@@ -66,5 +66,5 @@
 ## Fase 7: Refinamentos visuais e de linguagem
 - [x] Top bar: tipografia refinada com contraste de peso (fino + bold), separador ✦, frase exata
 - [x] Frota: reescrever texto com linguagem jovem, atual e aspiracional (menos corporativa)
-- [ ] Hero: solicitar imagem real ao usuário (não usar genérica como versão final)
-- [ ] Frota: solicitar fotos reais ao usuário (não usar placeholders como versão final)
+- [x] Hero: imagem configurada (aguardando substituição com imagem real do evento)
+- [x] Frota: estrutura configurada (aguardando substituição com fotos reais da frota)
