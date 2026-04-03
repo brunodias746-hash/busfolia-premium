@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE `boarding_points` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`eventId` int NOT NULL,\n\t`city` varchar(100) NOT NULL,\n\t`locationName` varchar(255) NOT NULL,\n\t`meetingTime` varchar(10),\n\t`departureTime` varchar(10),\n\t`isActive` boolean NOT NULL DEFAULT true,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\tCONSTRAINT `boarding_points_id` PRIMARY KEY(`id`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2dcXFJ5zHsK7P8Z.root --database ci3rs2m5P7Zem9o9Dnh5ee --execute CREATE TABLE `boarding_points` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`eventId` int NOT NULL,\n\t`city` varchar(100) NOT NULL,\n\t`locationName` varchar(255) NOT NULL,\n\t`meetingTime` varchar(10),\n\t`departureTime` varchar(10),\n\t`isActive` boolean NOT NULL DEFAULT true,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\tCONSTRAINT `boarding_points_id` PRIMARY KEY(`id`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 152
+}

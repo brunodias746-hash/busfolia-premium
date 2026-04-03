@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO `events` (`name`, `description`, `eventDate`, `priceCents`, `feeCents`, `packagePriceCents`, `packageLabel`, `capacity`, `groupLink`, `status`)\nVALUES ('Pedro Leopoldo Rodeio Show 2026', 'O maior rodeio de Minas Gerais. Transporte oficial com ida e volta garantida.', '05, 06, 12 e 13 | Junho | 2026', 6000, 610, 20000, 'Todos os dias', 200, 'https://chat.whatsapp.com/example', 'active');\n\nINSERT INTO `boarding_points` (`eventId`, `city`, `locationName`, `meetingTime`, `departureTime`) VALUES\n(1, 'BH', 'Shopping Del Rey', '16:00', '16:30'),\n(1, 'BH', 'Estação São Gabriel', '16:00', '16:30'),\n(1, 'Betim', 'Partage Shopping Betim', '15:30', '16:00'),\n(1, 'Contagem', 'Shopping Contagem', '15:30', '16:00'),\n(1, 'Santa Luzia', 'Terminal Santa Luzia', '15:00', '15:30');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2dcXFJ5zHsK7P8Z.root --database ci3rs2m5P7Zem9o9Dnh5ee --execute INSERT INTO `events` (`name`, `description`, `eventDate`, `priceCents`, `feeCents`, `packagePriceCents`, `packageLabel`, `capacity`, `groupLink`, `status`)\nVALUES ('Pedro Leopoldo Rodeio Show 2026', 'O maior rodeio de Minas Gerais. Transporte oficial com ida e volta garantida.', '05, 06, 12 e 13 | Junho | 2026', 6000, 610, 20000, 'Todos os dias', 200, 'https://chat.whatsapp.com/example', 'active');\n\nINSERT INTO `boarding_points` (`eventId`, `city`, `locationName`, `meetingTime`, `departureTime`) VALUES\n(1, 'BH', 'Shopping Del Rey', '16:00', '16:30'),\n(1, 'BH', 'Estação São Gabriel', '16:00', '16:30'),\n(1, 'Betim', 'Partage Shopping Betim', '15:30', '16:00'),\n(1, 'Contagem', 'Shopping Contagem', '15:30', '16:00'),\n(1, 'Santa Luzia', 'Terminal Santa Luzia', '15:00', '15:30');",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 139
+}

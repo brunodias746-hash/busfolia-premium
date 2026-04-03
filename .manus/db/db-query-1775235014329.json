@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE `payments` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`orderId` int NOT NULL,\n\t`stripePaymentIntentId` varchar(255),\n\t`stripeSessionId` varchar(255),\n\t`method` varchar(50),\n\t`amountReceivedCents` int,\n\t`feeStripeCents` int,\n\t`status` varchar(50) NOT NULL DEFAULT 'pending',\n\t`processedAt` timestamp,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\tCONSTRAINT `payments_id` PRIMARY KEY(`id`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2dcXFJ5zHsK7P8Z.root --database ci3rs2m5P7Zem9o9Dnh5ee --execute CREATE TABLE `payments` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`orderId` int NOT NULL,\n\t`stripePaymentIntentId` varchar(255),\n\t`stripeSessionId` varchar(255),\n\t`method` varchar(50),\n\t`amountReceivedCents` int,\n\t`feeStripeCents` int,\n\t`status` varchar(50) NOT NULL DEFAULT 'pending',\n\t`processedAt` timestamp,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\tCONSTRAINT `payments_id` PRIMARY KEY(`id`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 128
+}

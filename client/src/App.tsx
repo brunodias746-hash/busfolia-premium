@@ -5,14 +5,51 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
+import Comprar from "./pages/Comprar";
+import Sucesso from "./pages/Sucesso";
+import Falha from "./pages/Falha";
+import Duvidas from "./pages/Duvidas";
+import Contato from "./pages/Contato";
+import { lazy, Suspense } from "react";
+import { Loader2 } from "lucide-react";
+
+// Lazy load admin pages
+const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
+const AdminEventos = lazy(() => import("./pages/admin/Eventos"));
+const AdminPedidos = lazy(() => import("./pages/admin/Pedidos"));
+const AdminPassageiros = lazy(() => import("./pages/admin/Passageiros"));
+const AdminCheckin = lazy(() => import("./pages/admin/Checkin"));
+const AdminFinanceiro = lazy(() => import("./pages/admin/Financeiro"));
+
+function AdminFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+    </div>
+  );
+}
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
+      {/* Public routes */}
+      <Route path="/" component={Home} />
+      <Route path="/comprar" component={Comprar} />
+      <Route path="/sucesso" component={Sucesso} />
+      <Route path="/falha" component={Falha} />
+      <Route path="/duvidas" component={Duvidas} />
+      <Route path="/contato" component={Contato} />
+
+      {/* Admin routes */}
+      <Route path="/admin">{() => <Suspense fallback={<AdminFallback />}><AdminDashboard /></Suspense>}</Route>
+      <Route path="/admin/dashboard">{() => <Suspense fallback={<AdminFallback />}><AdminDashboard /></Suspense>}</Route>
+      <Route path="/admin/eventos">{() => <Suspense fallback={<AdminFallback />}><AdminEventos /></Suspense>}</Route>
+      <Route path="/admin/pedidos">{() => <Suspense fallback={<AdminFallback />}><AdminPedidos /></Suspense>}</Route>
+      <Route path="/admin/passageiros">{() => <Suspense fallback={<AdminFallback />}><AdminPassageiros /></Suspense>}</Route>
+      <Route path="/admin/checkin">{() => <Suspense fallback={<AdminFallback />}><AdminCheckin /></Suspense>}</Route>
+      <Route path="/admin/financeiro">{() => <Suspense fallback={<AdminFallback />}><AdminFinanceiro /></Suspense>}</Route>
+
+      <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -27,7 +64,7 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider
-        defaultTheme="light"
+        defaultTheme="dark"
         // switchable
       >
         <TooltipProvider>

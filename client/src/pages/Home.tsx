@@ -1,31 +1,353 @@
-import { useAuth } from "@/_core/hooks/useAuth";
+import PublicLayout from "@/components/PublicLayout";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { getLoginUrl } from "@/const";
-import { Streamdown } from 'streamdown';
+import { IMAGES, formatCurrency } from "@/lib/constants";
+import { trpc } from "@/lib/trpc";
+import { Link } from "wouter";
+import {
+  Shield, Clock, MapPin, Users, Star, ChevronRight,
+  Headphones, Wifi, Snowflake,
+  MessageCircle, ArrowRight, Zap, Heart
+} from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
-/**
- * All content in this page are only for example, replace with your own feature implementation
- * When building pages, remember your instructions in Frontend Workflow, Frontend Best Practices, Design Guide and Common Pitfalls
- */
-export default function Home() {
-  // The userAuth hooks provides authentication state
-  // To implement login/logout functionality, simply call logout() or redirect to getLoginUrl()
-  let { user, loading, error, isAuthenticated, logout } = useAuth();
-
-  // If theme is switchable in App.tsx, we can implement theme toggling like this:
-  // const { theme, toggleTheme } = useTheme();
-
+function CountdownTimer() {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  useEffect(() => {
+    const target = new Date("2026-06-05T00:00:00-03:00");
+    const interval = setInterval(() => {
+      const diff = target.getTime() - Date.now();
+      if (diff <= 0) { clearInterval(interval); return; }
+      setTimeLeft({
+        days: Math.floor(diff / 86400000),
+        hours: Math.floor((diff / 3600000) % 24),
+        minutes: Math.floor((diff / 60000) % 60),
+        seconds: Math.floor((diff / 1000) % 60),
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+  const units = [
+    { label: "Dias", value: timeLeft.days },
+    { label: "Horas", value: timeLeft.hours },
+    { label: "Min", value: timeLeft.minutes },
+    { label: "Seg", value: timeLeft.seconds },
+  ];
   return (
-    <div className="min-h-screen flex flex-col">
-      <main>
-        {/* Example: lucide-react for icons */}
-        <Loader2 className="animate-spin" />
-        Example Page
-        {/* Example: Streamdown for markdown rendering */}
-        <Streamdown>Any **markdown** content</Streamdown>
-        <Button variant="default">Example Button</Button>
-      </main>
+    <div className="flex gap-3">
+      {units.map((u) => (
+        <div key={u.label} className="glass-card rounded-lg px-3 py-2 text-center min-w-[60px]">
+          <div className="text-2xl font-bold font-heading text-primary">{String(u.value).padStart(2, "0")}</div>
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{u.label}</div>
+        </div>
+      ))}
     </div>
+  );
+}
+
+function HeroSection() {
+  return (
+    <section className="relative min-h-[90vh] flex items-center overflow-hidden">
+      <div className="absolute inset-0">
+        <img src={IMAGES.busExterior} alt="BusFolia Premium" className="w-full h-full object-cover opacity-30" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-background/50" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/30" />
+      </div>
+      <div className="container relative z-10 py-20">
+        <div className="max-w-2xl">
+          <div className="inline-flex items-center gap-2 glass-card rounded-full px-4 py-1.5 mb-6">
+            <Zap className="w-4 h-4 text-primary" />
+            <span className="text-xs font-medium text-primary">Transporte Oficial</span>
+          </div>
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black font-heading leading-[1.05] mb-6">
+            <span className="text-foreground">Vá com </span>
+            <span className="gold-text">segurança</span>
+            <br />
+            <span className="text-foreground">e volte com </span>
+            <span className="gold-text">história</span>
+          </h1>
+          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-8 max-w-lg">
+            Transporte premium para os maiores eventos de MG. Ida e volta garantida, com conforto e pontualidade.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 mb-10">
+            <Link href="/comprar">
+              <Button size="lg" className="gold-gradient text-black font-bold text-base px-8 py-6 rounded-xl hover:opacity-90 transition-opacity w-full sm:w-auto">
+                GARANTA SUA VAGA <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </Link>
+            <a href="#como-funciona">
+              <Button size="lg" variant="outline" className="border-white/10 text-foreground/80 px-8 py-6 rounded-xl hover:bg-white/5 w-full sm:w-auto">
+                Como Funciona
+              </Button>
+            </a>
+          </div>
+          <div className="mb-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Próximo evento começa em:</p>
+            <CountdownTimer />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BenefitsBar() {
+  const benefits = [
+    { icon: Shield, label: "100% Seguro" },
+    { icon: Clock, label: "Ida e Volta" },
+    { icon: MapPin, label: "5+ Pontos de Embarque" },
+    { icon: Users, label: "200+ Passageiros" },
+  ];
+  return (
+    <section className="border-y border-white/5 bg-[#080808]">
+      <div className="container py-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {benefits.map((b) => (
+            <div key={b.label} className="flex items-center gap-3 justify-center">
+              <b.icon className="w-5 h-5 text-primary shrink-0" />
+              <span className="text-sm font-medium text-foreground/80">{b.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function EventsSection() {
+  const { data: events, isLoading } = trpc.events.active.useQuery();
+  if (isLoading) return (
+    <section className="py-20"><div className="container"><div className="animate-pulse space-y-4"><div className="h-8 bg-white/5 rounded w-64 mx-auto" /><div className="h-64 bg-white/5 rounded-2xl" /></div></div></section>
+  );
+  if (!events || events.length === 0) return null;
+  return (
+    <section className="py-20">
+      <div className="container">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-black font-heading mb-3"><span className="gold-text">Próximos</span> Eventos</h2>
+          <p className="text-muted-foreground">Garanta sua vaga nos melhores eventos de MG</p>
+        </div>
+        <div className="grid gap-6">
+          {events.map((event) => {
+            const spotsLeft = event.capacity - event.soldCount;
+            const urgency = spotsLeft < 30;
+            return (
+              <div key={event.id} className="glass-card rounded-2xl p-6 md:p-8 relative overflow-hidden">
+                {urgency && <div className="absolute top-4 right-4 bg-red-500/20 text-red-400 text-xs font-bold px-3 py-1 rounded-full border border-red-500/30">ÚLTIMAS VAGAS</div>}
+                <div className="grid md:grid-cols-[1fr_auto] gap-6 items-center">
+                  <div>
+                    <h3 className="text-2xl md:text-3xl font-black font-heading mb-2">{event.name}</h3>
+                    <p className="text-muted-foreground mb-4">{event.description}</p>
+                    <div className="flex flex-wrap gap-4 text-sm">
+                      <span className="flex items-center gap-1.5 text-foreground/70"><Clock className="w-4 h-4 text-primary" /> {event.eventDate}</span>
+                      <span className="flex items-center gap-1.5 text-foreground/70"><Users className="w-4 h-4 text-primary" /> {spotsLeft} vagas restantes</span>
+                    </div>
+                    <div className="mt-4 w-full max-w-md">
+                      <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                        <div className="h-full gold-gradient rounded-full transition-all duration-500" style={{ width: `${Math.min((event.soldCount / event.capacity) * 100, 100)}%` }} />
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">{event.soldCount} de {event.capacity} vendidos</p>
+                    </div>
+                  </div>
+                  <div className="text-center md:text-right">
+                    <div className="mb-2">
+                      <span className="text-sm text-muted-foreground">A partir de</span>
+                      <div className="text-3xl font-black font-heading text-primary">{formatCurrency(event.priceCents)}</div>
+                      {event.feeCents > 0 && <span className="text-xs text-muted-foreground">+ {formatCurrency(event.feeCents)} taxa</span>}
+                    </div>
+                    <Link href="/comprar">
+                      <Button className="gold-gradient text-black font-bold px-8 py-3 rounded-xl hover:opacity-90">COMPRAR AGORA <ChevronRight className="w-4 h-4 ml-1" /></Button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HowItWorksSection() {
+  const steps = [
+    { num: "01", title: "Escolha o Evento", desc: "Selecione o evento e a data desejada." },
+    { num: "02", title: "Preencha seus Dados", desc: "Informe dados pessoais e ponto de embarque." },
+    { num: "03", title: "Pague com Segurança", desc: "Pagamento via cartão com Stripe seguro." },
+    { num: "04", title: "Embarque e Curta", desc: "Receba confirmação e embarque no horário." },
+  ];
+  return (
+    <section id="como-funciona" className="py-20 bg-[#080808]">
+      <div className="container">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-black font-heading mb-3">Como <span className="gold-text">Funciona</span></h2>
+          <p className="text-muted-foreground">Processo simples em 4 passos</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {steps.map((step) => (
+            <div key={step.num} className="glass-card rounded-2xl p-6 text-center relative group hover:border-primary/20 transition-colors">
+              <div className="text-4xl font-black font-heading text-primary/20 mb-3">{step.num}</div>
+              <h3 className="font-bold text-lg mb-2">{step.title}</h3>
+              <p className="text-sm text-muted-foreground">{step.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FleetSection() {
+  const features = [
+    { icon: Snowflake, label: "Ar Condicionado" },
+    { icon: Wifi, label: "Wi-Fi Gratuito" },
+    { icon: Headphones, label: "Entretenimento" },
+    { icon: Shield, label: "Seguro Total" },
+  ];
+  return (
+    <section className="py-20">
+      <div className="container">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            <h2 className="text-3xl md:text-4xl font-black font-heading mb-4">Conheça nossa <span className="gold-text">Frota Premium</span></h2>
+            <p className="text-muted-foreground leading-relaxed mb-8">Ônibus executivos com poltronas reclináveis, ar condicionado, Wi-Fi e sistema de entretenimento. Viaje com o conforto que você merece.</p>
+            <div className="grid grid-cols-2 gap-4">
+              {features.map((f) => (
+                <div key={f.label} className="flex items-center gap-3 glass-card rounded-xl p-3">
+                  <f.icon className="w-5 h-5 text-primary shrink-0" />
+                  <span className="text-sm font-medium">{f.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="relative">
+            <div className="rounded-2xl overflow-hidden border border-white/5">
+              <img src={IMAGES.busInterior} alt="Interior Premium" className="w-full h-80 object-cover" />
+            </div>
+            <div className="absolute -bottom-4 -left-4 glass-card rounded-xl p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full gold-gradient flex items-center justify-center"><Star className="w-5 h-5 text-black" /></div>
+              <div><div className="text-sm font-bold">4.9/5.0</div><div className="text-xs text-muted-foreground">+500 avaliações</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function WhyChooseSection() {
+  const reasons = [
+    { icon: Shield, title: "Segurança Garantida", desc: "Motoristas profissionais, veículos revisados e seguro completo para todos os passageiros." },
+    { icon: Clock, title: "Pontualidade", desc: "Horários rigorosos de saída e retorno. Nunca perca o início do evento." },
+    { icon: Heart, title: "Experiência Premium", desc: "Conforto de primeira classe com poltronas reclináveis e amenidades a bordo." },
+    { icon: MessageCircle, title: "Suporte 24h", desc: "Equipe disponível via WhatsApp para qualquer dúvida antes, durante e após a viagem." },
+  ];
+  return (
+    <section className="py-20 bg-[#080808]">
+      <div className="container">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-black font-heading mb-3">Por que escolher a <span className="gold-text">BusFolia</span>?</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {reasons.map((r) => (
+            <div key={r.title} className="glass-card rounded-2xl p-6 flex gap-4 hover:border-primary/20 transition-colors">
+              <div className="w-12 h-12 rounded-xl gold-gradient flex items-center justify-center shrink-0"><r.icon className="w-6 h-6 text-black" /></div>
+              <div><h3 className="font-bold text-lg mb-1">{r.title}</h3><p className="text-sm text-muted-foreground leading-relaxed">{r.desc}</p></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TestimonialsSection() {
+  const testimonials = [
+    { name: "Lucas M.", text: "Melhor experiência de transporte para evento! Ônibus impecável e pontual.", rating: 5 },
+    { name: "Ana C.", text: "Super organizado. Embarquei no Shopping Del Rey e foi tudo perfeito. Recomendo!", rating: 5 },
+    { name: "Pedro H.", text: "Já é a terceira vez que uso a BusFolia. Nunca me decepcionou. Conforto nota 10.", rating: 5 },
+  ];
+  return (
+    <section className="py-20">
+      <div className="container">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-black font-heading mb-3">O que dizem nossos <span className="gold-text">passageiros</span></h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {testimonials.map((t) => (
+            <div key={t.name} className="glass-card rounded-2xl p-6">
+              <div className="flex gap-1 mb-4">{Array.from({ length: t.rating }).map((_, i) => <Star key={i} className="w-4 h-4 text-primary fill-primary" />)}</div>
+              <p className="text-sm text-foreground/80 leading-relaxed mb-4">"{t.text}"</p>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full gold-gradient flex items-center justify-center text-xs font-bold text-black">{t.name.charAt(0)}</div>
+                <span className="text-sm font-medium">{t.name}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FAQSection() {
+  const faqs = [
+    { q: "O transporte inclui ida e volta?", a: "Sim! Todas as passagens incluem ida e volta garantida." },
+    { q: "Posso escolher o ponto de embarque?", a: "Sim, temos diversos pontos de embarque em BH e região metropolitana." },
+    { q: "Como funciona o pagamento?", a: "O pagamento é feito online via cartão de crédito, com processamento seguro pelo Stripe." },
+    { q: "Posso cancelar minha passagem?", a: "Consulte nossa política de cancelamento entrando em contato pelo WhatsApp." },
+  ];
+  return (
+    <section className="py-20 bg-[#080808]">
+      <div className="container max-w-3xl">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-black font-heading mb-3">Perguntas <span className="gold-text">Frequentes</span></h2>
+        </div>
+        <Accordion type="single" collapsible className="space-y-3">
+          {faqs.map((faq, i) => (
+            <AccordionItem key={i} value={`faq-${i}`} className="glass-card rounded-xl border-none px-6">
+              <AccordionTrigger className="text-left font-medium hover:no-underline hover:text-primary py-4">{faq.q}</AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pb-4">{faq.a}</AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </div>
+    </section>
+  );
+}
+
+function CTASection() {
+  return (
+    <section className="py-20 relative overflow-hidden">
+      <div className="absolute inset-0 gold-gradient opacity-5" />
+      <div className="container relative z-10 text-center">
+        <h2 className="text-3xl md:text-5xl font-black font-heading mb-4">Não fique de fora.<br /><span className="gold-text">Garanta sua vaga agora.</span></h2>
+        <p className="text-muted-foreground text-lg mb-8 max-w-lg mx-auto">Vagas limitadas. Compre sua passagem com segurança e viaje com conforto.</p>
+        <Link href="/comprar">
+          <Button size="lg" className="gold-gradient text-black font-bold text-lg px-10 py-6 rounded-xl hover:opacity-90">COMPRAR PASSAGEM <ArrowRight className="w-5 h-5 ml-2" /></Button>
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+export default function Home() {
+  return (
+    <PublicLayout>
+      <HeroSection />
+      <BenefitsBar />
+      <EventsSection />
+      <HowItWorksSection />
+      <FleetSection />
+      <WhyChooseSection />
+      <TestimonialsSection />
+      <FAQSection />
+      <CTASection />
+    </PublicLayout>
   );
 }
