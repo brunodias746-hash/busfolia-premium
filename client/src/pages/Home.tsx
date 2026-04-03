@@ -52,28 +52,39 @@ function CountdownTimer() {
 
 function HeroSection() {
   return (
-    <section className="relative min-h-[90vh] flex items-center overflow-hidden">
+    <section className="relative min-h-[90vh] flex items-center overflow-hidden -mt-[104px] pt-[104px]">
+      {/* Background image with dark overlay */}
       <div className="absolute inset-0">
-        <img src={IMAGES.busExterior} alt="BusFolia Premium" className="w-full h-full object-cover opacity-30" />
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-background/50" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/30" />
+        <img
+          src={IMAGES.busExterior}
+          alt="Evento Rodeio"
+          className="w-full h-full object-cover"
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(to right, rgba(0,0,0,0.85), rgba(0,0,0,0.4))",
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
       </div>
+
       <div className="container relative z-10 py-20">
-        <div className="max-w-2xl">
+        <div className="max-w-[600px]">
           <div className="inline-flex items-center gap-2 glass-card rounded-full px-4 py-1.5 mb-6">
             <Zap className="w-4 h-4 text-primary" />
             <span className="text-xs font-medium text-primary">Transporte Oficial</span>
           </div>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black font-heading leading-[1.05] mb-6">
-            <span className="text-foreground">Vá com </span>
-            <span className="gold-text">segurança</span>
-            <br />
-            <span className="text-foreground">e volte com </span>
-            <span className="gold-text">história</span>
+
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black font-heading leading-[1.1] mb-6">
+            O transporte oficial para o{" "}
+            <span className="gold-text">Pedro Leopoldo Rodeio Show 2026</span>
           </h1>
+
           <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-8 max-w-lg">
-            Transporte premium para os maiores eventos de MG. Ida e volta garantida, com conforto e pontualidade.
+            Ida e volta garantida, com conforto, segurança e pontos de embarque estratégicos.
           </p>
+
           <div className="flex flex-col sm:flex-row gap-4 mb-10">
             <Link href="/comprar">
               <Button size="lg" className="gold-gradient text-black font-bold text-base px-8 py-6 rounded-xl hover:opacity-90 transition-opacity w-full sm:w-auto">
@@ -86,6 +97,7 @@ function HeroSection() {
               </Button>
             </a>
           </div>
+
           <div className="mb-4">
             <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Próximo evento começa em:</p>
             <CountdownTimer />
@@ -203,20 +215,76 @@ function HowItWorksSection() {
 }
 
 function FleetSection() {
+  // Placeholder images - will be replaced with real fleet images
+  const fleetImages = [
+    { src: IMAGES.busExterior, label: "Exterior Premium", category: "Exterior" },
+    { src: IMAGES.busInterior, label: "Interior Executivo", category: "Interior" },
+    { src: IMAGES.busFleet, label: "Frota Completa", category: "Frota" },
+    { src: IMAGES.busExterior, label: "Vista Lateral", category: "Exterior" },
+    { src: IMAGES.busInterior, label: "Poltronas Reclináveis", category: "Interior" },
+    { src: IMAGES.busFleet, label: "Ônibus Executivo", category: "Frota" },
+  ];
+
+  // Duplicate for infinite scroll effect
+  const col1 = [...fleetImages.slice(0, 3), ...fleetImages.slice(0, 3)];
+  const col2 = [...fleetImages.slice(3, 6), ...fleetImages.slice(3, 6)];
+
   const features = [
     { icon: Snowflake, label: "Ar Condicionado" },
     { icon: Wifi, label: "Wi-Fi Gratuito" },
     { icon: Headphones, label: "Entretenimento" },
     { icon: Shield, label: "Seguro Total" },
   ];
+
   return (
     <section className="py-20">
       <div className="container">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div>
-            <h2 className="text-3xl md:text-4xl font-black font-heading mb-4">Conheça nossa <span className="gold-text">Frota Premium</span></h2>
-            <p className="text-muted-foreground leading-relaxed mb-8">Ônibus executivos com poltronas reclináveis, ar condicionado, Wi-Fi e sistema de entretenimento. Viaje com o conforto que você merece.</p>
-            <div className="grid grid-cols-2 gap-4">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-black font-heading mb-3">Conheça nossa <span className="gold-text">Frota Premium</span></h2>
+          <p className="text-muted-foreground">Ônibus executivos com conforto de primeira classe</p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8 items-start">
+          {/* Left: Fleet Carousel 2-column grid */}
+          <div className="grid grid-cols-2 gap-3 h-[400px] overflow-hidden rounded-2xl">
+            {/* Column 1 - scrolls up */}
+            <div className="overflow-hidden">
+              <div className="animate-scroll-up">
+                {col1.map((img, i) => (
+                  <div key={`col1-${i}`} className="relative mb-3 rounded-xl overflow-hidden aspect-[4/3]">
+                    <img src={img.src} alt={img.label} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    <div className="absolute bottom-2 left-2">
+                      <span className="text-[10px] uppercase tracking-wider text-primary/80 font-semibold">{img.category}</span>
+                      <p className="text-xs font-medium text-white">{img.label}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Column 2 - scrolls down */}
+            <div className="overflow-hidden">
+              <div className="animate-scroll-down">
+                {col2.map((img, i) => (
+                  <div key={`col2-${i}`} className="relative mb-3 rounded-xl overflow-hidden aspect-[4/3]">
+                    <img src={img.src} alt={img.label} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    <div className="absolute bottom-2 left-2">
+                      <span className="text-[10px] uppercase tracking-wider text-primary/80 font-semibold">{img.category}</span>
+                      <p className="text-xs font-medium text-white">{img.label}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Right: Features + rating */}
+          <div className="flex flex-col justify-center">
+            <p className="text-muted-foreground leading-relaxed mb-8">
+              Ônibus executivos com poltronas reclináveis, ar condicionado, Wi-Fi e sistema de entretenimento. Viaje com o conforto que você merece.
+            </p>
+            <div className="grid grid-cols-2 gap-4 mb-8">
               {features.map((f) => (
                 <div key={f.label} className="flex items-center gap-3 glass-card rounded-xl p-3">
                   <f.icon className="w-5 h-5 text-primary shrink-0" />
@@ -224,17 +292,19 @@ function FleetSection() {
                 </div>
               ))}
             </div>
-          </div>
-          <div className="relative">
-            <div className="rounded-2xl overflow-hidden border border-white/5">
-              <img src={IMAGES.busInterior} alt="Interior Premium" className="w-full h-80 object-cover" />
-            </div>
-            <div className="absolute -bottom-4 -left-4 glass-card rounded-xl p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full gold-gradient flex items-center justify-center"><Star className="w-5 h-5 text-black" /></div>
-              <div><div className="text-sm font-bold">4.9/5.0</div><div className="text-xs text-muted-foreground">+500 avaliações</div></div>
+            <div className="glass-card rounded-xl p-4 flex items-center gap-3 w-fit">
+              <div className="w-10 h-10 rounded-full gold-gradient flex items-center justify-center">
+                <Star className="w-5 h-5 text-black" />
+              </div>
+              <div>
+                <div className="text-sm font-bold">4.9/5.0</div>
+                <div className="text-xs text-muted-foreground">+500 avaliações</div>
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Note: Fleet images are placeholders - real images will be provided */}
       </div>
     </section>
   );

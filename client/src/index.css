@@ -183,3 +183,47 @@
     background-clip: text;
   }
 }
+
+/* Marquee animation for TopAnnouncementBar */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 25s linear infinite;
+  will-change: transform;
+}
+
+/* Fleet carousel vertical scroll */
+@keyframes scroll-up {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes scroll-down {
+  0% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.animate-scroll-up {
+  animation: scroll-up 20s linear infinite;
+  will-change: transform;
+}
+
+.animate-scroll-down {
+  animation: scroll-down 20s linear infinite;
+  will-change: transform;
+}

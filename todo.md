@@ -56,3 +56,9 @@
 - [x] Criar tela Financeiro dedicada com filtros por período
 - [x] Adicionar testes webhook Stripe (assinatura válida/inválida)
 - [x] Checkpoint final e entrega
+
+## Fase 6: Atualização UI/UX Frontend
+- [x] TopAnnouncementBar animada (marquee) com texto PLRS 2026 em loop infinito
+- [x] Hero Section reconstruída com imagem de evento, overlay escuro, novo copy e CTA
+- [x] FleetCarousel em 2 colunas com animação contínua (estrutura pronta, aguardando imagens reais)
+- [x] Ajustes de identidade global: contraste, hierarquia tipográfica, espaçamento 8pt

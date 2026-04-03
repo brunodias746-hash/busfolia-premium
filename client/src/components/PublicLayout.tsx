@@ -2,6 +2,7 @@ import { Link, useLocation } from "wouter";
 import { SITE } from "@/lib/constants";
 import { Bus, Menu, X, Instagram, MessageCircle, Mail } from "lucide-react";
 import { useState } from "react";
+import TopAnnouncementBar from "./TopAnnouncementBar";
 
 function Header() {
   const [location] = useLocation();
@@ -15,7 +16,14 @@ function Header() {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/5" style={{ background: "rgba(10,10,10,0.85)", backdropFilter: "blur(20px)" }}>
+    <header
+      className="fixed left-0 right-0 z-50 border-b border-white/5"
+      style={{
+        top: "40px",
+        background: "rgba(10,10,10,0.85)",
+        backdropFilter: "blur(20px)",
+      }}
+    >
       <div className="container flex items-center justify-between h-16">
         <Link href="/" className="flex items-center gap-2 group">
           <Bus className="w-7 h-7 text-primary" />
@@ -139,8 +147,10 @@ function Footer() {
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <TopAnnouncementBar />
       <Header />
-      <main className="flex-1 pt-16">{children}</main>
+      {/* pt-[104px] = 40px announcement bar + 64px header */}
+      <main className="flex-1 pt-[104px]">{children}</main>
       <Footer />
     </div>
   );
