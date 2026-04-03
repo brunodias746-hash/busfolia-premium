@@ -62,3 +62,9 @@
 - [x] Hero Section reconstruída com imagem de evento, overlay escuro, novo copy e CTA
 - [x] FleetCarousel em 2 colunas com animação contínua (estrutura pronta, aguardando imagens reais)
 - [x] Ajustes de identidade global: contraste, hierarquia tipográfica, espaçamento 8pt
+
+## Fase 7: Refinamentos visuais e de linguagem
+- [x] Top bar: tipografia refinada com contraste de peso (fino + bold), separador ✦, frase exata
+- [x] Frota: reescrever texto com linguagem jovem, atual e aspiracional (menos corporativa)
+- [ ] Hero: solicitar imagem real ao usuário (não usar genérica como versão final)
+- [ ] Frota: solicitar fotos reais ao usuário (não usar placeholders como versão final)

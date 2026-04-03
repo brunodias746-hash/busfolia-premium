@@ -240,8 +240,8 @@ function FleetSection() {
     <section className="py-20">
       <div className="container">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-black font-heading mb-3">Conheça nossa <span className="gold-text">Frota Premium</span></h2>
-          <p className="text-muted-foreground">Ônibus executivos com conforto de primeira classe</p>
+          <h2 className="text-3xl md:text-4xl font-black font-heading mb-3">A experiência começa <span className="gold-text">no embarque</span></h2>
+          <p className="text-muted-foreground">Conforto, estrutura e clima premium desde o primeiro momento</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 items-start">
@@ -282,7 +282,7 @@ function FleetSection() {
           {/* Right: Features + rating */}
           <div className="flex flex-col justify-center">
             <p className="text-muted-foreground leading-relaxed mb-8">
-              Ônibus executivos com poltronas reclináveis, ar condicionado, Wi-Fi e sistema de entretenimento. Viaje com o conforto que você merece.
+              Esquece aquele transporte básico. Aqui o rolê já começa no ônibus: poltrona reclinável, ar no ponto, Wi-Fi pra postar tudo e um clima que já te coloca no mood do evento. Ida e volta com estrutura de verdade.
             </p>
             <div className="grid grid-cols-2 gap-4 mb-8">
               {features.map((f) => (
