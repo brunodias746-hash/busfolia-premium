@@ -1,5 +1,6 @@
 // CDN Image URLs
 export const IMAGES = {
+  heroRodeo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/PHIL9031-Aprimorado-NR-1024x683_75d9d13c.webp",
   busExterior: "https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/bus-exterior_40362a91.jpeg",
   busInterior: "https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/bus-interior_ce0531f0.jpg",
   busFleet: "https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/bus-fleet_34461a69.jpg",

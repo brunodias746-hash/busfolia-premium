@@ -56,7 +56,7 @@ function HeroSection() {
       {/* Background image with dark overlay */}
       <div className="absolute inset-0">
         <img
-          src={IMAGES.busExterior}
+          src={IMAGES.heroRodeo}
           alt="Evento Rodeio"
           className="w-full h-full object-cover"
         />
