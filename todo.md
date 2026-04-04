@@ -67,4 +67,4 @@
 - [x] Top bar: tipografia refinada com contraste de peso (fino + bold), separador ✦, frase exata
 - [x] Frota: reescrever texto com linguagem jovem, atual e aspiracional (menos corporativa)
 - [x] Hero: imagem real do evento rodeio integrada (PHIL9031 oficial)
-- [ ] Frota: aguardando fotos reais da frota para substituir placeholders
+- [x] Frota: 12 fotos reais da Viacao TG integradas no carrossel

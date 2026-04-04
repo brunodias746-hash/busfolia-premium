@@ -1,9 +1,19 @@
 // CDN Image URLs
 export const IMAGES = {
   heroRodeo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/PHIL9031-Aprimorado-NR-1024x683_75d9d13c.webp",
-  busExterior: "https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/bus-exterior_40362a91.jpeg",
-  busInterior: "https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/bus-interior_ce0531f0.jpg",
-  busFleet: "https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/bus-fleet_34461a69.jpg",
+  // Real Viacao TG fleet images
+  fleetBus1: "https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/freepik_ultra-realistic-luxury-coach-bus-driving-on-highway-same-exact-bus-from-reference-image-no-design-changes-dynamic-motion-blur-background-sharp-focus-on-bus-golden-hour-lighting-cinematic-_0006_0f2c8d9b.webp",
+  fleetBus2: "https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/freepik_ultra-realistic-premium-tourism-bus-advertisement-same-exact-bus-from-reference-image-preserve-original-design-preserve-company-identity-and-real-proportions-enhance-only-visual-quality-a_0012_d55a9fab.webp",
+  fleetBus3: "https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/freepik_ultra-realistic-premium-tourism-bus-advertisement-same-exact-bus-from-reference-image-preserve-original-design-preserve-company-identity-and-real-proportions-enhance-only-visual-quality-a_0011_d55a9fab.webp",
+  fleetBus4: "https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/freepik_ultra-realistic-premium-tourism-bus-advertisement-same-exact-bus-from-reference-image-preserve-original-design-preserve-company-identity-and-real-proportions-enhance-only-visual-quality-a_0013_9e13c1bd.webp",
+  fleetBus5: "https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/freepik_ultra-realistic-cinematic-luxury-bus-scene-same-exact-bus-from-reference-image-preserve-all-original-design-colors-and-branding-enhance-lighting-and-environment-only-dramatic-sunset-sky-w_0002_b9e3d2be.webp",
+  fleetBus6: "https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/freepik_ultra-realistic-luxury-coach-bus-driving-on-highway-same-exact-bus-from-reference-image-no-design-changes-dynamic-motion-blur-background-sharp-focus-on-bus-golden-hour-lighting-cinematic-_0005_8bfad958.webp",
+  fleetBus7: "https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/freepik_ultra-realistic-premium-transport-company-bus-same-exact-bus-from-reference-image-no-changes-to-structure-or-branding-cinematic-commercial-lighting-ultra-polished-surface-reflections-dram_0009_0284a71a.webp",
+  fleetBus8: "https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/freepik_ultra-realistic-premium-transport-company-bus-same-exact-bus-from-reference-image-no-changes-to-structure-or-branding-cinematic-commercial-lighting-ultra-polished-surface-reflections-dram_0007_36efac87.webp",
+  fleetBus9: "https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/freepik_ultra-realistic-cinematic-luxury-bus-scene-same-exact-bus-from-reference-image-preserve-all-original-design-colors-and-branding-enhance-lighting-and-environment-only-dramatic-sunset-sky-w_0001_6272a330.webp",
+  fleetBus10: "https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/freepik_ultra-realistic-luxury-bus-at-night-same-exact-bus-from-reference-image-preserve-original-structure-and-identity-cinematic-night-lighting-neon-underglow-lights-subtly-added-beneath-the-bu_0010_16cd29b2.webp",
+  fleetBus11: "https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/freepik_ultra-realistic-premium-transport-company-bus-same-exact-bus-from-reference-image-no-changes-to-structure-or-branding-cinematic-commercial-lighting-ultra-polished-surface-reflections-dram_0008_1ea77df4.webp",
+  fleetBus12: "https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/freepik_ultra-realistic-cinematic-luxury-bus-scene-same-exact-bus-from-reference-image-preserve-all-original-design-colors-and-branding-enhance-lighting-and-environment-only-dramatic-sunset-sky-w_0004_ec9bfb0d.webp",
 };
 
 // Site configuration
