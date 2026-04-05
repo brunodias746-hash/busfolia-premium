@@ -79,3 +79,26 @@
 - [ ] Remover conteúdo genérico ou falso
 - [ ] Testar todos os fluxos
 - [ ] Validar em produção
+
+## FASE 13: REVISÃO MOBILE-FIRST COMPLETA
+- [ ] Hero: altura controlada no mobile (60-75vh), sem corte de conteúdo
+- [ ] Hero: object-fit cover com posicionamento correto
+- [ ] Top Bar: texto em loop sem quebra no mobile
+- [ ] Header/Nav: menu responsivo funcional
+- [ ] Imagens: width 100%, height auto, sem overflow horizontal
+- [ ] Tipografia: reduzir títulos no mobile, hierarquia clara
+- [ ] Espaçamentos: padding/margin adequados no mobile
+- [ ] Grids: converter para 1 coluna no mobile
+- [ ] Botões: área de toque mínima 44px
+- [ ] Carrosséis: swipe funcional, sem corte lateral
+- [ ] Card evento: layout empilhado no mobile
+- [ ] Pontos de embarque: layout responsivo
+- [ ] Depoimentos: 1 coluna no mobile
+- [ ] FAQ: accordion funcional no mobile
+- [ ] Checkout: inputs grandes, espaçamento adequado
+- [ ] Checkout: fácil digitação, sem scroll quebrado
+- [ ] Sucesso/Falha: layout mobile adequado
+- [ ] Contato: layout mobile adequado
+- [ ] Dúvidas: layout mobile adequado
+- [ ] Nenhum overflow horizontal em nenhuma página
+- [ ] Testado em 375px (iPhone) e 360px (Android)

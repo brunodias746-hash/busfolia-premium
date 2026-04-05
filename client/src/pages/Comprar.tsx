@@ -190,41 +190,41 @@ export default function Comprar() {
 
   return (
     <PublicLayout>
-      <div className="container max-w-2xl py-12">
-        <h1 className="text-3xl font-black font-heading text-center mb-2">
+      <div className="container max-w-2xl py-8 sm:py-12 px-4 sm:px-6">
+        <h1 className="text-2xl sm:text-3xl font-black font-heading text-center mb-1 sm:mb-2">
           Comprar <span className="gold-text">Passagem</span>
         </h1>
-        <p className="text-center text-muted-foreground mb-8">{event.name}</p>
+        <p className="text-center text-xs sm:text-base text-muted-foreground mb-6 sm:mb-8">{event.name}</p>
 
         <StepIndicator current={step} steps={["Dados Pessoais", "Embarque", "Resumo"]} />
 
         {/* Step 0: Personal Data */}
         {step === 0 && (
-          <div className="glass-card rounded-2xl p-6 md:p-8 space-y-5">
-            <div className="flex items-center gap-3 mb-4">
-              <User className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-bold">Dados Pessoais</h2>
+          <div className="glass-card rounded-2xl p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-5">
+            <div className="flex items-center gap-3 mb-4 sm:mb-5">
+              <User className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+              <h2 className="text-base sm:text-lg font-bold">Dados Pessoais</h2>
             </div>
 
             <div>
-              <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Nome Completo</label>
+              <label className="text-xs sm:text-sm font-medium text-foreground/80 mb-2 block">Nome Completo</label>
               <input
                 type="text"
                 value={form.customerName}
                 onChange={(e) => setForm((f) => ({ ...f, customerName: e.target.value }))}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                className="w-full bg-white/5 border border-white/10 rounded-lg sm:rounded-xl px-3 sm:px-4 py-3 sm:py-3 text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[44px]"
                 placeholder="Seu nome completo"
               />
               {errors.customerName && <p className="text-xs text-red-400 mt-1">{errors.customerName}</p>}
             </div>
 
             <div>
-              <label className="text-sm font-medium text-foreground/80 mb-1.5 block">CPF</label>
+              <label className="text-xs sm:text-sm font-medium text-foreground/80 mb-2 block">CPF</label>
               <input
                 type="text"
                 value={form.customerCpf}
                 onChange={(e) => setForm((f) => ({ ...f, customerCpf: formatCPF(e.target.value) }))}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                className="w-full bg-white/5 border border-white/10 rounded-lg sm:rounded-xl px-3 sm:px-4 py-3 sm:py-3 text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[44px]"
                 placeholder="000.000.000-00"
                 maxLength={14}
               />
@@ -232,31 +232,31 @@ export default function Comprar() {
             </div>
 
             <div>
-              <label className="text-sm font-medium text-foreground/80 mb-1.5 block">E-mail</label>
+              <label className="text-xs sm:text-sm font-medium text-foreground/80 mb-2 block">E-mail</label>
               <input
                 type="email"
                 value={form.customerEmail}
                 onChange={(e) => setForm((f) => ({ ...f, customerEmail: e.target.value }))}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                className="w-full bg-white/5 border border-white/10 rounded-lg sm:rounded-xl px-3 sm:px-4 py-3 sm:py-3 text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[44px]"
                 placeholder="seu@email.com"
               />
               {errors.customerEmail && <p className="text-xs text-red-400 mt-1">{errors.customerEmail}</p>}
             </div>
 
             <div>
-              <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Telefone / WhatsApp</label>
+              <label className="text-xs sm:text-sm font-medium text-foreground/80 mb-2 block">Telefone / WhatsApp</label>
               <input
                 type="text"
                 value={form.customerPhone}
                 onChange={(e) => setForm((f) => ({ ...f, customerPhone: formatPhone(e.target.value) }))}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                className="w-full bg-white/5 border border-white/10 rounded-lg sm:rounded-xl px-3 sm:px-4 py-3 sm:py-3 text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[44px]"
                 placeholder="(31) 99999-9999"
                 maxLength={15}
               />
               {errors.customerPhone && <p className="text-xs text-red-400 mt-1">{errors.customerPhone}</p>}
             </div>
 
-            <Button onClick={handleNext} className="w-full gold-gradient text-black font-bold py-3 rounded-xl">
+            <Button onClick={handleNext} className="w-full gold-gradient text-black font-bold py-3 sm:py-4 rounded-lg sm:rounded-xl min-h-[44px] text-sm sm:text-base">
               PRÓXIMO <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
@@ -264,7 +264,7 @@ export default function Comprar() {
 
         {/* Step 1: Boarding & Passengers */}
         {step === 1 && (
-          <div className="glass-card rounded-2xl p-6 md:p-8 space-y-5">
+          <div className="glass-card rounded-2xl p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-5">
             <div className="flex items-center gap-3 mb-4">
               <MapPin className="w-5 h-5 text-primary" />
               <h2 className="text-lg font-bold">Embarque e Passageiros</h2>
@@ -360,7 +360,7 @@ export default function Comprar() {
 
         {/* Step 2: Summary */}
         {step === 2 && (
-          <div className="glass-card rounded-2xl p-6 md:p-8 space-y-5">
+          <div className="glass-card rounded-2xl p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-5">
             <div className="flex items-center gap-3 mb-4">
               <CreditCard className="w-5 h-5 text-primary" />
               <h2 className="text-lg font-bold">Resumo do Pedido</h2>
