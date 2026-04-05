@@ -68,3 +68,93 @@
 - [x] Frota: reescrever texto com linguagem jovem, atual e aspiracional (menos corporativa)
 - [x] Hero: imagem real do evento rodeio integrada (PHIL9031 oficial)
 - [x] Frota: 12 fotos reais da Viacao TG integradas no carrossel
+
+
+## Fase 8: Checklist Final de Execução (NOVO)
+
+### TOP BAR (BARRA VERMELHA)
+- [x] Corrigir espaçamento de "PARA O"
+- [x] Implementar tipografia alternada (font-weight 400 e 700)
+- [x] Garantir loop contínuo sem quebra
+- [x] Animação fluida com separador ✦
+
+### HERO PRINCIPAL
+- [x] Manter layout atual
+- [x] Converter hero em carrossel
+- [x] Adicionar capa do evento (1920x780)
+- [x] Manter texto em MAIÚSCULO com legibilidade
+
+### CARD EVENTO
+- [ ] Remover "0 de 200 vendidos"
+
+### FROTA
+- [x] Corrigir imagens quebradas (removidas 2 imagens que falhavam)
+- [x] Remover promessas falsas (ar condicionado, wi-fi)
+- [x] Usar linguagem mais jovem
+
+### DEPOIMENTOS
+- [x] Remover referência a Shopping Del Rey
+- [x] Alinhar com pontos reais
+
+### PONTOS DE EMBARQUE
+- [ ] Atualizar em TODO o site:
+  - [ ] BETIM: PARTAGE SHOPPING BETIM
+  - [ ] CONTAGEM: PRAÇA DA CEMIG
+  - [ ] BELO HORIZONTE: PRAÇA DA ESTAÇÃO, MINAS SHOPPING, SHOPPING ESTAÇÃO
+  - [ ] SANTA LUZIA: SORVETERIA 4 ESTAÇÃO
+- [ ] Não exibir horários nessa seção
+- [ ] Refletir no checkout também
+
+### CONTATO / GRUPO
+- [ ] Atualizar WhatsApp: (31) 9 7354-0425
+- [ ] Adicionar link do grupo: https://chat.whatsapp.com/KjaIneid0P9F6JScKsV7Po
+- [ ] Adicionar botão "ENTRAR NO GRUPO"
+
+### CHECKOUT
+- [ ] Corrigir erro CPF inválido
+- [ ] CPF solicitado apenas 1 vez
+- [ ] Nome: aceitar nome + sobrenome
+- [ ] Implementar fluxo correto:
+  1. [ ] Dados pessoais
+  2. [ ] Cidade
+  3. [ ] Ponto de embarque
+  4. [ ] Datas
+  5. [ ] Tipo de compra
+  6. [ ] Passageiros
+  7. [ ] Resumo
+  8. [ ] Pagamento
+
+### REGRAS DE COMPRA
+- [ ] 1 dia = R$ 60,00
+- [ ] Múltiplos dias: cliente escolhe dias específicos
+- [ ] Cálculo: R$ 60,00 x quantidade de dias
+- [ ] Passaporte (TODOS OS DIAS): R$ 200,00
+
+### SUCESSO / EMAIL
+- [ ] Tela de sucesso com resumo real
+- [ ] Email automático com:
+  - [ ] Dados da passagem
+  - [ ] Link do grupo
+
+### ADMIN / PEDIDOS
+- [ ] Revisar pedidos pendentes sem pagamento
+- [ ] Validar regra correta de criação/status
+
+### ADMIN / EVENTOS
+- [ ] Permitir editar evento
+- [ ] Permitir upload de capa/banner (padrão: 1920x780)
+- [ ] Capa vai para hero
+- [ ] Hero aceita carrossel
+
+### EXPORTAÇÃO
+- [ ] Manter exportação
+- [ ] Melhorar planilha
+- [ ] Deixar mais profissional e completa
+
+### VALIDAÇÃO FINAL
+- [ ] Revisar site inteiro + admin
+- [ ] Alinhar todos os dados
+- [ ] Garantir consistência
+- [ ] Todos os botões funcionando
+- [ ] Nenhum fluxo fake
+- [ ] Checkout funcionando real

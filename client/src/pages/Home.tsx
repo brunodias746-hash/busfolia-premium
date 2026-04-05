@@ -51,58 +51,116 @@ function CountdownTimer() {
 }
 
 function HeroSection() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  
+  const slides = [
+    {
+      type: "banner",
+      image: IMAGES.eventBanner,
+      title: "PEDRO LEOPOLDO RODEIO SHOW 2026",
+    },
+    {
+      type: "content",
+      image: IMAGES.heroRodeo,
+      title: "O transporte oficial para o Pedro Leopoldo Rodeio Show 2026",
+    },
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [slides.length]);
+
+  const currentSlideData = slides[currentSlide];
+
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden -mt-[104px] pt-[104px]">
-      {/* Background image with dark overlay */}
+      {/* Carrossel de imagens */}
       <div className="absolute inset-0">
-        <img
-          src={IMAGES.heroRodeo}
-          alt="Evento Rodeio"
-          className="w-full h-full object-cover"
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            background: "linear-gradient(to right, rgba(0,0,0,0.85), rgba(0,0,0,0.4))",
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+        {slides.map((slide, idx) => (
+          <div
+            key={idx}
+            className={`absolute inset-0 transition-opacity duration-1000 ${
+              idx === currentSlide ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <img
+              src={slide.image}
+              alt={slide.title}
+              className="w-full h-full object-cover"
+            />
+            {slide.type === "content" && (
+              <>
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: "linear-gradient(to right, rgba(0,0,0,0.85), rgba(0,0,0,0.4))",
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+              </>
+            )}
+          </div>
+        ))}
       </div>
 
+      {/* Conteúdo do Hero */}
       <div className="container relative z-10 py-20">
         <div className="max-w-[600px]">
-          <div className="inline-flex items-center gap-2 glass-card rounded-full px-4 py-1.5 mb-6">
-            <Zap className="w-4 h-4 text-primary" />
-            <span className="text-xs font-medium text-primary">Transporte Oficial</span>
-          </div>
+          {currentSlideData.type === "content" && (
+            <>
+              <div className="inline-flex items-center gap-2 glass-card rounded-full px-4 py-1.5 mb-6">
+                <Zap className="w-4 h-4 text-primary" />
+                <span className="text-xs font-medium text-primary">Transporte Oficial</span>
+              </div>
 
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black font-heading leading-[1.1] mb-6">
-            O transporte oficial para o{" "}
-            <span className="gold-text">Pedro Leopoldo Rodeio Show 2026</span>
-          </h1>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black font-heading leading-[1.1] mb-6 uppercase">
+                O transporte oficial para o{" "}
+                <span className="gold-text">Pedro Leopoldo Rodeio Show 2026</span>
+              </h1>
 
-          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-8 max-w-lg">
-            Ida e volta garantida, com conforto, segurança e pontos de embarque estratégicos.
-          </p>
+              <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-8 max-w-lg">
+                Ida e volta garantida, com conforto, segurança e pontos de embarque estratégicos.
+              </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 mb-10">
-            <Link href="/comprar">
-              <Button size="lg" className="gold-gradient text-black font-bold text-base px-8 py-6 rounded-xl hover:opacity-90 transition-opacity w-full sm:w-auto">
-                GARANTA SUA VAGA <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </Link>
-            <a href="#como-funciona">
-              <Button size="lg" variant="outline" className="border-white/10 text-foreground/80 px-8 py-6 rounded-xl hover:bg-white/5 w-full sm:w-auto">
-                Como Funciona
-              </Button>
-            </a>
-          </div>
+              <div className="flex flex-col sm:flex-row gap-4 mb-10">
+                <Link href="/comprar">
+                  <Button size="lg" className="gold-gradient text-black font-bold text-base px-8 py-6 rounded-xl hover:opacity-90 transition-opacity w-full sm:w-auto">
+                    GARANTA SUA VAGA <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </Link>
+                <a href="#como-funciona">
+                  <Button size="lg" variant="outline" className="border-white/10 text-foreground/80 px-8 py-6 rounded-xl hover:bg-white/5 w-full sm:w-auto">
+                    Como Funciona
+                  </Button>
+                </a>
+              </div>
 
-          <div className="mb-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Próximo evento começa em:</p>
-            <CountdownTimer />
-          </div>
+              <div className="mb-4">
+                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Próximo evento começa em:</p>
+                <CountdownTimer />
+              </div>
+            </>
+          )}
         </div>
+      </div>
+
+      {/* Indicadores de slide */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+        {slides.map((_, idx) => (
+          <button
+            key={idx}
+            onClick={() => setCurrentSlide(idx)}
+            className={`w-2 h-2 rounded-full transition-all ${
+              idx === currentSlide
+                ? "bg-primary w-8"
+                : "bg-white/30 hover:bg-white/50"
+            }`}
+            aria-label={`Slide ${idx + 1}`}
+          />
+        ))}
       </div>
     </section>
   );
@@ -236,10 +294,10 @@ function FleetSection() {
   const col2 = [...fleetImages.slice(6, 12), ...fleetImages.slice(6, 12)];
 
   const features = [
-    { icon: Snowflake, label: "Ar Condicionado" },
-    { icon: Wifi, label: "Wi-Fi Gratuito" },
     { icon: Headphones, label: "Entretenimento" },
     { icon: Shield, label: "Seguro Total" },
+    { icon: Heart, label: "Conforto Premium" },
+    { icon: Clock, label: "Pontualidade" },
   ];
 
   return (
@@ -288,7 +346,7 @@ function FleetSection() {
           {/* Right: Features + rating */}
           <div className="flex flex-col justify-center">
             <p className="text-muted-foreground leading-relaxed mb-8">
-              Esquece aquele transporte básico. Aqui o rolê já começa no ônibus: poltrona reclinável, ar no ponto, Wi-Fi pra postar tudo e um clima que já te coloca no mood do evento. Ida e volta com estrutura de verdade.
+              Esquece aquele transporte básico. Aqui o rolê já começa no ônibus: poltronas reclináveis confortáveis, clima premium que já te coloca no mood do evento, e uma estrutura pensada pra você curtir a viagem. Ida e volta com qualidade de verdade.
             </p>
             <div className="grid grid-cols-2 gap-4 mb-8">
               {features.map((f) => (
@@ -345,7 +403,7 @@ function WhyChooseSection() {
 function TestimonialsSection() {
   const testimonials = [
     { name: "Lucas M.", text: "Melhor experiência de transporte para evento! Ônibus impecável e pontual.", rating: 5 },
-    { name: "Ana C.", text: "Super organizado. Embarquei no Shopping Del Rey e foi tudo perfeito. Recomendo!", rating: 5 },
+    { name: "Ana C.", text: "Super organizado. Embarquei na Praça da Estação e foi tudo perfeito. Recomendo!", rating: 5 },
     { name: "Pedro H.", text: "Já é a terceira vez que uso a BusFolia. Nunca me decepcionou. Conforto nota 10.", rating: 5 },
   ];
   return (
