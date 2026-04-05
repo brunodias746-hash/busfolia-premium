@@ -2,7 +2,7 @@ import PublicLayout from "@/components/PublicLayout";
 import { trpc } from "@/lib/trpc";
 import { formatCurrency } from "@/lib/constants";
 import { useSearch } from "wouter";
-import { CheckCircle2, Loader2, Clock, User, MapPin, CreditCard } from "lucide-react";
+import { CheckCircle2, Loader2, Clock, User, MapPin, CreditCard, MessageCircle, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { useEffect, useState } from "react";
@@ -121,17 +121,27 @@ export default function Sucesso() {
                 </div>
               )}
 
+
+
               <p className="text-xs text-muted-foreground text-center">
                 Um e-mail de confirmação será enviado para <strong>{order.customerEmail}</strong>.
               </p>
             </div>
           )}
 
-          <Link href="/">
-            <Button className="gold-gradient text-black font-bold mt-6 w-full py-3 rounded-xl">
-              Voltar ao Início
-            </Button>
-          </Link>
+          <div className="space-y-3 mt-6">
+            <a href="https://wa.me/5531973540425" target="_blank" rel="noopener noreferrer">
+              <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl">
+                <MessageCircle className="w-4 h-4 mr-2" />
+                ENTRAR NO GRUPO DO WHATSAPP
+              </Button>
+            </a>
+            <Link href="/">
+              <Button className="gold-gradient text-black font-bold w-full py-3 rounded-xl">
+                Voltar ao Início
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     </PublicLayout>

@@ -131,10 +131,10 @@
 - [ ] Passaporte (TODOS OS DIAS): R$ 200,00
 
 ### SUCESSO / EMAIL
-- [ ] Tela de sucesso com resumo real
-- [ ] Email automático com:
-  - [ ] Dados da passagem
-  - [ ] Link do grupo
+- [x] Tela de sucesso com resumo real
+- [x] Email automático com:
+  - [x] Dados da passagem
+  - [x] Link do grupo
 
 ### ADMIN / PEDIDOS
 - [ ] Revisar pedidos pendentes sem pagamento
