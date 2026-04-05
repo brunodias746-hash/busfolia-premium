@@ -1,21 +1,17 @@
 export default function TopAnnouncementBar() {
-  // Single unit that will be repeated for the infinite loop
-  // Alternating font weights for visual rhythm
-  const unit = (
-    <>
-      <span className="font-normal tracking-[0.12em]">TRANSPORTE OFICIAL</span>
-      <span className="mx-2 text-amber-300/80 text-[10px] sm:text-xs">•</span>
-      <span className="font-bold tracking-[0.12em]">PARA O PLRS 2026</span>
-      <span className="mx-4 text-amber-300/80 text-[10px] sm:text-xs">✦</span>
-    </>
-  );
-
-  // Repeat enough times to fill wide screens seamlessly
-  const items = Array.from({ length: 20 }, (_, i) => (
-    <span key={i} className="inline-flex items-center">
-      {unit}
-    </span>
-  ));
+  // Create items with alternating font weights
+  // Each item is: [full phrase with weight] + [separator]
+  const items = Array.from({ length: 24 }, (_, i) => {
+    const isEven = i % 2 === 0;
+    const weight = isEven ? "font-normal" : "font-bold";
+    
+    return (
+      <span key={i} className="inline-flex items-center whitespace-nowrap">
+        <span className={`${weight} tracking-[0.12em]`}>TRANSPORTE OFICIAL PARA O PLRS 2026</span>
+        <span className="mx-4 text-amber-300/80 text-[10px] sm:text-xs">✦</span>
+      </span>
+    );
+  });
 
   return (
     <div
@@ -26,9 +22,9 @@ export default function TopAnnouncementBar() {
       }}
     >
       <div 
-        className="flex items-center h-full whitespace-nowrap"
+        className="flex items-center h-full"
         style={{
-          animation: "marquee 40s linear infinite",
+          animation: "marquee 60s linear infinite",
         }}
       >
         <span className="text-white text-[11px] sm:text-xs uppercase inline-flex items-center">

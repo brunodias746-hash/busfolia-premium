@@ -208,32 +208,39 @@ function EventsSection() {
             const urgency = spotsLeft < 30;
             return (
               <div key={event.id} className="glass-card rounded-2xl p-6 md:p-8 relative overflow-hidden">
-                {urgency && <div className="absolute top-4 right-4 bg-red-500/20 text-red-400 text-xs font-bold px-3 py-1 rounded-full border border-red-500/30">ÚLTIMAS VAGAS</div>}
-                <div className="grid md:grid-cols-[1fr_auto] gap-6 items-center">
-                  <div>
-                    <h3 className="text-2xl md:text-3xl font-black font-heading mb-2">{event.name}</h3>
-                    <p className="text-muted-foreground mb-4">{event.description}</p>
-                    <div className="flex flex-wrap gap-4 text-sm">
-                      <span className="flex items-center gap-1.5 text-foreground/70"><Clock className="w-4 h-4 text-primary" /> {event.eventDate}</span>
-                      <span className="flex items-center gap-1.5 text-foreground/70"><Users className="w-4 h-4 text-primary" /> {spotsLeft} vagas restantes</span>
-                    </div>
-
+                {urgency && <div className="absolute top-4 right-4 bg-red-500/20 text-red-400 text-xs font-bold px-3 py-1 rounded-full border border-red-500/30 z-10">ÚLTIMAS VAGAS</div>}
+                {event.bannerUrl && (
+                  <div className="relative h-48 md:h-64 overflow-hidden">
+                    <img src={event.bannerUrl} alt={event.name} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   </div>
-                  <div className="text-center md:text-right">
-                    <div className="mb-2">
-                      <span className="text-sm text-muted-foreground">A partir de</span>
-                      <div className="text-3xl font-black font-heading text-primary">{formatCurrency(event.priceCents)}</div>
-                      {event.feeCents > 0 && <span className="text-xs text-muted-foreground">+ {formatCurrency(event.feeCents)} taxa</span>}
+                )}
+                <div className="p-6 md:p-8">
+                  <div className="grid md:grid-cols-[1fr_auto] gap-6 items-start">
+                    <div>
+                      <h3 className="text-2xl md:text-3xl font-black font-heading mb-2">{event.name}</h3>
+                      <p className="text-muted-foreground mb-4">{event.description}</p>
+                      <div className="flex flex-wrap gap-4 text-sm">
+                        <span className="flex items-center gap-1.5 text-foreground/70"><Clock className="w-4 h-4 text-primary" /> {event.eventDate}</span>
+                        <span className="flex items-center gap-1.5 text-foreground/70"><Users className="w-4 h-4 text-primary" /> {spotsLeft} vagas restantes</span>
+                      </div>
                     </div>
-                    <div className="flex flex-col gap-2">
-                      <Link href="/comprar">
-                        <Button className="gold-gradient text-black font-bold px-8 py-3 rounded-xl hover:opacity-90 w-full">COMPRAR AGORA <ChevronRight className="w-4 h-4 ml-1" /></Button>
-                      </Link>
-                      {event.groupLink && (
-                        <a href={event.groupLink} target="_blank" rel="noopener noreferrer">
-                          <Button variant="outline" className="w-full font-bold px-8 py-3 rounded-xl">ENTRAR NO GRUPO</Button>
-                        </a>
-                      )}
+                    <div className="text-center md:text-right">
+                      <div className="mb-2">
+                        <span className="text-sm text-muted-foreground">A partir de</span>
+                        <div className="text-3xl font-black font-heading text-primary">{formatCurrency(event.priceCents)}</div>
+                        {event.feeCents > 0 && <span className="text-xs text-muted-foreground">+ {formatCurrency(event.feeCents)} taxa</span>}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <Link href="/comprar">
+                          <Button className="gold-gradient text-black font-bold px-8 py-3 rounded-xl hover:opacity-90 w-full">COMPRAR AGORA <ChevronRight className="w-4 h-4 ml-1" /></Button>
+                        </Link>
+                        {event.groupLink && (
+                          <a href={event.groupLink} target="_blank" rel="noopener noreferrer">
+                            <Button variant="outline" className="w-full font-bold px-8 py-3 rounded-xl">ENTRAR NO GRUPO</Button>
+                          </a>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
