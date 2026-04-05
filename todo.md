@@ -85,7 +85,7 @@
 - [x] Manter texto em MAIÚSCULO com legibilidade
 
 ### CARD EVENTO
-- [ ] Remover "0 de 200 vendidos"
+- [x] Remover "0 de 200 vendidos"
 
 ### FROTA
 - [x] Corrigir imagens quebradas (removidas 2 imagens que falhavam)
@@ -97,24 +97,24 @@
 - [x] Alinhar com pontos reais
 
 ### PONTOS DE EMBARQUE
-- [ ] Atualizar em TODO o site:
-  - [ ] BETIM: PARTAGE SHOPPING BETIM
-  - [ ] CONTAGEM: PRAÇA DA CEMIG
-  - [ ] BELO HORIZONTE: PRAÇA DA ESTAÇÃO, MINAS SHOPPING, SHOPPING ESTAÇÃO
-  - [ ] SANTA LUZIA: SORVETERIA 4 ESTAÇÃO
-- [ ] Não exibir horários nessa seção
-- [ ] Refletir no checkout também
+- [x] Atualizar em TODO o site:
+  - [x] BETIM: PARTAGE SHOPPING BETIM
+  - [x] CONTAGEM: PRAÇA DA CEMIG
+  - [x] BELO HORIZONTE: PRAÇA DA ESTAÇÃO, MINAS SHOPPING, SHOPPING ESTAÇÃO
+  - [x] SANTA LUZIA: SORVETERIA 4 ESTAÇÃO
+- [x] Não exibir horários nessa seção
+- [x] Refletir no checkout também
 
 ### CONTATO / GRUPO
-- [ ] Atualizar WhatsApp: (31) 9 7354-0425
-- [ ] Adicionar link do grupo: https://chat.whatsapp.com/KjaIneid0P9F6JScKsV7Po
-- [ ] Adicionar botão "ENTRAR NO GRUPO"
+- [x] Atualizar WhatsApp: (31) 9 7354-0425
+- [x] Adicionar link do grupo: https://chat.whatsapp.com/KjaIneid0P9F6JScKsV7Po
+- [x] Adicionar botão "ENTRAR NO GRUPO"
 
 ### CHECKOUT
-- [ ] Corrigir erro CPF inválido
-- [ ] CPF solicitado apenas 1 vez
-- [ ] Nome: aceitar nome + sobrenome
-- [ ] Implementar fluxo correto:
+- [x] Corrigir erro CPF inválido
+- [x] CPF solicitado apenas 1 vez
+- [x] Nome: aceitar nome + sobrenome
+- [x] Implementar fluxo correto:
   1. [ ] Dados pessoais
   2. [ ] Cidade
   3. [ ] Ponto de embarque

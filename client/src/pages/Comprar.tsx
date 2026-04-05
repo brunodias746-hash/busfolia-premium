@@ -6,6 +6,21 @@ import { useState, useMemo } from "react";
 import { ArrowLeft, ArrowRight, Plus, Trash2, Loader2, ShieldCheck, User, MapPin, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 
+// Valida CPF usando algoritmo oficial
+function validateCPF(cpf: string): boolean {
+  if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+  let sum = 0, remainder;
+  for (let i = 1; i <= 9; i++) sum += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+  remainder = (sum * 10) % 11;
+  if (remainder === 10 || remainder === 11) remainder = 0;
+  if (remainder !== parseInt(cpf.substring(9, 10))) return false;
+  sum = 0;
+  for (let i = 1; i <= 10; i++) sum += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+  remainder = (sum * 10) % 11;
+  if (remainder === 10 || remainder === 11) remainder = 0;
+  return remainder === parseInt(cpf.substring(10, 11));
+}
+
 interface PassengerData {
   name: string;
   cpf: string;
@@ -91,9 +106,10 @@ export default function Comprar() {
 
   function validateStep0(): boolean {
     const e: Record<string, string> = {};
-    if (form.customerName.length < 3) e.customerName = "Nome deve ter pelo menos 3 caracteres";
+    if (form.customerName.trim().length < 5) e.customerName = "Nome completo obrigatório (nome + sobrenome)";
     const cpfClean = form.customerCpf.replace(/\D/g, "");
-    if (cpfClean.length !== 11) e.customerCpf = "CPF inválido";
+    if (cpfClean.length !== 11) e.customerCpf = "CPF inválido (11 dígitos)";
+    else if (!validateCPF(cpfClean)) e.customerCpf = "CPF inválido";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.customerEmail)) e.customerEmail = "E-mail inválido";
     const phoneClean = form.customerPhone.replace(/\D/g, "");
     if (phoneClean.length < 10) e.customerPhone = "Telefone inválido";
@@ -106,9 +122,10 @@ export default function Comprar() {
     if (!form.boardingPointId) e.boardingPointId = "Selecione um ponto de embarque";
     if (!form.transportDate) e.transportDate = "Selecione uma data";
     form.passengers.forEach((p, i) => {
-      if (p.name.length < 3) e[`passenger_${i}_name`] = "Nome obrigatório";
+      if (p.name.trim().length < 3) e[`passenger_${i}_name`] = "Nome obrigatório";
       const cpfClean = p.cpf.replace(/\D/g, "");
-      if (cpfClean.length !== 11) e[`passenger_${i}_cpf`] = "CPF inválido";
+      if (cpfClean.length !== 11) e[`passenger_${i}_cpf`] = "CPF inválido (11 dígitos)";
+      else if (!validateCPF(cpfClean)) e[`passenger_${i}_cpf`] = "CPF inválido";
     });
     setErrors(e);
     return Object.keys(e).length === 0;

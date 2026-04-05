@@ -217,12 +217,7 @@ function EventsSection() {
                       <span className="flex items-center gap-1.5 text-foreground/70"><Clock className="w-4 h-4 text-primary" /> {event.eventDate}</span>
                       <span className="flex items-center gap-1.5 text-foreground/70"><Users className="w-4 h-4 text-primary" /> {spotsLeft} vagas restantes</span>
                     </div>
-                    <div className="mt-4 w-full max-w-md">
-                      <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full gold-gradient rounded-full transition-all duration-500" style={{ width: `${Math.min((event.soldCount / event.capacity) * 100, 100)}%` }} />
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">{event.soldCount} de {event.capacity} vendidos</p>
-                    </div>
+
                   </div>
                   <div className="text-center md:text-right">
                     <div className="mb-2">
@@ -230,9 +225,16 @@ function EventsSection() {
                       <div className="text-3xl font-black font-heading text-primary">{formatCurrency(event.priceCents)}</div>
                       {event.feeCents > 0 && <span className="text-xs text-muted-foreground">+ {formatCurrency(event.feeCents)} taxa</span>}
                     </div>
-                    <Link href="/comprar">
-                      <Button className="gold-gradient text-black font-bold px-8 py-3 rounded-xl hover:opacity-90">COMPRAR AGORA <ChevronRight className="w-4 h-4 ml-1" /></Button>
-                    </Link>
+                    <div className="flex flex-col gap-2">
+                      <Link href="/comprar">
+                        <Button className="gold-gradient text-black font-bold px-8 py-3 rounded-xl hover:opacity-90 w-full">COMPRAR AGORA <ChevronRight className="w-4 h-4 ml-1" /></Button>
+                      </Link>
+                      {event.groupLink && (
+                        <a href={event.groupLink} target="_blank" rel="noopener noreferrer">
+                          <Button variant="outline" className="w-full font-bold px-8 py-3 rounded-xl">ENTRAR NO GRUPO</Button>
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
