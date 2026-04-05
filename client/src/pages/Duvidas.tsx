@@ -39,32 +39,32 @@ const faqs = [
 export default function Duvidas() {
   return (
     <PublicLayout>
-      <div className="container max-w-3xl py-16">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 glass-card rounded-full px-4 py-1.5 mb-4">
-            <HelpCircle className="w-4 h-4 text-primary" />
-            <span className="text-xs font-medium text-primary">Central de Ajuda</span>
+      <div className="container max-w-3xl py-8 sm:py-16 px-4 sm:px-6">
+        <div className="text-center mb-8 sm:mb-12">
+          <div className="inline-flex items-center gap-2 glass-card rounded-full px-3 sm:px-4 py-1 sm:py-1.5 mb-3 sm:mb-4">
+            <HelpCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary shrink-0" />
+            <span className="text-[10px] sm:text-xs font-medium text-primary">Central de Ajuda</span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-black font-heading mb-3">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black font-heading mb-2 sm:mb-3">
             Perguntas <span className="gold-text">Frequentes</span>
           </h1>
-          <p className="text-muted-foreground">Encontre respostas para as dúvidas mais comuns</p>
+          <p className="text-xs sm:text-base text-muted-foreground">Encontre respostas para as dúvidas mais comuns</p>
         </div>
 
         {faqs.map((section) => (
-          <div key={section.category} className="mb-8">
-            <h2 className="text-lg font-bold mb-4 text-primary">{section.category}</h2>
-            <Accordion type="single" collapsible className="space-y-3">
+          <div key={section.category} className="mb-6 sm:mb-8">
+            <h2 className="text-base sm:text-lg font-bold mb-3 sm:mb-4 text-primary">{section.category}</h2>
+            <Accordion type="single" collapsible className="space-y-2 sm:space-y-3">
               {section.items.map((faq, i) => (
                 <AccordionItem
                   key={i}
                   value={`${section.category}-${i}`}
-                  className="glass-card rounded-xl border-none px-6"
+                  className="glass-card rounded-lg sm:rounded-xl border-none px-3 sm:px-6"
                 >
-                  <AccordionTrigger className="text-left font-medium hover:no-underline hover:text-primary py-4">
+                  <AccordionTrigger className="text-left text-xs sm:text-sm font-medium hover:no-underline hover:text-primary py-3 sm:py-4 min-h-[44px]">
                     {faq.q}
                   </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground pb-4">
+                  <AccordionContent className="text-[10px] sm:text-sm text-muted-foreground pb-3 sm:pb-4">
                     {faq.a}
                   </AccordionContent>
                 </AccordionItem>
