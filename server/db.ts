@@ -186,7 +186,7 @@ export async function getOrderById(id: number) {
   return result[0];
 }
 
-export async function updateOrderStatus(id: number, status: "pending" | "paid" | "failed" | "canceled") {
+export async function updateOrderStatus(id: number, status: "pending" | "pending_checkout" | "paid" | "failed" | "canceled") {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   await db.update(orders).set({ status }).where(eq(orders.id, id));
@@ -395,7 +395,7 @@ export async function getPassengersForExport(eventId?: number) {
       orderShortId: order.shortId,
       orderStatus: order.status,
       boardingPoint: bp ? `${bp.city} - ${bp.locationName}` : "",
-      transportDate: order.transportDate,
+      transportDate: order.transportDates ? JSON.parse(order.transportDates)[0] : "",
       checkInStatus: p.checkInStatus,
     });
   }

@@ -117,12 +117,13 @@ export const appRouter = router({
         customerEmail: input.customerEmail,
         customerPhone: input.customerPhone.replace(/\D/g, ""),
         boardingPointId: input.boardingPointId,
-        transportDate: input.transportDate,
+        transportDates: JSON.stringify([input.transportDate]),
+        purchaseType: "single",
         quantity: qty,
         unitPriceCents,
         feeCents,
         totalAmountCents,
-        status: "pending",
+        status: "pending_checkout",
       });
 
       // 5. Create passengers
@@ -186,7 +187,7 @@ export const appRouter = router({
             customerEmail: order.customerEmail,
             quantity: order.quantity,
             totalAmountCents: order.totalAmountCents,
-            transportDate: order.transportDate,
+            transportDate: order.transportDates ? JSON.parse(order.transportDates)[0] : "",
             eventName: event?.name ?? "",
           },
           passengers: passengers.map((p) => ({ name: p.name, cpf: p.cpf })),

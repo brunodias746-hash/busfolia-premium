@@ -34,7 +34,7 @@ export default function Sucesso() {
     );
   }
 
-  if (isLoading || data?.status === "pending") {
+  if (isLoading || data?.status === "pending_checkout") {
     return (
       <PublicLayout>
         <div className="container max-w-lg py-16 sm:py-32 px-4 sm:px-6 text-center">

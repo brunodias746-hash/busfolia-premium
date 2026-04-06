@@ -120,7 +120,7 @@ function OrderDetail({ orderId, onClose }: { orderId: number; onClose: () => voi
           <div className="flex justify-between"><span className="text-muted-foreground">CPF</span><span>{order.customerCpf}</span></div>
           <div className="flex justify-between"><span className="text-muted-foreground">E-mail</span><span>{order.customerEmail}</span></div>
           <div className="flex justify-between"><span className="text-muted-foreground">Telefone</span><span>{order.customerPhone}</span></div>
-          <div className="flex justify-between"><span className="text-muted-foreground">Data</span><span>{order.transportDate}</span></div>
+          <div className="flex justify-between"><span className="text-muted-foreground">Data</span><span>{order.transportDates ? JSON.parse(order.transportDates)[0] : "N/A"}</span></div>
           <div className="flex justify-between"><span className="text-muted-foreground">Total</span><span className="font-bold text-primary">{formatCurrency(order.totalAmountCents)}</span></div>
           <div className="flex justify-between"><span className="text-muted-foreground">Status</span><StatusBadge status={order.status} /></div>
         </div>

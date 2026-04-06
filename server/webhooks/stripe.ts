@@ -84,7 +84,7 @@ stripeWebhookRouter.post(
         case "checkout.session.expired": {
           const session = event.data.object as Stripe.Checkout.Session;
           const order = await getOrderByStripeSession(session.id);
-          if (order && order.status === "pending") {
+          if (order && order.status === "pending_checkout") {
             await updateOrderStatus(order.id, "canceled");
             console.log(`[Webhook] Order ${order.shortId} marked as canceled (session expired)`);
           }

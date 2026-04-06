@@ -102,3 +102,82 @@
 - [ ] Dúvidas: layout mobile adequado
 - [ ] Nenhum overflow horizontal em nenhuma página
 - [ ] Testado em 375px (iPhone) e 360px (Android)
+
+
+## FASE 14: CORREÇÕES ESTRUTURAIS CRÍTICAS
+
+### 1. CHECKOUT - MODELAGEM DE DADOS
+- [ ] Alterar `transportDate: string` para `transportDates: string[]`
+- [ ] Adicionar `purchaseType: "single" | "multiple" | "all_days"`
+- [ ] Validar regras: single=1 data, multiple=array, all_days=ignorar datas
+
+### 2. CHECKOUT - CÁLCULO DE PREÇO
+- [ ] Remover uso de `event.priceCents` como base fixa
+- [ ] Implementar `PRICE_PER_DAY = 6000` (R$60)
+- [ ] Implementar `ALL_DAYS_PRICE = 20000` (R$200)
+- [ ] Cálculo: `total = (purchaseType === "all_days" ? ALL_DAYS_PRICE : transportDates.length * PRICE_PER_DAY) * passengers`
+
+### 3. CHECKOUT - ESTRUTURA DE FLUXO
+- [ ] Quebrar em 7 steps: personalData, boardingSelection, dateSelection, purchaseType, passengerCount, review, payment
+- [ ] Separar estados por step
+- [ ] Remover acoplamento
+
+### 4. EMBARQUE - ESTRUTURA DE INPUT
+- [ ] Remover select separado de cidade e ponto
+- [ ] Criar `BoardingOption` unificado: `{ id, label: "CIDADE - PONTO" }`
+- [ ] Remover exibição de horários
+
+### 5. STRIPE - SESSION
+- [ ] Usar `unit_amount` dinâmico baseado em cálculo
+- [ ] Não usar valor fixo do evento
+- [ ] Total já calculado no backend
+
+### 6. HERO - DESACOPLAR HARDCODE
+- [ ] Criar endpoint `/api/events/active`
+- [ ] Retornar evento com `bannerUrl`
+- [ ] Frontend mapear banners → carrossel
+
+### 7. ADMIN - UPLOAD DE BANNER
+- [ ] Adicionar `<input type="file" accept="image/*" />`
+- [ ] Upload via Forge storage
+- [ ] Salvar URL em `events.bannerUrl`
+- [ ] Validar proporção ~1920x780
+
+### 8. FROTA - REMOÇÃO DE MOCK
+- [ ] Remover imagens de `constants.ts`
+- [ ] Criar lista vazia ou placeholder
+- [ ] Bloquear deploy até imagens reais
+
+### 9. EMAIL - IMPLEMENTAÇÃO REAL
+- [ ] Adicionar serviço (SendGrid ou Resend)
+- [ ] Implementar no webhook Stripe
+- [ ] Template com: datas, ponto, passageiros, link grupo
+
+### 10. SUCCESS PAGE
+- [ ] Buscar pedido por `session_id`
+- [ ] Renderizar `transportDates[]`
+- [ ] Renderizar `boardingPoint`
+- [ ] Renderizar `passengers`
+
+### 11. MOBILE - HERO FIX
+- [ ] Remover `min-h-[90vh]`
+- [ ] Usar `h-[60vh] sm:h-[65vh]`
+- [ ] Adicionar `object-fit: cover; object-position: center;`
+
+### 12. ADMIN - EVENT DELETE
+- [ ] Adicionar mutation `deleteEvent(id: string)`
+- [ ] Botão delete com confirmação
+
+### 13. PEDIDOS - STATUS
+- [ ] Status inicial: "pending_checkout"
+- [ ] Após webhook: "paid"
+- [ ] Não tratar tentativa como pedido válido
+
+### 14. EXPORTAÇÃO
+- [ ] Adicionar colunas: nome, cpf, telefone, ponto, datas, quantidade, valor, status
+
+### 15. LIMPEZA
+- [ ] Remover `.manus/`
+- [ ] Remover mocks e textos fake
+- [ ] Remover dados fictícios
+- [ ] Garantir tudo funcional real
