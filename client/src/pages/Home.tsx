@@ -80,9 +80,9 @@ function HeroSection() {
   const currentSlideData = slides[currentSlide];
 
   return (
-    <section className="relative h-[50vh] sm:h-[60vh] md:h-[75vh] lg:h-[85vh] flex items-center overflow-hidden -mt-[104px] pt-[104px]">
+    <section className="relative w-full aspect-[1920/780] sm:aspect-[1920/780] md:aspect-[1920/780] flex items-center overflow-visible -mt-[104px] pt-[104px]">
       {/* Carrossel de imagens */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 w-full h-full">
         {slides.map((slide, idx) => (
           <div
             key={idx}
