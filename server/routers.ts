@@ -217,7 +217,7 @@ export const appRouter = router({
               // Send confirmation email
               const orderDetails = await getOrderWithDetails(order.id);
               if (orderDetails && orderDetails.boardingPoint) {
-                const { sendEmail, generateOrderConfirmationEmail } = await import("../server/_core/email");
+                const { sendEmail, generateOrderConfirmationEmail } = await import("./_core/email");
                 const boardingPointLabel = `${orderDetails.boardingPoint.city} - ${orderDetails.boardingPoint.locationName}`;
                 const transportDates = JSON.parse(orderDetails.transportDates || "[]") as string[];
                 
