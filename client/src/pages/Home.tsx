@@ -39,11 +39,11 @@ function CountdownTimer() {
     { label: "Seg", value: timeLeft.seconds },
   ];
   return (
-    <div className="flex gap-2 sm:gap-3">
+    <div className="flex gap-2 sm:gap-4 md:gap-6">
       {units.map((u) => (
-        <div key={u.label} className="glass-card rounded-lg px-2.5 py-1.5 sm:px-3 sm:py-2 text-center min-w-[50px] sm:min-w-[60px]">
-          <div className="text-xl sm:text-2xl font-bold font-heading text-primary">{String(u.value).padStart(2, "0")}</div>
-          <div className="text-[9px] sm:text-[10px] uppercase tracking-wider text-muted-foreground">{u.label}</div>
+        <div key={u.label} className="glass-card rounded-lg sm:rounded-xl px-3 py-2 sm:px-5 sm:py-3 text-center flex-1 sm:flex-none min-w-[55px] sm:min-w-[75px] md:min-w-[90px]">
+          <div className="text-2xl sm:text-3xl md:text-4xl font-bold font-heading text-primary leading-tight">{String(u.value).padStart(2, "0")}</div>
+          <div className="text-xs sm:text-sm uppercase tracking-wider text-muted-foreground mt-1">{u.label}</div>
         </div>
       ))}
     </div>
@@ -80,7 +80,7 @@ function HeroSection() {
   const currentSlideData = slides[currentSlide];
 
   return (
-    <section className="relative w-full aspect-[1920/780] sm:aspect-[1920/780] md:aspect-[1920/780] flex items-center overflow-visible -mt-[104px] pt-[104px]">
+    <section className="relative w-full h-[50vh] sm:h-[55vh] md:h-[70vh] lg:h-[80vh] flex items-center -mt-[104px] pt-[104px]">
       {/* Carrossel de imagens */}
       <div className="absolute inset-0 w-full h-full">
         {slides.map((slide, idx) => (
@@ -93,9 +93,7 @@ function HeroSection() {
             <img
               src={slide.image}
               alt={slide.title}
-              className={`w-full h-full ${
-                slide.type === "banner" ? "object-contain" : "object-cover"
-              } object-center`}
+              className="w-full h-full object-cover object-center"
             />
             {slide.type === "banner" && (
               <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60" />
@@ -220,8 +218,8 @@ function EventsSection() {
               <div key={event.id} className="glass-card rounded-2xl overflow-hidden relative">
                 {urgency && <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-red-500/20 text-red-400 text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-full border border-red-500/30 z-10">ÚLTIMAS VAGAS</div>}
                 {event.bannerUrl && (
-                  <div className="relative w-full aspect-[1920/780] bg-black/20">
-                    <img src={event.bannerUrl} alt={event.name} className="w-full h-full object-contain object-center" />
+                  <div className="relative w-full h-[180px] sm:h-[220px] md:h-[280px] bg-black/20">
+                    <img src={event.bannerUrl} alt={event.name} className="w-full h-full object-cover object-center" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   </div>
                 )}
