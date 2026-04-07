@@ -184,8 +184,8 @@ export const appRouter = router({
     status: publicProcedure
       .input(z.object({ sessionId: z.string() }))
       .query(async ({ input }) => {
-        const order = await getOrderByStripeSession(input.sessionId);
-        if (!order) return { status: "not_found" as const, order: null };
+         let order = await getOrderByStripeSession(input.sessionId);
+        if (!order) return { status: "not_found" as const, order: null };;
         
         // If order is still pending_checkout, verify with Stripe and update if needed
         if (order.status === "pending_checkout") {
@@ -238,12 +238,18 @@ export const appRouter = router({
                   html: emailHtml,
                 });
               }
+              
+              // CRITICAL: Re-fetch order from database to get updated status
+              order = await getOrderByStripeSession(input.sessionId);
+              console.log(`[Status Check] Order re-fetched after update: ${order?.shortId} status=${order?.status}`);
             }
           } catch (err: any) {
             console.error(`[Status Check] Error verifying session ${input.sessionId}:`, err.message);
             // Continue anyway, return current status
           }
         }
+        
+        if (!order) return { status: "not_found" as const, order: null };
         
         const passengers = await getPassengersByOrder(order.id);
         const event = await getEventById(order.eventId);
