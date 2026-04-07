@@ -80,7 +80,7 @@ function HeroSection() {
   const currentSlideData = slides[currentSlide];
 
   return (
-    <section className="relative h-[65vh] sm:h-[70vh] md:h-[80vh] lg:min-h-[90vh] flex items-center overflow-hidden -mt-[104px] pt-[104px]">
+    <section className="relative h-[50vh] sm:h-[60vh] md:h-[75vh] lg:h-[85vh] flex items-center overflow-hidden -mt-[104px] pt-[104px]">
       {/* Carrossel de imagens */}
       <div className="absolute inset-0">
         {slides.map((slide, idx) => (
@@ -93,7 +93,9 @@ function HeroSection() {
             <img
               src={slide.image}
               alt={slide.title}
-              className="w-full h-full object-cover object-center"
+              className={`w-full h-full ${
+                slide.type === "banner" ? "object-contain" : "object-cover"
+              } object-center`}
             />
             {slide.type === "banner" && (
               <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60" />
@@ -217,8 +219,8 @@ function EventsSection() {
               <div key={event.id} className="glass-card rounded-2xl overflow-hidden relative">
                 {urgency && <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-red-500/20 text-red-400 text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-full border border-red-500/30 z-10">ÚLTIMAS VAGAS</div>}
                 {event.bannerUrl && (
-                  <div className="relative h-36 sm:h-48 md:h-64 overflow-hidden">
-                    <img src={event.bannerUrl} alt={event.name} className="w-full h-full object-cover object-top" />
+                  <div className="relative w-full aspect-[1920/780] bg-black/20">
+                    <img src={event.bannerUrl} alt={event.name} className="w-full h-full object-contain object-center" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   </div>
                 )}
