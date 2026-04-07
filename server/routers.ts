@@ -81,6 +81,9 @@ export const appRouter = router({
 
   // ─── Public: Events ───
   events: router({
+    list: publicProcedure.query(async () => {
+      return getAllEvents();
+    }),
     active: publicProcedure.query(async () => {
       return getActiveEvents();
     }),
