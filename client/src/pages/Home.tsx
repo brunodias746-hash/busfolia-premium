@@ -208,8 +208,9 @@ function EventsSection() {
     <section className="py-12 sm:py-20">
       <div className="container">
         <div className="text-center mb-8 sm:mb-12">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black font-heading mb-2 sm:mb-3"><span className="gold-text">Próximos</span> Eventos</h2>
-          <p className="text-sm sm:text-base text-muted-foreground">Garanta sua vaga nos melhores eventos de MG</p>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black font-heading mb-2 sm:mb-3">Transporte Oficial para <span className="gold-text">Eventos</span></h2>
+          <p className="text-sm sm:text-base text-muted-foreground mb-2">Garanta seu transporte seguro e confortável para os melhores eventos de MG</p>
+          <p className="text-xs sm:text-sm text-muted-foreground/70">Pedro Leopoldo Rodeio Show 2026 — Transporte oficial com ida e volta garantida, conforto e pontos estratégicos.</p>
         </div>
         <div className="grid gap-4 sm:gap-6">
           {events.map((event) => {
