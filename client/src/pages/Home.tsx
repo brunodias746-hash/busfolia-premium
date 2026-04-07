@@ -125,12 +125,12 @@ function HeroSection() {
                 <span className="text-[10px] sm:text-xs font-medium text-primary">Transporte Oficial</span>
               </div>
 
-              <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-black font-heading leading-[1.1] mb-4 sm:mb-6 uppercase">
+              <h1 className="text-3xl sm:text-3xl md:text-5xl lg:text-6xl font-black font-heading leading-[1.1] mb-4 sm:mb-6 uppercase">
                 O transporte oficial para o{" "}
                 <span className="gold-text">Pedro Leopoldo Rodeio Show 2026</span>
               </h1>
 
-              <p className="text-sm sm:text-base md:text-xl text-muted-foreground leading-relaxed mb-5 sm:mb-8 max-w-lg">
+              <p className="text-base sm:text-base md:text-xl text-muted-foreground leading-relaxed mb-5 sm:mb-8 max-w-lg">
                 Ida e volta garantida, com conforto, segurança e pontos de embarque estratégicos.
               </p>
 
@@ -188,8 +188,8 @@ function BenefitsBar() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           {benefits.map((b) => (
             <div key={b.label} className="flex items-center gap-2 sm:gap-3 justify-center">
-              <b.icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
-              <span className="text-xs sm:text-sm font-medium text-foreground/80">{b.label}</span>
+              <b.icon className="w-5 h-5 sm:w-5 sm:h-5 text-primary shrink-0" />
+              <span className="text-sm sm:text-sm font-medium text-foreground/80">{b.label}</span>
             </div>
           ))}
         </div>
@@ -208,9 +208,9 @@ function EventsSection() {
     <section className="py-12 sm:py-20">
       <div className="container">
         <div className="text-center mb-8 sm:mb-12">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black font-heading mb-2 sm:mb-3">TRANSPORTE OFICIAL PARA <span className="gold-text">PLRS 2026</span></h2>
-          <p className="text-sm sm:text-base text-muted-foreground mb-2">Garanta seu transporte seguro e confortável para os melhores eventos de MG</p>
-          <p className="text-xs sm:text-sm text-muted-foreground/70">Pedro Leopoldo Rodeio Show 2026 — Transporte oficial com ida e volta garantida, conforto e pontos estratégicos.</p>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black font-heading mb-3 sm:mb-3">TRANSPORTE OFICIAL PARA <span className="gold-text">PLRS 2026</span></h2>
+          <p className="text-base sm:text-base text-muted-foreground mb-2">Garanta seu transporte seguro e confortável para os melhores eventos de MG</p>
+          <p className="text-sm sm:text-sm text-muted-foreground/70">Pedro Leopoldo Rodeio Show 2026 — Transporte oficial com ida e volta garantida, conforto e pontos estratégicos.</p>
         </div>
         <div className="grid gap-4 sm:gap-6">
           {events.map((event) => {
@@ -228,26 +228,26 @@ function EventsSection() {
                 <div className="p-4 sm:p-6 md:p-8">
                   <div className="flex flex-col md:flex-row md:items-start gap-4 sm:gap-6">
                     <div className="flex-1">
-                      <h3 className="text-xl sm:text-2xl md:text-3xl font-black font-heading mb-1.5 sm:mb-2">{event.name}</h3>
-                      <p className="text-sm text-muted-foreground mb-3 sm:mb-4">{event.description}</p>
-                      <div className="flex flex-wrap gap-3 sm:gap-4 text-xs sm:text-sm">
-                        <span className="flex items-center gap-1.5 text-foreground/70"><Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" /> {event.eventDate}</span>
-                        <span className="flex items-center gap-1.5 text-foreground/70"><Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" /> {spotsLeft} vagas</span>
+                      <h3 className="text-2xl sm:text-2xl md:text-3xl font-black font-heading mb-2 sm:mb-2">{event.name}</h3>
+                      <p className="text-base text-muted-foreground mb-4 sm:mb-4">{event.description}</p>
+                      <div className="flex flex-wrap gap-3 sm:gap-4 text-sm sm:text-sm">
+                        <span className="flex items-center gap-1.5 text-foreground/70"><Clock className="w-4 h-4 sm:w-4 sm:h-4 text-primary" /> {event.eventDate}</span>
+                        <span className="flex items-center gap-1.5 text-foreground/70"><Users className="w-4 h-4 sm:w-4 sm:h-4 text-primary" /> {spotsLeft} vagas</span>
                       </div>
                     </div>
                     <div className="flex flex-col items-stretch sm:items-center md:items-end gap-3">
                       <div className="text-center md:text-right">
-                        <span className="text-xs sm:text-sm text-muted-foreground">A partir de</span>
-                        <div className="text-2xl sm:text-3xl font-black font-heading text-primary">{formatCurrency(event.priceCents)}</div>
-                        {event.feeCents > 0 && <span className="text-[10px] sm:text-xs text-muted-foreground">+ {formatCurrency(event.feeCents)} taxa</span>}
+                        <span className="text-sm sm:text-sm text-muted-foreground">A partir de</span>
+                        <div className="text-3xl sm:text-3xl font-black font-heading text-primary">{formatCurrency(event.priceCents)}</div>
+                        {event.feeCents > 0 && <span className="text-xs sm:text-xs text-muted-foreground">+ {formatCurrency(event.feeCents)} taxa</span>}
                       </div>
                       <div className="flex flex-col gap-2 w-full sm:w-auto">
                         <Link href="/comprar">
-                          <Button className="gold-gradient text-black font-bold px-6 sm:px-8 py-3 rounded-xl hover:opacity-90 w-full min-h-[44px]">COMPRAR AGORA <ChevronRight className="w-4 h-4 ml-1" /></Button>
+                          <Button className="gold-gradient text-black font-bold text-base px-6 sm:px-8 py-4 rounded-xl hover:opacity-90 w-full min-h-[48px]">COMPRAR AGORA <ChevronRight className="w-5 h-5 ml-1" /></Button>
                         </Link>
                         {event.groupLink && (
                           <a href={event.groupLink} target="_blank" rel="noopener noreferrer">
-                            <Button variant="outline" className="w-full font-bold px-6 sm:px-8 py-3 rounded-xl min-h-[44px]">ENTRAR NO GRUPO</Button>
+                            <Button variant="outline" className="w-full font-bold text-base px-6 sm:px-8 py-4 rounded-xl min-h-[48px]">ENTRAR NO GRUPO</Button>
                           </a>
                         )}
                       </div>
@@ -274,15 +274,15 @@ function HowItWorksSection() {
     <section id="como-funciona" className="py-12 sm:py-20 bg-[#080808]">
       <div className="container">
         <div className="text-center mb-8 sm:mb-12">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black font-heading mb-2 sm:mb-3">Como <span className="gold-text">Funciona</span></h2>
-          <p className="text-sm sm:text-base text-muted-foreground">Processo simples em 4 passos</p>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black font-heading mb-3 sm:mb-3">Como <span className="gold-text">Funciona</span></h2>
+          <p className="text-base sm:text-base text-muted-foreground">Processo simples em 4 passos</p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
           {steps.map((step) => (
-            <div key={step.num} className="glass-card rounded-xl sm:rounded-2xl p-4 sm:p-6 text-center relative group hover:border-primary/20 transition-colors">
-              <div className="text-2xl sm:text-4xl font-black font-heading text-primary/20 mb-2 sm:mb-3">{step.num}</div>
-              <h3 className="font-bold text-sm sm:text-lg mb-1 sm:mb-2">{step.title}</h3>
-              <p className="text-xs sm:text-sm text-muted-foreground">{step.desc}</p>
+            <div key={step.num} className="glass-card rounded-xl sm:rounded-2xl p-5 sm:p-6 text-center relative group hover:border-primary/20 transition-colors">
+              <div className="text-4xl sm:text-4xl font-black font-heading text-primary/20 mb-3 sm:mb-3">{step.num}</div>
+              <h3 className="font-bold text-base sm:text-lg mb-2 sm:mb-2">{step.title}</h3>
+              <p className="text-sm sm:text-sm text-muted-foreground">{step.desc}</p>
             </div>
           ))}
         </div>
@@ -321,8 +321,8 @@ function FleetSection() {
     <section className="py-12 sm:py-20">
       <div className="container">
         <div className="text-center mb-8 sm:mb-12">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black font-heading mb-2 sm:mb-3">A experiência começa <span className="gold-text">no embarque</span></h2>
-          <p className="text-sm sm:text-base text-muted-foreground">Conforto, estrutura e clima premium desde o primeiro momento</p>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black font-heading mb-3 sm:mb-3">A experiência começa <span className="gold-text">no embarque</span></h2>
+          <p className="text-base sm:text-base text-muted-foreground">Conforto, estrutura e clima premium desde o primeiro momento</p>
         </div>
 
         <div className="flex flex-col md:grid md:grid-cols-2 gap-6 sm:gap-8 items-start">
@@ -360,24 +360,24 @@ function FleetSection() {
 
           {/* Features */}
           <div className="flex flex-col justify-center w-full">
-            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mb-6 sm:mb-8">
+            <p className="text-base sm:text-base text-muted-foreground leading-relaxed mb-6 sm:mb-8">
               Esquece aquele transporte básico. Aqui o rolê já começa no ônibus: poltronas reclináveis confortáveis, clima premium que já te coloca no mood do evento, e uma estrutura pensada pra você curtir a viagem. Ida e volta com qualidade de verdade.
             </p>
             <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
               {features.map((f) => (
-                <div key={f.label} className="flex items-center gap-2 sm:gap-3 glass-card rounded-lg sm:rounded-xl p-2.5 sm:p-3">
-                  <f.icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
-                  <span className="text-xs sm:text-sm font-medium">{f.label}</span>
+                <div key={f.label} className="flex items-center gap-2 sm:gap-3 glass-card rounded-lg sm:rounded-xl p-3 sm:p-3">
+                  <f.icon className="w-5 h-5 sm:w-5 sm:h-5 text-primary shrink-0" />
+                  <span className="text-sm sm:text-sm font-medium">{f.label}</span>
                 </div>
               ))}
             </div>
-            <div className="glass-card rounded-xl p-3 sm:p-4 flex items-center gap-3 w-fit">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full gold-gradient flex items-center justify-center">
-                <Star className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
+            <div className="glass-card rounded-xl p-4 sm:p-4 flex items-center gap-3 w-fit">
+              <div className="w-10 h-10 sm:w-10 sm:h-10 rounded-full gold-gradient flex items-center justify-center">
+                <Star className="w-5 h-5 sm:w-5 sm:h-5 text-black" />
               </div>
               <div>
-                <div className="text-xs sm:text-sm font-bold">4.9/5.0</div>
-                <div className="text-[10px] sm:text-xs text-muted-foreground">+500 avaliações</div>
+                <div className="text-base sm:text-sm font-bold">4.9/5.0</div>
+                <div className="text-sm sm:text-xs text-muted-foreground">+500 avaliações</div>
               </div>
             </div>
           </div>
