@@ -98,6 +98,9 @@ function EventForm({ event, onClose }: { event?: any; onClose: () => void }) {
     groupLink: event?.groupLink ?? "",
     status: event?.status ?? "active",
   });
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const [bannerPreview, setBannerPreview] = useState<string | null>(event?.bannerUrl ?? null);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
 
   const create = trpc.admin.events.create.useMutation({
     onSuccess: () => { utils.admin.events.list.invalidate(); toast.success("Evento criado!"); onClose(); },
@@ -105,6 +108,10 @@ function EventForm({ event, onClose }: { event?: any; onClose: () => void }) {
   });
   const update = trpc.admin.events.update.useMutation({
     onSuccess: () => { utils.admin.events.list.invalidate(); toast.success("Evento atualizado!"); onClose(); },
+    onError: (e) => toast.error(e.message),
+  });
+  const uploadBanner = trpc.admin.events.uploadBanner.useMutation({
+    onSuccess: (data) => { setBannerPreview(data.url); toast.success("Banner enviado!"); },
     onError: (e) => toast.error(e.message),
   });
 
@@ -141,6 +148,51 @@ function EventForm({ event, onClose }: { event?: any; onClose: () => void }) {
       </div>
       <textarea value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Descrição" className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm" rows={2} />
       <input value={form.groupLink} onChange={(e) => setForm(f => ({ ...f, groupLink: e.target.value }))} placeholder="Link do grupo WhatsApp (opcional)" className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm" />
+      {isEdit && (
+        <div className="space-y-2">
+          <label className="block text-xs font-medium">Banner (1920x780px)</label>
+          {bannerPreview && <img src={bannerPreview} alt="Preview" className="w-full h-auto rounded-lg max-h-32 object-cover" />}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                setBannerFile(file);
+                const reader = new FileReader();
+                reader.onload = (ev) => setBannerPreview(ev.target?.result as string);
+                reader.readAsDataURL(file);
+              }
+            }}
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm"
+          />
+          {bannerFile && (
+            <Button
+              type="button"
+              size="sm"
+              className="gold-gradient text-black font-bold w-full"
+              disabled={uploadingBanner}
+              onClick={async () => {
+                setUploadingBanner(true);
+                const reader = new FileReader();
+                reader.onload = async (ev) => {
+                  const base64 = (ev.target?.result as string).split(',')[1];
+                  await uploadBanner.mutateAsync({
+                    eventId: event.id,
+                    bannerBase64: base64,
+                    mimeType: bannerFile.type,
+                  });
+                  setBannerFile(null);
+                  setUploadingBanner(false);
+                };
+                reader.readAsDataURL(bannerFile);
+              }}
+            >
+              {uploadingBanner ? <Loader2 className="w-4 h-4 animate-spin" /> : "Enviar Banner"}
+            </Button>
+          )}
+        </div>
+      )}
       <div className="flex gap-2 justify-end">
         <Button type="button" variant="outline" size="sm" onClick={onClose} className="border-white/10">Cancelar</Button>
         <Button type="submit" size="sm" className="gold-gradient text-black font-bold" disabled={create.isPending || update.isPending}>

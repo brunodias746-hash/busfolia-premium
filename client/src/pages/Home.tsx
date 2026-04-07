@@ -52,19 +52,23 @@ function CountdownTimer() {
 
 function HeroSection() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const { data: events } = trpc.events.list.useQuery();
   
-  const slides = [
-    {
-      type: "banner",
-      image: IMAGES.eventBanner,
-      title: "PEDRO LEOPOLDO RODEIO SHOW 2026",
-    },
-    {
-      type: "content",
-      image: IMAGES.heroRodeo,
-      title: "O transporte oficial para o Pedro Leopoldo Rodeio Show 2026",
-    },
-  ];
+  const bannerSlides = (events || [])
+    .filter(e => e.bannerUrl)
+    .map(e => ({
+      type: "banner" as const,
+      image: e.bannerUrl,
+      title: e.name,
+    }));
+  
+  const contentSlide = {
+    type: "content" as const,
+    image: IMAGES.heroRodeo,
+    title: "O transporte oficial para o Pedro Leopoldo Rodeio Show 2026",
+  };
+  
+  const slides = bannerSlides.length > 0 ? [...bannerSlides, contentSlide] : [contentSlide];
 
   useEffect(() => {
     const interval = setInterval(() => {

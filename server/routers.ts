@@ -320,6 +320,36 @@ export const appRouter = router({
           await updateEvent(id, data);
           return { success: true };
         }),
+      uploadBanner: adminProcedure
+        .input(
+          z.object({
+            eventId: z.number().int().positive(),
+            bannerBase64: z.string(),
+            mimeType: z.string(),
+          })
+        )
+        .mutation(async ({ input }) => {
+          const { storagePut } = await import("./storage");
+          const sharp = await import("sharp");
+          
+          if (!input.mimeType.startsWith("image/")) {
+            throw new Error("Only image files are allowed");
+          }
+          
+          const buffer = Buffer.from(input.bannerBase64, "base64");
+          const metadata = await sharp.default(buffer).metadata();
+          
+          if (metadata.width !== 1920 || metadata.height !== 780) {
+            throw new Error(`Banner must be 1920x780px. Current: ${metadata.width}x${metadata.height}`);
+          }
+          
+          const fileKey = `banners/event-${input.eventId}-${Date.now()}.jpg`;
+          const { url } = await storagePut(fileKey, buffer, "image/jpeg");
+          
+          await updateEvent(input.eventId, { bannerUrl: url });
+          
+          return { success: true, url };
+        }),
     }),
 
     // Boarding Points
