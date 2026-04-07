@@ -6,6 +6,7 @@ import { CheckCircle2, Loader2, Clock, User, MapPin, CreditCard, MessageCircle, 
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { useEffect, useState } from "react";
+import { trackPurchase } from "@/lib/meta-pixel";
 
 export default function Sucesso() {
   const searchString = useSearch();
@@ -20,6 +21,13 @@ export default function Sucesso() {
       return 2000;
     }}
   );
+  
+  // Track Purchase event when order is confirmed
+  useEffect(() => {
+    if (data?.status === "paid" && data?.order?.totalAmountCents) {
+      trackPurchase(data.order.totalAmountCents, "BRL");
+    }
+  }, [data?.status, data?.order?.totalAmountCents]);
 
   if (!sessionId) {
     return (

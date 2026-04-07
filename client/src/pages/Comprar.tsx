@@ -2,7 +2,8 @@ import PublicLayout from "@/components/PublicLayout";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { formatCurrency, formatCPF, formatPhone } from "@/lib/constants";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { trackInitiateCheckout } from "@/lib/meta-pixel";
 import { ArrowLeft, ArrowRight, Plus, Trash2, Loader2, ShieldCheck, User, MapPin, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 
@@ -71,6 +72,11 @@ export default function Comprar() {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormData>(INITIAL_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  // Track InitiateCheckout when component mounts
+  useEffect(() => {
+    trackInitiateCheckout();
+  }, []);
 
   const { data: events } = trpc.events.active.useQuery();
   const event = events?.[0]; // Use first active event
@@ -106,7 +112,7 @@ export default function Comprar() {
 
   function validateStep0(): boolean {
     const e: Record<string, string> = {};
-    if (form.customerName.trim().length < 5) e.customerName = "Nome completo obrigatório (nome + sobrenome)";
+    if (form.customerName.trim().length < 3) e.customerName = "Nome obrigatório";
     const cpfClean = form.customerCpf.replace(/\D/g, "");
     if (cpfClean.length !== 11) e.customerCpf = "CPF inválido (11 dígitos)";
     else if (!validateCPF(cpfClean)) e.customerCpf = "CPF inválido";
@@ -119,7 +125,7 @@ export default function Comprar() {
 
   function validateStep1(): boolean {
     const e: Record<string, string> = {};
-    if (!form.boardingPointId) e.boardingPointId = "Selecione um ponto de embarque";
+    if (form.boardingPointId <= 0) e.boardingPointId = "Selecione um ponto de embarque";
     if (!form.transportDate) e.transportDate = "Selecione uma data";
     form.passengers.forEach((p, i) => {
       if (p.name.trim().length < 3) e[`passenger_${i}_name`] = "Nome obrigatório";
@@ -288,7 +294,7 @@ export default function Comprar() {
             <div>
               <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Ponto de Embarque</label>
               <select
-                value={form.boardingPointId || ""}
+                value={String(form.boardingPointId)}
                 onChange={(e) => setForm((f) => ({ ...f, boardingPointId: e.target.value ? Number(e.target.value) : 0 }))}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
               >

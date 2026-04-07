@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/sonner";
+import { useEffect } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
@@ -11,6 +12,8 @@ import Falha from "./pages/Falha";
 import Duvidas from "./pages/Duvidas";
 import Contato from "./pages/Contato";
 import { lazy, Suspense } from "react";
+import { useLocation } from "wouter";
+import { trackPageView } from "@/lib/meta-pixel";
 import { Loader2 } from "lucide-react";
 
 // Lazy load admin pages
@@ -30,6 +33,13 @@ function AdminFallback() {
 }
 
 function Router() {
+  const [location] = useLocation();
+  
+  // Track PageView on route change
+  useEffect(() => {
+    trackPageView();
+  }, [location]);
+  
   return (
     <Switch>
       {/* Public routes */}
@@ -61,6 +71,11 @@ function Router() {
 // - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
 
 function App() {
+  // Track initial PageView
+  useEffect(() => {
+    trackPageView();
+  }, []);
+  
   return (
     <ErrorBoundary>
       <ThemeProvider
