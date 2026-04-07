@@ -31,7 +31,7 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
         Authorization: `Bearer ${ENV.resendApiKey}`,
       },
       body: JSON.stringify({
-        from: "noreply@busfolia.com.br",
+        from: "contato@busfolia.com.br",
         to,
         subject,
         html,
