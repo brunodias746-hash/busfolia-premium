@@ -34,6 +34,7 @@ interface FormData {
   customerPhone: string;
   boardingPointId: number;
   transportDate: string;
+  purchaseType: 'single' | 'all_days';
   passengers: PassengerData[];
 }
 
@@ -44,6 +45,7 @@ const INITIAL_FORM: FormData = {
   customerPhone: "",
   boardingPointId: 0,
   transportDate: "",
+  purchaseType: 'single',
   passengers: [{ name: "", cpf: "", boardingPointId: 0 }],
 };
 
@@ -271,6 +273,33 @@ export default function Comprar() {
             </div>
 
             <div>
+              <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Tipo de Compra</label>
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <button
+                  onClick={() => setForm((f) => ({ ...f, purchaseType: 'single', transportDate: '' }))}
+                  className={`px-4 py-3 rounded-xl font-medium text-sm transition-all ${
+                    form.purchaseType === 'single'
+                      ? 'gold-gradient text-black'
+                      : 'bg-white/5 border border-white/10 text-foreground hover:bg-white/10'
+                  }`}
+                >
+                  1 Dia
+                </button>
+                <button
+                  onClick={() => setForm((f) => ({ ...f, purchaseType: 'all_days', transportDate: 'Todos os Dias' }))}
+                  className={`px-4 py-3 rounded-xl font-medium text-sm transition-all ${
+                    form.purchaseType === 'all_days'
+                      ? 'gold-gradient text-black'
+                      : 'bg-white/5 border border-white/10 text-foreground hover:bg-white/10'
+                  }`}
+                >
+                  Todos os Dias
+                </button>
+              </div>
+            </div>
+
+            {form.purchaseType === 'single' && (
+            <div>
               <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Data da Viagem</label>
               <select
                 value={form.transportDate}
@@ -284,6 +313,13 @@ export default function Comprar() {
               </select>
               {errors.transportDate && <p className="text-xs text-red-400 mt-1">{errors.transportDate}</p>}
             </div>
+            )}
+
+            {form.purchaseType === 'all_days' && (
+            <div className="bg-primary/10 border border-primary/30 rounded-xl p-4">
+              <p className="text-sm text-foreground">✓ Passaporte válido para <span className="font-bold">todos os dias do evento</span></p>
+            </div>
+            )}
 
             <div>
               <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Ponto de Embarque</label>

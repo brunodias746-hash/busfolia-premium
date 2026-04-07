@@ -28,6 +28,7 @@ import {
   incrementEventSoldCount,
   getFinancialData,
   getPassengersForExport,
+  getOrderWithDetails,
 } from "./db";
 import { getStripe } from "./lib/stripe";
 
@@ -62,6 +63,7 @@ const checkoutSchema = z.object({
   customerPhone: z.string().min(10, "Telefone inválido"),
   boardingPointId: z.number().int().positive(),
   transportDate: z.string().min(1),
+  purchaseType: z.enum(["single", "all_days"]).default("single"),
   passengers: z.array(passengerSchema).min(1, "Adicione pelo menos 1 passageiro"),
   origin: z.string().url(),
 });
@@ -105,8 +107,15 @@ export const appRouter = router({
       }
 
       // 3. Calculate total
-      const unitPriceCents = event.priceCents;
-      const feeCents = event.feeCents;
+      let unitPriceCents = event.priceCents;
+      let feeCents = event.feeCents;
+      
+      // For "all_days" (Passaporte), use fixed price of R$ 200,00
+      if (input.purchaseType === "all_days") {
+        unitPriceCents = 20000; // R$ 200,00 in cents
+        feeCents = 0; // No additional fee for all_days
+      }
+      
       const totalAmountCents = (unitPriceCents + feeCents) * qty;
 
       // 4. Create order in DB
@@ -117,8 +126,8 @@ export const appRouter = router({
         customerEmail: input.customerEmail,
         customerPhone: input.customerPhone.replace(/\D/g, ""),
         boardingPointId: input.boardingPointId,
-        transportDates: JSON.stringify([input.transportDate]),
-        purchaseType: "single",
+        transportDates: input.purchaseType === "all_days" ? JSON.stringify(["Todos os Dias"]) : JSON.stringify([input.transportDate]),
+        purchaseType: input.purchaseType,
         quantity: qty,
         unitPriceCents,
         feeCents,
@@ -177,6 +186,65 @@ export const appRouter = router({
       .query(async ({ input }) => {
         const order = await getOrderByStripeSession(input.sessionId);
         if (!order) return { status: "not_found" as const, order: null };
+        
+        // If order is still pending_checkout, verify with Stripe and update if needed
+        if (order.status === "pending_checkout") {
+          try {
+            const stripe = getStripe();
+            const session = await stripe.checkout.sessions.retrieve(input.sessionId);
+            
+            // If payment was successful but not yet marked as paid, update it
+            if (session.payment_status === "paid" && order.status === "pending_checkout") {
+              console.log(`[Status Check] Session ${input.sessionId} shows paid, updating order ${order.shortId}`);
+              
+              // Update order status
+              await updateOrderStatus(order.id, "paid");
+              
+              // Create payment record if not exists
+              await createPayment({
+                orderId: order.id,
+                stripePaymentIntentId: typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id ?? null,
+                stripeSessionId: session.id,
+                method: session.payment_method_types?.[0] ?? "card",
+                amountReceivedCents: session.amount_total ?? order.totalAmountCents,
+                status: "succeeded",
+                processedAt: new Date(),
+              });
+              
+              // Increment sold count
+              await incrementEventSoldCount(order.eventId, order.quantity);
+              
+              // Send confirmation email
+              const orderDetails = await getOrderWithDetails(order.id);
+              if (orderDetails && orderDetails.boardingPoint) {
+                const { sendEmail, generateOrderConfirmationEmail } = await import("../server/_core/email");
+                const boardingPointLabel = `${orderDetails.boardingPoint.city} - ${orderDetails.boardingPoint.locationName}`;
+                const transportDates = JSON.parse(orderDetails.transportDates || "[]") as string[];
+                
+                const emailHtml = generateOrderConfirmationEmail({
+                  customerName: orderDetails.customerName,
+                  customerEmail: orderDetails.customerEmail,
+                  shortId: orderDetails.shortId,
+                  boardingPoint: boardingPointLabel,
+                  transportDates,
+                  quantity: orderDetails.quantity,
+                  totalAmountCents: orderDetails.totalAmountCents,
+                  whatsappLink: "https://chat.whatsapp.com/KjaIneid0P9F6JScKsV7Po",
+                });
+                
+                await sendEmail({
+                  to: orderDetails.customerEmail,
+                  subject: `Confirmação de Pedido - BusFolia ${orderDetails.shortId}`,
+                  html: emailHtml,
+                });
+              }
+            }
+          } catch (err: any) {
+            console.error(`[Status Check] Error verifying session ${input.sessionId}:`, err.message);
+            // Continue anyway, return current status
+          }
+        }
+        
         const passengers = await getPassengersByOrder(order.id);
         const event = await getEventById(order.eventId);
         return {

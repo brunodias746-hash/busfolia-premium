@@ -195,3 +195,10 @@
 - [ ] Realizar teste 3 de compra completa
 - [ ] Verificar recebimento de email com dados corretos
 - [ ] Retornar relatório com screenshots e logs
+
+## PHASE 5: CRITICAL BUG FIX - Payment Flow Fallback
+- [x] Implementar fallback de verificação de pagamento (Stripe API direct check)
+- [x] Criar testes unitários para validar fallback (4 testes passando)
+- [x] Adicionar importação de getOrderWithDetails ao routers.ts
+- [ ] Instruções para usuário configurar webhook no Stripe Dashboard
+- [ ] Testes manuais de pagamento com cartão de teste (4242 4242 4242 4242)
