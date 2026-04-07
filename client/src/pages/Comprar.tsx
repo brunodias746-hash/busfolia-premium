@@ -288,16 +288,20 @@ export default function Comprar() {
             <div>
               <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Ponto de Embarque</label>
               <select
-                value={form.boardingPointId}
-                onChange={(e) => setForm((f) => ({ ...f, boardingPointId: Number(e.target.value) }))}
+                value={form.boardingPointId || ""}
+                onChange={(e) => setForm((f) => ({ ...f, boardingPointId: e.target.value ? Number(e.target.value) : 0 }))}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
               >
-                <option value={0} className="bg-background">Selecione o ponto</option>
-                {boardingPoints?.map((bp) => (
-                  <option key={bp.id} value={bp.id} className="bg-background">
-                    {bp.city} - {bp.locationName} (Saída: {bp.departureTime})
-                  </option>
-                ))}
+                <option value="" className="bg-background">Selecione o ponto</option>
+                {boardingPoints && boardingPoints.length > 0 ? (
+                  boardingPoints.map((bp) => (
+                    <option key={bp.id} value={String(bp.id)} className="bg-background">
+                      {bp.city} - {bp.locationName} (Saída: {bp.departureTime})
+                    </option>
+                  ))
+                ) : (
+                  <option disabled className="bg-background">Carregando pontos...</option>
+                )}
               </select>
               {errors.boardingPointId && <p className="text-xs text-red-400 mt-1">{errors.boardingPointId}</p>}
             </div>

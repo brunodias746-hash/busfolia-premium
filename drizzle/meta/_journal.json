@@ -15,6 +15,13 @@
       "when": 1775234962539,
       "tag": "0001_clammy_husk",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1775532119561,
+      "tag": "0002_famous_puppet_master",
+      "breakpoints": true
     }
   ]
 }

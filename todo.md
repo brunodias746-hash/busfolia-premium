@@ -181,3 +181,17 @@
 - [ ] Remover mocks e textos fake
 - [ ] Remover dados fictícios
 - [ ] Garantir tudo funcional real
+
+## PHASE 3: REAL EMAIL IMPLEMENTATION
+- [x] Integrar SendGrid ou Resend como serviço de email
+- [x] Adicionar variáveis de ambiente para credenciais
+- [x] Configurar webhook para enviar email após checkout.session.completed
+- [x] Implementar template de email com dados do pedido
+- [x] Email deve incluir: nome, ponto de embarque, datas, passageiros, total pago, link WhatsApp
+- [ ] Realizar teste 1 de compra completa
+- [ ] Verificar recebimento de email com dados corretos
+- [ ] Realizar teste 2 de compra completa
+- [ ] Verificar recebimento de email com dados corretos
+- [ ] Realizar teste 3 de compra completa
+- [ ] Verificar recebimento de email com dados corretos
+- [ ] Retornar relatório com screenshots e logs

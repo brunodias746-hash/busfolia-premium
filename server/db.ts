@@ -186,6 +186,21 @@ export async function getOrderById(id: number) {
   return result[0];
 }
 
+export async function getOrderWithDetails(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const order = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
+  if (!order.length) return undefined;
+  
+  const boardingPoint = await db.select().from(boardingPoints).where(eq(boardingPoints.id, order[0].boardingPointId)).limit(1);
+  
+  return {
+    ...order[0],
+    boardingPoint: boardingPoint[0],
+  };
+}
+
 export async function updateOrderStatus(id: number, status: "pending" | "pending_checkout" | "paid" | "failed" | "canceled") {
   const db = await getDb();
   if (!db) throw new Error("DB not available");

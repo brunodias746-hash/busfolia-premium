@@ -6,7 +6,9 @@ import {
   updateOrderStatus,
   createPayment,
   incrementEventSoldCount,
+  getOrderWithDetails,
 } from "../db";
+import { sendEmail, generateOrderConfirmationEmail } from "../_core/email";
 import type Stripe from "stripe";
 
 const stripeWebhookRouter = Router();
@@ -76,6 +78,37 @@ stripeWebhookRouter.post(
 
           // Increment sold count on event
           await incrementEventSoldCount(order.eventId, order.quantity);
+
+          // Get full order details with boarding point
+          const orderDetails = await getOrderWithDetails(order.id);
+          if (orderDetails && orderDetails.boardingPoint) {
+            const boardingPointLabel = `${orderDetails.boardingPoint.city} - ${orderDetails.boardingPoint.locationName}`;
+            const transportDates = JSON.parse(orderDetails.transportDates || "[]") as string[];
+            
+            // Send confirmation email
+            const emailHtml = generateOrderConfirmationEmail({
+              customerName: orderDetails.customerName,
+              customerEmail: orderDetails.customerEmail,
+              shortId: orderDetails.shortId,
+              boardingPoint: boardingPointLabel,
+              transportDates,
+              quantity: orderDetails.quantity,
+              totalAmountCents: orderDetails.totalAmountCents,
+              whatsappLink: "https://chat.whatsapp.com/KjaIneid0P9F6JScKsV7Po",
+            });
+            
+            const emailResult = await sendEmail({
+              to: orderDetails.customerEmail,
+              subject: `Confirmação de Pedido - BusFolia ${orderDetails.shortId}`,
+              html: emailHtml,
+            });
+            
+            if (emailResult.success) {
+              console.log(`[Webhook] Confirmation email sent to ${orderDetails.customerEmail}`);
+            } else {
+              console.error(`[Webhook] Failed to send confirmation email: ${emailResult.error}`);
+            }
+          }
 
           console.log(`[Webhook] Order ${order.shortId} marked as paid. Qty: ${order.quantity}`);
           break;
