@@ -123,12 +123,12 @@ function HeroSection() {
                 <span className="text-[10px] sm:text-xs font-medium text-primary">Transporte Oficial</span>
               </div>
 
-              <h1 className="text-3xl sm:text-3xl md:text-5xl lg:text-6xl font-black font-heading leading-[1.1] mb-4 sm:mb-6 uppercase">
+              <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-6xl font-black font-heading leading-[1.1] mb-4 sm:mb-6 uppercase">
                 O transporte oficial para o{" "}
                 <span className="gold-text">Pedro Leopoldo Rodeio Show 2026</span>
               </h1>
 
-              <p className="text-base sm:text-base md:text-xl text-muted-foreground leading-relaxed mb-5 sm:mb-8 max-w-lg">
+              <p className="text-lg sm:text-base md:text-xl text-muted-foreground leading-relaxed mb-5 sm:mb-8 max-w-lg">
                 Ida e volta garantida, com conforto, segurança e pontos de embarque estratégicos.
               </p>
 
@@ -206,9 +206,9 @@ function EventsSection() {
     <section className="py-12 sm:py-20">
       <div className="container">
         <div className="text-center mb-8 sm:mb-12">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black font-heading mb-3 sm:mb-3">TRANSPORTE OFICIAL PARA <span className="gold-text">PLRS 2026</span></h2>
-          <p className="text-base sm:text-base text-muted-foreground mb-2">Garanta seu transporte seguro e confortável para os melhores eventos de MG</p>
-          <p className="text-sm sm:text-sm text-muted-foreground/70">Pedro Leopoldo Rodeio Show 2026 — Transporte oficial com ida e volta garantida, conforto e pontos estratégicos.</p>
+          <h2 className="text-3xl sm:text-3xl md:text-4xl font-black font-heading mb-3 sm:mb-3">TRANSPORTE OFICIAL PARA <span className="gold-text">PLRS 2026</span></h2>
+          <p className="text-lg sm:text-base text-muted-foreground mb-2">Garanta seu transporte seguro e confortável para os melhores eventos de MG</p>
+          <p className="text-base sm:text-sm text-muted-foreground/70">Pedro Leopoldo Rodeio Show 2026 — Transporte oficial com ida e volta garantida, conforto e pontos estratégicos.</p>
         </div>
         <div className="grid gap-4 sm:gap-6">
           {events.map((event) => {
@@ -235,17 +235,17 @@ function EventsSection() {
                     </div>
                     <div className="flex flex-col items-stretch sm:items-center md:items-end gap-3">
                       <div className="text-center md:text-right">
-                        <span className="text-sm sm:text-sm text-muted-foreground">A partir de</span>
-                        <div className="text-3xl sm:text-3xl font-black font-heading text-primary">{formatCurrency(event.priceCents)}</div>
-                        {event.feeCents > 0 && <span className="text-xs sm:text-xs text-muted-foreground">+ {formatCurrency(event.feeCents)} taxa</span>}
+                        <span className="text-base sm:text-sm text-muted-foreground">A partir de</span>
+                        <div className="text-4xl sm:text-3xl font-black font-heading text-primary">{formatCurrency(event.priceCents)}</div>
+                        {event.feeCents > 0 && <span className="text-sm sm:text-xs text-muted-foreground">+ {formatCurrency(event.feeCents)} taxa</span>}
                       </div>
                       <div className="flex flex-col gap-2 w-full sm:w-auto">
                         <Link href="/comprar">
-                          <Button className="gold-gradient text-black font-bold text-base px-6 sm:px-8 py-4 rounded-xl hover:opacity-90 w-full min-h-[48px]">COMPRAR AGORA <ChevronRight className="w-5 h-5 ml-1" /></Button>
+                          <Button className="gold-gradient text-black font-bold text-lg sm:text-base px-6 sm:px-8 py-5 sm:py-4 rounded-xl hover:opacity-90 w-full min-h-[52px] sm:min-h-[48px]">COMPRAR AGORA <ChevronRight className="w-5 h-5 ml-1" /></Button>
                         </Link>
                         {event.groupLink && (
                           <a href={event.groupLink} target="_blank" rel="noopener noreferrer">
-                            <Button variant="outline" className="w-full font-bold text-base px-6 sm:px-8 py-4 rounded-xl min-h-[48px]">ENTRAR NO GRUPO</Button>
+                            <Button variant="outline" className="w-full font-bold text-lg sm:text-base px-6 sm:px-8 py-5 sm:py-4 rounded-xl min-h-[52px] sm:min-h-[48px]">ENTRAR NO GRUPO</Button>
                           </a>
                         )}
                       </div>
@@ -272,15 +272,15 @@ function HowItWorksSection() {
     <section id="como-funciona" className="py-12 sm:py-20 bg-[#080808]">
       <div className="container">
         <div className="text-center mb-8 sm:mb-12">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black font-heading mb-3 sm:mb-3">Como <span className="gold-text">Funciona</span></h2>
-          <p className="text-base sm:text-base text-muted-foreground">Processo simples em 4 passos</p>
+          <h2 className="text-3xl sm:text-3xl md:text-4xl font-black font-heading mb-3 sm:mb-3">Como <span className="gold-text">Funciona</span></h2>
+          <p className="text-lg sm:text-base text-muted-foreground">Processo simples em 4 passos</p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
           {steps.map((step) => (
             <div key={step.num} className="glass-card rounded-xl sm:rounded-2xl p-5 sm:p-6 text-center relative group hover:border-primary/20 transition-colors">
-              <div className="text-4xl sm:text-4xl font-black font-heading text-primary/20 mb-3 sm:mb-3">{step.num}</div>
-              <h3 className="font-bold text-base sm:text-lg mb-2 sm:mb-2">{step.title}</h3>
-              <p className="text-sm sm:text-sm text-muted-foreground">{step.desc}</p>
+              <div className="text-5xl sm:text-4xl font-black font-heading text-primary/20 mb-3 sm:mb-3">{step.num}</div>
+              <h3 className="font-bold text-lg sm:text-lg mb-2 sm:mb-2">{step.title}</h3>
+              <p className="text-base sm:text-sm text-muted-foreground">{step.desc}</p>
             </div>
           ))}
         </div>
