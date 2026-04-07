@@ -188,20 +188,10 @@
 - [x] Configurar webhook para enviar email após checkout.session.completed
 - [x] Implementar template de email com dados do pedido
 - [x] Email deve incluir: nome, ponto de embarque, datas, passageiros, total pago, link WhatsApp
-- [x] Realizar teste 1 de compra completa (Ana Paula Silva - 1 dia - R$ 66,10)
-- [x] Webhook Stripe funcionando com assinatura correta
-- [x] Pedido atualizado de pending_checkout para paid
-- [x] Pagamento registrado com status succeeded
-- [x] Email de confirmação enviado via Resend
-- [x] Retornar relatório com screenshots e logs
-
-## PHASE 4: META PIXEL IMPLEMENTATION
-- [ ] Adicionar código base do Meta Pixel ao index.html
-- [ ] Configurar Pixel ID: 338256852603241
-- [ ] Implementar evento PageView (todas as páginas)
-- [ ] Implementar evento InitiateCheckout (ao entrar no checkout)
-- [ ] Implementar evento Purchase (na página de sucesso)
-- [ ] Testar Purchase event com compra real
-- [ ] Confirmar Pixel ID no Meta Events Manager
-- [ ] Capturar screenshot de Purchase event disparando
-- [ ] Retornar relatório de testes
+- [ ] Realizar teste 1 de compra completa
+- [ ] Verificar recebimento de email com dados corretos
+- [ ] Realizar teste 2 de compra completa
+- [ ] Verificar recebimento de email com dados corretos
+- [ ] Realizar teste 3 de compra completa
+- [ ] Verificar recebimento de email com dados corretos
+- [ ] Retornar relatório com screenshots e logs
