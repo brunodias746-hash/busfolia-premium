@@ -39,11 +39,11 @@ function CountdownTimer() {
     { label: "Seg", value: timeLeft.seconds },
   ];
   return (
-    <div className="flex gap-1.5 sm:gap-3 md:gap-4 w-full">
+    <div className="grid grid-cols-4 gap-1.5 sm:gap-2 w-full max-w-xs">
       {units.map((u) => (
-        <div key={u.label} className="glass-card rounded-lg px-2 py-1.5 sm:px-4 sm:py-2.5 md:px-5 md:py-3 text-center flex-1 min-w-0">
-          <div className="text-lg sm:text-2xl md:text-3xl font-bold font-heading text-primary leading-none">{String(u.value).padStart(2, "0")}</div>
-          <div className="text-[10px] sm:text-xs md:text-sm uppercase tracking-wider text-muted-foreground mt-0.5 sm:mt-1 truncate">{u.label}</div>
+        <div key={u.label} className="glass-card rounded-lg px-1.5 py-1 sm:px-2 sm:py-1.5 text-center">
+          <div className="text-base sm:text-xl md:text-2xl font-bold font-heading text-primary leading-tight">{String(u.value).padStart(2, "0")}</div>
+          <div className="text-[8px] sm:text-[9px] uppercase tracking-wider text-muted-foreground mt-0.5">{u.label}</div>
         </div>
       ))}
     </div>
@@ -80,7 +80,7 @@ function HeroSection() {
   const currentSlideData = slides[currentSlide];
 
   return (
-    <section className="relative w-full h-[45vh] sm:h-[50vh] md:h-[60vh] lg:h-[65vh] flex items-center -mt-[104px] pt-[104px]">
+    <section className="relative w-full h-[55vh] md:h-[65vh] flex items-center -mt-[104px] pt-[104px]">
       {/* Carrossel de imagens */}
       <div className="absolute inset-0 w-full h-full">
         {slides.map((slide, idx) => (
