@@ -114,7 +114,9 @@ function HeroSection() {
       </div>
 
       {/* Conteúdo do Hero */}
-      <div className="container relative z-10 py-8 sm:py-12 md:py-20">
+      <div className={`container relative z-10 py-8 sm:py-12 md:py-20 transition-opacity duration-1000 ${
+        currentSlideData.type === "content" ? "opacity-100" : "opacity-0"
+      }`}>
         <div className="max-w-[600px]">
           {/* H1 sempre visível para SEO */}
           <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-6xl font-black font-heading leading-[1.1] mb-4 sm:mb-6">

@@ -258,7 +258,7 @@ export default function Comprar() {
                   <div className="text-left">
                     <h3 className="text-lg font-bold mb-1">Dia Único</h3>
                     <p className="text-sm text-muted-foreground mb-3">Escolha 1 dia do evento</p>
-                    <p className="text-2xl font-bold text-primary">{formatCurrency(event.priceCents / 100)}</p>
+                    <p className="text-2xl font-bold text-primary">{formatCurrency(event.priceCents)}</p>
                     <p className="text-xs text-muted-foreground mt-1">/dia</p>
                   </div>
                 </button>
@@ -275,7 +275,7 @@ export default function Comprar() {
                   <div className="text-left">
                     <h3 className="text-lg font-bold mb-1">Múltiplos Dias</h3>
                     <p className="text-sm text-muted-foreground mb-3">Escolha 2 ou mais dias</p>
-                    <p className="text-2xl font-bold text-primary">{formatCurrency((event.priceCents * 2) / 100)}</p>
+                    <p className="text-2xl font-bold text-primary">{formatCurrency(event.priceCents * 2)}</p>
                     <p className="text-xs text-muted-foreground mt-1">/2 dias</p>
                   </div>
                 </button>
@@ -300,7 +300,7 @@ export default function Comprar() {
                   <div className="text-left mt-6">
                     <h3 className="text-lg font-bold mb-1">Passaporte — Todos os Dias</h3>
                     <p className="text-sm text-muted-foreground mb-3">05, 06, 12 e 13 de Junho • Melhor valor!</p>
-                    <p className="text-2xl font-bold text-primary">{formatCurrency((event.priceCents * 4) / 100)}</p>
+                    <p className="text-2xl font-bold text-primary">{formatCurrency(event.priceCents * 4)}</p>
                     <p className="text-xs text-muted-foreground mt-1">/4 dias</p>
                   </div>
                 </button>
@@ -350,7 +350,7 @@ export default function Comprar() {
               <div className="mt-6 space-y-4">
                 <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex justify-between items-center">
                   <span className="font-medium">Total:</span>
-                  <span className="text-2xl font-bold text-primary">{formatCurrency(totalCents / 100)}</span>
+                  <span className="text-2xl font-bold text-primary">{formatCurrency(totalCents)}</span>
                 </div>
                 <Button onClick={handleNext} className="w-full gold-gradient text-black font-bold py-3 rounded-xl">
                   Continuar <ArrowRight className="w-4 h-4 ml-2" />
@@ -409,13 +409,13 @@ export default function Comprar() {
                   <select
                     value={form.boardingPointId}
                     onChange={handleBoardingPointChange}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    className="w-full bg-[#1F1F1F] border border-white/10 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                   >
                     <option value={0}>Selecione um ponto</option>
                     {boardingPoints && boardingPoints.length > 0 ? (
                       boardingPoints.map((bp) => (
                         <option key={bp.id} value={bp.id}>
-                          {bp.city} - {bp.locationName} (Saída: {bp.departureTime})
+                          {bp.city} - {bp.locationName}
                         </option>
                       ))
                     ) : (
@@ -516,7 +516,7 @@ export default function Comprar() {
 
                 <div className="border-t border-white/10 pt-4 flex justify-between items-center">
                   <span className="font-bold">Total:</span>
-                  <span className="text-2xl font-bold text-primary">{formatCurrency(totalCents / 100)}</span>
+                  <span className="text-2xl font-bold text-primary">{formatCurrency(totalCents)}</span>
                 </div>
               </div>
 
