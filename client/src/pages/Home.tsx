@@ -70,6 +70,14 @@ function HeroSection() {
   
   const slides = bannerSlides.length > 0 ? [...bannerSlides, contentSlide] : [contentSlide];
 
+  // Preload all hero images for smooth transitions
+  useEffect(() => {
+    slides.forEach(slide => {
+      const img = new Image();
+      img.src = slide.image;
+    });
+  }, [slides]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -86,14 +94,23 @@ function HeroSection() {
         {slides.map((slide, idx) => (
           <div
             key={idx}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
+            className={`absolute inset-0 will-change-opacity transition-opacity duration-1000 ${
               idx === currentSlide ? "opacity-100" : "opacity-0"
             }`}
+            style={{
+              backfaceVisibility: 'hidden',
+              transform: 'translateZ(0)',
+              WebkitFontSmoothing: 'antialiased',
+            }}
           >
             <img
               src={slide.image || ""}
               alt={slide.title}
               className="w-full h-full object-cover object-center"
+              style={{
+                aspectRatio: '16 / 9',
+              }}
+              loading={idx === currentSlide ? 'eager' : 'lazy'}
             />
             {slide.type === "banner" && (
               <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60" />
@@ -114,9 +131,13 @@ function HeroSection() {
       </div>
 
       {/* Conteúdo do Hero */}
-      <div className={`container relative z-10 py-8 sm:py-12 md:py-20 transition-opacity duration-1000 ${
+      <div className={`container relative z-10 py-8 sm:py-12 md:py-20 will-change-opacity transition-opacity duration-1000 ${
         currentSlideData.type === "content" ? "opacity-100" : "opacity-0"
-      }`}>
+      }`}
+      style={{
+        backfaceVisibility: 'hidden',
+        transform: 'translateZ(0)',
+      }}>
         <div className="max-w-[600px]">
           {/* H1 sempre visível para SEO */}
           <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-6xl font-black font-heading leading-[1.1] mb-4 sm:mb-6">
@@ -158,7 +179,7 @@ function HeroSection() {
       </div>
 
       {/* Indicadores de slide */}
-      <div className="absolute bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+      <div className="absolute bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2" style={{ pointerEvents: 'auto' }}>
         {slides.map((_, idx) => (
           <button
             key={idx}

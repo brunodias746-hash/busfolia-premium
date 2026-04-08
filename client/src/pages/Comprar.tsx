@@ -80,6 +80,24 @@ export default function Comprar() {
   const [form, setForm] = useState<FormData>(INITIAL_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Carregar dados salvos do localStorage ao montar o componente
+  useEffect(() => {
+    const savedForm = localStorage.getItem('busfolia_checkout_form');
+    if (savedForm) {
+      try {
+        const parsedForm = JSON.parse(savedForm);
+        setForm(parsedForm);
+      } catch (e) {
+        console.error('Erro ao carregar dados salvos:', e);
+      }
+    }
+  }, []);
+
+  // Salvar dados no localStorage sempre que o formulário muda
+  useEffect(() => {
+    localStorage.setItem('busfolia_checkout_form', JSON.stringify(form));
+  }, [form]);
+
   // Track InitiateCheckout when page loads
   useEffect(() => {
     trackInitiateCheckout();
