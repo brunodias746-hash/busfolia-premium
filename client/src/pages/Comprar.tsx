@@ -12,15 +12,17 @@ import { trackInitiateCheckout } from "@/utils/meta-pixel";
 function validateCPF(cpf: string): boolean {
   if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
   let sum = 0, remainder;
-  for (let i = 1; i <= 9; i++) sum += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+  // First digit validation
+  for (let i = 0; i < 9; i++) sum += parseInt(cpf.charAt(i)) * (10 - i);
   remainder = (sum * 10) % 11;
   if (remainder === 10 || remainder === 11) remainder = 0;
-  if (remainder !== parseInt(cpf.substring(9, 10))) return false;
+  if (remainder !== parseInt(cpf.charAt(9))) return false;
+  // Second digit validation
   sum = 0;
-  for (let i = 1; i <= 10; i++) sum += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+  for (let i = 0; i < 10; i++) sum += parseInt(cpf.charAt(i)) * (11 - i);
   remainder = (sum * 10) % 11;
   if (remainder === 10 || remainder === 11) remainder = 0;
-  return remainder === parseInt(cpf.substring(10, 11));
+  return remainder === parseInt(cpf.charAt(10));
 }
 
 interface PassengerData {
@@ -36,7 +38,8 @@ interface FormData {
   customerPhone: string;
   boardingPointId: number;
   transportDate: string;
-  purchaseType: 'single' | 'all_days';
+  transportDates: string[];
+  purchaseType: 'single' | 'multiple' | 'all_days';
   passengers: PassengerData[];
 }
 
@@ -47,6 +50,7 @@ const INITIAL_FORM: FormData = {
   customerPhone: "",
   boardingPointId: 0,
   transportDate: "",
+  transportDates: [],
   purchaseType: 'single',
   passengers: [{ name: "", cpf: "", boardingPointId: 0 }],
 };
@@ -116,6 +120,7 @@ export default function Comprar() {
   function validateStep0(): boolean {
     const e: Record<string, string> = {};
     if (form.purchaseType === 'single' && !form.transportDate) e.transportDate = "Selecione uma data";
+    if (form.purchaseType === 'multiple' && form.transportDates.length < 2) e.transportDates = "Selecione pelo menos 2 datas";
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -210,7 +215,19 @@ export default function Comprar() {
     }));
   }
 
-  const totalCents = event ? (event.priceCents + event.feeCents) * form.passengers.length : 0;
+  const calculateTotal = (): number => {
+    if (!event) return 0;
+    let baseCents = 0;
+    if (form.purchaseType === 'single') {
+      baseCents = event.priceCents;
+    } else if (form.purchaseType === 'multiple') {
+      baseCents = event.priceCents * form.transportDates.length;
+    } else if (form.purchaseType === 'all_days') {
+      baseCents = 20000; // R$200 fixed price
+    }
+    return (baseCents + event.feeCents) * form.passengers.length;
+  };
+  const totalCents = calculateTotal();
   const selectedBP = boardingPoints?.find((bp) => bp.id === form.boardingPointId);
 
   if (!event) {
@@ -265,13 +282,18 @@ export default function Comprar() {
 
                 {/* Múltiplos Dias */}
                 <button
-                  onClick={() => setForm(f => ({ ...f, purchaseType: 'single' }))}
+                  onClick={() => setForm(f => ({ ...f, purchaseType: 'multiple', transportDates: [] }))}
                   className={`relative border-2 rounded-2xl p-6 transition-all ${
-                    form.purchaseType === 'single'
-                      ? "border-white/10 hover:border-white/20 bg-white/5"
+                    form.purchaseType === 'multiple'
+                      ? "border-primary bg-primary/5"
                       : "border-white/10 hover:border-white/20 bg-white/5"
                   }`}
                 >
+                  {form.purchaseType === 'multiple' && (
+                    <div className="absolute top-3 right-3 w-6 h-6 rounded-full gold-gradient flex items-center justify-center">
+                      <Check className="w-4 h-4 text-black" />
+                    </div>
+                  )}
                   <div className="text-left">
                     <h3 className="text-lg font-bold mb-1">Múltiplos Dias</h3>
                     <p className="text-sm text-muted-foreground mb-3">Escolha 2 ou mais dias</p>
@@ -300,7 +322,7 @@ export default function Comprar() {
                   <div className="text-left mt-6">
                     <h3 className="text-lg font-bold mb-1">Passaporte — Todos os Dias</h3>
                     <p className="text-sm text-muted-foreground mb-3">05, 06, 12 e 13 de Junho • Melhor valor!</p>
-                    <p className="text-2xl font-bold text-primary">{formatCurrency(event.priceCents * 4)}</p>
+                    <p className="text-2xl font-bold text-primary">{formatCurrency(20000)}</p>
                     <p className="text-xs text-muted-foreground mt-1">/4 dias</p>
                   </div>
                 </button>
@@ -339,9 +361,52 @@ export default function Comprar() {
                 </div>
               )}
 
+              {form.purchaseType === 'multiple' && (
+                <div>
+                  <label className="text-sm font-medium text-foreground/80 mb-3 block">SELECIONE 2 OU MAIS DATAS</label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {dates.map((d) => (
+                      <button
+                        key={d}
+                        onClick={() => {
+                          setForm(prev => {
+                            const isSelected = prev.transportDates.includes(d);
+                            return {
+                              ...prev,
+                              transportDates: isSelected
+                                ? prev.transportDates.filter(date => date !== d)
+                                : [...prev.transportDates, d]
+                            };
+                          });
+                          if (errors.transportDates) {
+                            setErrors(prev => {
+                              const updated = { ...prev };
+                              delete updated.transportDates;
+                              return updated;
+                            });
+                          }
+                        }}
+                        className={`border-2 rounded-xl p-3 text-center transition-all ${
+                          form.transportDates.includes(d)
+                            ? "border-primary bg-primary/10"
+                            : "border-white/10 hover:border-white/20 bg-white/5"
+                        }`}
+                      >
+                        <div className="text-sm font-bold">{d.split(" ")[0]}</div>
+                        <div className="text-xs text-muted-foreground">{d.split(" ")[2]}</div>
+                      </button>
+                    ))}
+                  </div>
+                  {errors.transportDates && <p className="text-xs text-red-400 mt-2">{errors.transportDates}</p>}
+                  {form.transportDates.length > 0 && (
+                    <p className="text-xs text-primary mt-2">Selecionadas {form.transportDates.length} datas</p>
+                  )}
+                </div>
+              )}
+
               {form.purchaseType === 'all_days' && (
                 <div className="bg-primary/10 border border-primary/30 rounded-xl p-4">
-                  <p className="text-sm text-foreground">✓ Passaporte válido para <span className="font-bold">todos os dias do evento</span></p>
+                  <p className="text-sm text-foreground">✓ Passaporte válido para <span className="font-bold">todos os 4 dias do evento</span></p>
                   <p className="text-xs text-muted-foreground mt-2">05, 06, 12 e 13 de Junho de 2026</p>
                 </div>
               )}
@@ -402,6 +467,18 @@ export default function Comprar() {
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                   />
                   {errors.customerPhone && <p className="text-xs text-red-400 mt-1">{errors.customerPhone}</p>}
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-foreground/80 mb-1.5 block">CPF *</label>
+                  <input
+                    type="text"
+                    placeholder="000.000.000-00"
+                    value={form.customerCpf}
+                    onChange={(e) => setForm((f) => ({ ...f, customerCpf: formatCPF(e.target.value) }))}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  />
+                  {errors.customerCpf && <p className="text-xs text-red-400 mt-1">{errors.customerCpf}</p>}
                 </div>
 
                 <div>
@@ -495,8 +572,11 @@ export default function Comprar() {
               <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4 mb-6">
                 <div>
                   <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">INGRESSO</p>
-                  <p className="font-bold text-lg">{form.purchaseType === 'all_days' ? 'Passaporte — Todos os Dias' : 'Dia Único'}</p>
+                  <p className="font-bold text-lg">
+                    {form.purchaseType === 'all_days' ? 'Passaporte — Todos os Dias' : form.purchaseType === 'multiple' ? 'Múltiplos Dias' : 'Dia Único'}
+                  </p>
                   {form.purchaseType === 'single' && <p className="text-sm text-muted-foreground">{form.transportDate}</p>}
+                  {form.purchaseType === 'multiple' && <p className="text-sm text-muted-foreground">{form.transportDates.join(', ')}</p>}
                   {form.purchaseType === 'all_days' && <p className="text-sm text-muted-foreground">05, 06, 12 e 13 de Junho de 2026</p>}
                 </div>
 
