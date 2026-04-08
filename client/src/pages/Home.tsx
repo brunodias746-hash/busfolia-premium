@@ -281,47 +281,47 @@ function EventsSection() {
   return (
     <section className="py-12 sm:py-20">
       <div className="container">
-        <div className="text-center mb-8 sm:mb-12">
-          <h2 className="text-3xl sm:text-3xl md:text-4xl font-black font-heading mb-3 sm:mb-3">TRANSPORTE OFICIAL PARA <span className="gold-text">PLRS 2026</span></h2>
-          <p className="text-base sm:text-base text-muted-foreground mb-2">Garanta seu transporte seguro e confortável para os melhores eventos de MG</p>
-          <p className="text-base sm:text-sm text-muted-foreground/70">Pedro Leopoldo Rodeio Show 2026 — Transporte oficial com ida e volta garantida, conforto e pontos estratégicos.</p>
+        <div className="text-center mb-12 sm:mb-16">
+          <p className="text-xs sm:text-sm font-bold text-primary uppercase tracking-widest mb-3 sm:mb-4">Próximos Eventos</p>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black font-heading mb-4 sm:mb-6">Garanta sua vaga nos melhores eventos de MG</h2>
         </div>
-        <div className="grid gap-4 sm:gap-6">
+        <div className="grid gap-6 sm:gap-8 lg:grid-cols-2 max-w-5xl mx-auto">
           {events.map((event) => {
             const spotsLeft = event.capacity - event.soldCount;
             const urgency = spotsLeft < 30;
             return (
-              <div key={event.id} className="glass-card rounded-2xl overflow-hidden relative">
-                {urgency && <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-red-500/20 text-red-400 text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-full border border-red-500/30 z-10">ÚLTIMAS VAGAS</div>}
+              <div key={event.id} className="glass-card rounded-3xl overflow-hidden relative border border-white/10 hover:border-primary/50 transition-all duration-300">
+                {urgency && <div className="absolute top-4 left-4 sm:top-5 sm:left-5 bg-red-500/20 text-red-400 text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-full border border-red-500/30 z-10">EM BREVE</div>}
                 {event.bannerUrl && (
-                  <div className="relative w-full h-[180px] sm:h-[220px] md:h-[280px] bg-black/20">
-                    <img src={event.bannerUrl} alt={event.name} className="w-full h-full object-cover object-center" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="relative w-full h-[200px] sm:h-[240px] md:h-[280px] bg-black/20 overflow-hidden">
+                    <img src={event.bannerUrl} alt={event.name} className="w-full h-full object-cover object-center hover:scale-105 transition-transform duration-500" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                   </div>
                 )}
-                <div className="p-4 sm:p-6 md:p-8">
-                  <div className="flex flex-col md:flex-row md:items-start gap-4 sm:gap-6">
-                    <div className="flex-1">
-                      <h3 className="text-2xl sm:text-2xl md:text-3xl font-black font-heading mb-2 sm:mb-2">{event.name}</h3>
-                      <p className="text-base text-muted-foreground mb-4 sm:mb-4">{event.description}</p>
-                      <div className="flex flex-wrap gap-3 sm:gap-4 text-sm sm:text-sm">
-                        <span className="flex items-center gap-1.5 text-foreground/70"><Clock className="w-4 h-4 sm:w-4 sm:h-4 text-primary" /> {event.eventDate}</span>
-                        <span className="flex items-center gap-1.5 text-foreground/70"><Users className="w-4 h-4 sm:w-4 sm:h-4 text-primary" /> {spotsLeft} vagas</span>
+                <div className="p-6 sm:p-8">
+                  <div className="flex flex-col gap-6">
+                    <div>
+                      <p className="text-xs font-bold text-primary uppercase tracking-wider mb-2">PEDRO LEOPOLDO - MG</p>
+                      <h3 className="text-2xl sm:text-3xl font-black font-heading mb-3">{event.name}</h3>
+                      <p className="text-sm sm:text-base text-muted-foreground/80 mb-4">{event.description}</p>
+                      <div className="flex flex-wrap gap-4 text-sm">
+                        <span className="flex items-center gap-2 text-foreground/70"><Clock className="w-4 h-4 text-primary" />{event.eventDate}</span>
+                        <span className="flex items-center gap-2 text-foreground/70"><Users className="w-4 h-4 text-primary" />{spotsLeft} vagas</span>
                       </div>
                     </div>
-                    <div className="flex flex-col items-stretch sm:items-center md:items-end gap-3">
-                      <div className="text-center md:text-right">
-                        <span className="text-sm sm:text-sm text-muted-foreground">A partir de</span>
-                        <div className="text-3xl sm:text-3xl font-black font-heading text-primary">{formatCurrency(event.priceCents)}</div>
-                        {event.feeCents > 0 && <span className="text-xs sm:text-xs text-muted-foreground">+ {formatCurrency(event.feeCents)} taxa</span>}
+                    <div className="flex items-end justify-between">
+                      <div>
+                        <span className="text-xs text-muted-foreground uppercase tracking-wider">A partir de</span>
+                        <div className="text-3xl sm:text-4xl font-black font-heading text-primary">{formatCurrency(event.priceCents)}</div>
+                        {event.feeCents > 0 && <span className="text-xs text-muted-foreground">+ {formatCurrency(event.feeCents)} taxa</span>}
                       </div>
-                      <div className="flex flex-col gap-2 w-full sm:w-auto">
+                      <div className="flex flex-col gap-2 w-full sm:w-auto sm:ml-4">
                         <Link href="/comprar">
-                          <Button className="gold-gradient text-black font-bold text-base sm:text-base px-5 sm:px-8 py-4 sm:py-4 rounded-xl hover:opacity-90 w-full min-h-[44px] sm:min-h-[48px]">COMPRAR AGORA <ChevronRight className="w-5 h-5 ml-1" /></Button>
+                          <Button className="gold-gradient text-black font-bold text-sm sm:text-base px-6 sm:px-8 py-3 sm:py-4 rounded-xl hover:opacity-90 w-full min-h-[44px] sm:min-h-[48px] whitespace-nowrap">COMPRAR AGORA</Button>
                         </Link>
                         {event.groupLink && (
-                          <a href={event.groupLink} target="_blank" rel="noopener noreferrer">
-                            <Button variant="outline" className="w-full font-bold text-base sm:text-base px-5 sm:px-8 py-4 sm:py-4 rounded-xl min-h-[44px] sm:min-h-[48px]">ENTRAR NO GRUPO</Button>
+                          <a href={event.groupLink} target="_blank" rel="noopener noreferrer" className="w-full">
+                            <Button variant="outline" className="w-full font-bold text-sm sm:text-base px-6 sm:px-8 py-3 sm:py-4 rounded-xl min-h-[44px] sm:min-h-[48px] whitespace-nowrap"><MessageCircle className="w-4 h-4 mr-2" />ENTRAR NO GRUPO</Button>
                           </a>
                         )}
                       </div>
