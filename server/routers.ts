@@ -258,6 +258,10 @@ export const appRouter = router({
         
         const passengers = await getPassengersByOrder(order.id);
         const event = await getEventById(order.eventId);
+        const orderDetails = await getOrderWithDetails(order.id);
+        const transportDates = order.transportDates ? JSON.parse(order.transportDates) as string[] : [];
+        const boardingPointLabel = orderDetails?.boardingPoint ? `${orderDetails.boardingPoint.city} - ${orderDetails.boardingPoint.locationName}` : "";
+        
         return {
           status: order.status,
           order: {
@@ -265,9 +269,14 @@ export const appRouter = router({
             customerName: order.customerName,
             customerEmail: order.customerEmail,
             quantity: order.quantity,
+            unitPriceCents: order.unitPriceCents,
+            feeCents: order.feeCents,
             totalAmountCents: order.totalAmountCents,
-            transportDate: order.transportDates ? JSON.parse(order.transportDates)[0] : "",
+            transportDate: transportDates[0] ?? "",
+            transportDates: transportDates,
             eventName: event?.name ?? "",
+            boardingPoint: boardingPointLabel,
+            purchaseType: order.purchaseType,
           },
           passengers: passengers.map((p) => ({ name: p.name, cpf: p.cpf })),
         };
