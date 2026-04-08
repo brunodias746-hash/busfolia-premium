@@ -58,7 +58,7 @@ function HeroSection() {
     .filter(e => e.bannerUrl)
     .map(e => ({
       type: "banner" as const,
-      image: e.bannerUrl,
+      image: e.bannerUrl!,
       title: e.name,
     }));
   
@@ -91,7 +91,7 @@ function HeroSection() {
             }`}
           >
             <img
-              src={slide.image}
+              src={slide.image || ""}
               alt={slide.title}
               className="w-full h-full object-cover object-center"
             />
@@ -117,8 +117,8 @@ function HeroSection() {
       <div className="container relative z-10 py-8 sm:py-12 md:py-20">
         <div className="max-w-[600px]">
           {/* H1 sempre visível para SEO */}
-          <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-6xl font-black font-heading leading-[1.1] mb-4 sm:mb-6 uppercase">
-            O transporte oficial para o{" "}
+          <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-6xl font-black font-heading leading-[1.1] mb-4 sm:mb-6">
+            Garanta seu transporte oficial para o{" "}
             <span className="gold-text">Pedro Leopoldo Rodeio Show 2026</span>
           </h1>
 
@@ -136,12 +136,12 @@ function HeroSection() {
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-10">
                 <Link href="/comprar">
                   <Button size="lg" className="gold-gradient text-black font-bold text-sm sm:text-base px-5 sm:px-8 py-4 sm:py-5 rounded-xl hover:opacity-90 transition-opacity w-full sm:w-auto min-h-[44px]">
-                    GARANTA SUA VAGA <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
+                    GARANTA SUA VAGA AGORA <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
                   </Button>
                 </Link>
-                <a href="#como-funciona">
+                <a href="https://chat.whatsapp.com/KjaIneid0P9F6JScKsV7Po" target="_blank" rel="noopener noreferrer">
                   <Button size="lg" variant="outline" className="border-white/10 text-foreground/80 px-5 sm:px-8 py-4 sm:py-5 rounded-xl hover:bg-white/5 w-full sm:w-auto min-h-[44px]">
-                    Como Funciona
+                    <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" /> Entrar no Grupo
                   </Button>
                 </a>
               </div>

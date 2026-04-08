@@ -75,7 +75,7 @@ export default function Sucesso() {
   useEffect(() => {
     if (order && data?.status === "paid") {
       const valueInBRL = order.totalAmountCents / 100; // Convert cents to BRL decimal
-      trackPurchase(valueInBRL, "BRL", order.id.toString());
+      trackPurchase(valueInBRL, "BRL", order.shortId);
     }
   }, [order, data?.status]);
 

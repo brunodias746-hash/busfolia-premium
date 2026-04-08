@@ -2,10 +2,11 @@
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { formatCurrency, formatCPF, formatPhone } from "@/lib/constants";
-import { useState, useMemo, useCallback } from "react";
-import { ArrowLeft, ArrowRight, Plus, Trash2, Loader2, ShieldCheck, User, MapPin, CreditCard } from "lucide-react";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { ArrowLeft, ArrowRight, Plus, Trash2, Loader2, ShieldCheck, User, MapPin, CreditCard, Check } from "lucide-react";
 import { toast } from "sonner";
 import { PublicLayout } from "@/components/PublicLayout";
+import { trackInitiateCheckout } from "@/utils/meta-pixel";
 
 // Valida CPF usando algoritmo oficial
 function validateCPF(cpf: string): boolean {
@@ -114,6 +115,13 @@ export default function Comprar() {
 
   function validateStep0(): boolean {
     const e: Record<string, string> = {};
+    if (form.purchaseType === 'single' && !form.transportDate) e.transportDate = "Selecione uma data";
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  }
+
+  function validateStep1(): boolean {
+    const e: Record<string, string> = {};
     if (form.customerName.trim().length < 5) e.customerName = "Nome completo obrigatório (nome + sobrenome)";
     const cpfClean = form.customerCpf.replace(/\D/g, "");
     if (cpfClean.length !== 11) e.customerCpf = "CPF inválido (11 dígitos)";
@@ -121,14 +129,7 @@ export default function Comprar() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.customerEmail)) e.customerEmail = "E-mail inválido";
     const phoneClean = form.customerPhone.replace(/\D/g, "");
     if (phoneClean.length < 10) e.customerPhone = "Telefone inválido";
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  }
-
-  function validateStep1(): boolean {
-    const e: Record<string, string> = {};
     if (form.boardingPointId === 0) e.boardingPointId = "Selecione um ponto de embarque";
-    if (!form.transportDate && form.purchaseType === 'single') e.transportDate = "Selecione uma data";
     form.passengers.forEach((p, i) => {
       if (p.name.trim().length < 3) e[`passenger_${i}_name`] = "Nome obrigatório";
       const cpfClean = p.cpf.replace(/\D/g, "");
@@ -225,172 +226,219 @@ export default function Comprar() {
 
   return (
     <PublicLayout>
-      <div className="container max-w-2xl py-8 sm:py-12 px-4 sm:px-6">
+      <div className="container max-w-3xl py-8 sm:py-12 px-4 sm:px-6">
         <h1 className="text-2xl sm:text-3xl font-black font-heading text-center mb-1 sm:mb-2">
-          Comprar <span className="gold-text">Passagem</span>
+          Escolha seu ingresso
         </h1>
-        <p className="text-center text-xs sm:text-base text-muted-foreground mb-6 sm:mb-8">{event.name}</p>
+        <p className="text-center text-xs sm:text-base text-muted-foreground mb-6 sm:mb-8">Pedro Leopoldo Rodeio Show 2026</p>
 
-        <StepIndicator current={step} steps={["Dados Pessoais", "Embarque", "Resumo"]} />
+        <StepIndicator current={step} steps={["Datas", "Dados", "Pagamento"]} />
 
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8">
-          {/* STEP 0: Personal Data */}
-          {step === 0 && (
-            <div className="space-y-5">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                  <User className="w-5 h-5 text-primary" />
-                </div>
-                <h2 className="text-lg sm:text-xl font-bold">Dados Pessoais</h2>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Nome Completo</label>
-                <input
-                  type="text"
-                  placeholder="Seu nome completo"
-                  value={form.customerName}
-                  onChange={(e) => setForm((f) => ({ ...f, customerName: e.target.value }))}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                />
-                {errors.customerName && <p className="text-xs text-red-400 mt-1">{errors.customerName}</p>}
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-foreground/80 mb-1.5 block">CPF</label>
-                <input
-                  type="text"
-                  placeholder="000.000.000-00"
-                  value={form.customerCpf}
-                  onChange={(e) => setForm((f) => ({ ...f, customerCpf: formatCPF(e.target.value) }))}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                />
-                {errors.customerCpf && <p className="text-xs text-red-400 mt-1">{errors.customerCpf}</p>}
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-foreground/80 mb-1.5 block">E-mail</label>
-                <input
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={form.customerEmail}
-                  onChange={(e) => setForm((f) => ({ ...f, customerEmail: e.target.value }))}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                />
-                {errors.customerEmail && <p className="text-xs text-red-400 mt-1">{errors.customerEmail}</p>}
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Telefone / WhatsApp</label>
-                <input
-                  type="tel"
-                  placeholder="(31) 99999-9999"
-                  value={form.customerPhone}
-                  onChange={(e) => setForm((f) => ({ ...f, customerPhone: formatPhone(e.target.value) }))}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                />
-                {errors.customerPhone && <p className="text-xs text-red-400 mt-1">{errors.customerPhone}</p>}
-              </div>
-
-              <Button onClick={handleNext} className="w-full mt-6 bg-primary hover:bg-primary/90 text-black font-bold py-3 rounded-xl">
-                PRÓXIMO <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-          )}
-
-          {/* STEP 1: Boarding */}
-          {step === 1 && (
-            <div className="space-y-5">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                  <MapPin className="w-5 h-5 text-primary" />
-                </div>
-                <h2 className="text-lg sm:text-xl font-bold">Embarque e Passageiros</h2>
-              </div>
-
-              {/* Purchase Type */}
-              <div className="flex gap-3 mb-4">
+        {/* STEP 0: Ticket Selection */}
+        {step === 0 && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-lg sm:text-xl font-bold mb-4">Escolha seu ingresso</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                {/* Dia Único */}
                 <button
-                  onClick={() => setForm((f) => ({ ...f, purchaseType: 'single' }))}
-                  className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all ${
+                  onClick={() => setForm(f => ({ ...f, purchaseType: 'single' }))}
+                  className={`relative border-2 rounded-2xl p-6 transition-all ${
                     form.purchaseType === 'single'
-                      ? "gold-gradient text-black"
-                      : "bg-white/5 border border-white/10 text-foreground hover:bg-white/10"
+                      ? "border-primary bg-primary/5"
+                      : "border-white/10 hover:border-white/20 bg-white/5"
                   }`}
                 >
-                  1 Dia
+                  {form.purchaseType === 'single' && (
+                    <div className="absolute top-3 right-3 w-6 h-6 rounded-full gold-gradient flex items-center justify-center">
+                      <Check className="w-4 h-4 text-black" />
+                    </div>
+                  )}
+                  <div className="text-left">
+                    <h3 className="text-lg font-bold mb-1">Dia Único</h3>
+                    <p className="text-sm text-muted-foreground mb-3">Escolha 1 dia do evento</p>
+                    <p className="text-2xl font-bold text-primary">{formatCurrency(event.priceCents / 100)}</p>
+                    <p className="text-xs text-muted-foreground mt-1">/dia</p>
+                  </div>
                 </button>
+
+                {/* Múltiplos Dias */}
                 <button
-                  onClick={() => setForm((f) => ({ ...f, purchaseType: 'all_days' }))}
-                  className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all ${
-                    form.purchaseType === 'all_days'
-                      ? "gold-gradient text-black"
-                      : "bg-white/5 border border-white/10 text-foreground hover:bg-white/10"
+                  onClick={() => setForm(f => ({ ...f, purchaseType: 'single' }))}
+                  className={`relative border-2 rounded-2xl p-6 transition-all ${
+                    form.purchaseType === 'single'
+                      ? "border-white/10 hover:border-white/20 bg-white/5"
+                      : "border-white/10 hover:border-white/20 bg-white/5"
                   }`}
                 >
-                  Todos os Dias
+                  <div className="text-left">
+                    <h3 className="text-lg font-bold mb-1">Múltiplos Dias</h3>
+                    <p className="text-sm text-muted-foreground mb-3">Escolha 2 ou mais dias</p>
+                    <p className="text-2xl font-bold text-primary">{formatCurrency((event.priceCents * 2) / 100)}</p>
+                    <p className="text-xs text-muted-foreground mt-1">/2 dias</p>
+                  </div>
+                </button>
+
+                {/* Passaporte - Todos os Dias */}
+                <button
+                  onClick={() => setForm(f => ({ ...f, purchaseType: 'all_days' }))}
+                  className={`relative border-2 rounded-2xl p-6 transition-all ${
+                    form.purchaseType === 'all_days'
+                      ? "border-primary bg-primary/5"
+                      : "border-white/10 hover:border-white/20 bg-white/5"
+                  }`}
+                >
+                  {form.purchaseType === 'all_days' && (
+                    <div className="absolute top-3 right-3 w-6 h-6 rounded-full gold-gradient flex items-center justify-center">
+                      <Check className="w-4 h-4 text-black" />
+                    </div>
+                  )}
+                  <div className="absolute top-3 left-3">
+                    <span className="bg-primary text-black text-xs font-bold px-2.5 py-1 rounded-full">MAIS POPULAR</span>
+                  </div>
+                  <div className="text-left mt-6">
+                    <h3 className="text-lg font-bold mb-1">Passaporte — Todos os Dias</h3>
+                    <p className="text-sm text-muted-foreground mb-3">05, 06, 12 e 13 de Junho • Melhor valor!</p>
+                    <p className="text-2xl font-bold text-primary">{formatCurrency((event.priceCents * 4) / 100)}</p>
+                    <p className="text-xs text-muted-foreground mt-1">/4 dias</p>
+                  </div>
                 </button>
               </div>
 
-              {/* Transport Date - FIXED CONTROLLED COMPONENT */}
+              {/* Date Selection Grid */}
               {form.purchaseType === 'single' && (
                 <div>
-                  <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Data da Viagem</label>
-                  <select
-                    value={form.transportDate}
-                    onChange={handleTransportDateChange}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  >
-                    <option value="">Selecione a data</option>
+                  <label className="text-sm font-medium text-foreground/80 mb-3 block">SELECIONE 1 DATA</label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {dates.map((d) => (
-                      <option key={d} value={d}>
-                        {d}
-                      </option>
+                      <button
+                        key={d}
+                        onClick={() => {
+                          setForm(prev => ({ ...prev, transportDate: d }));
+                          if (errors.transportDate) {
+                            setErrors(prev => {
+                              const updated = { ...prev };
+                              delete updated.transportDate;
+                              return updated;
+                            });
+                          }
+                        }}
+                        className={`border-2 rounded-xl p-3 text-center transition-all ${
+                          form.transportDate === d
+                            ? "border-primary bg-primary/10"
+                            : "border-white/10 hover:border-white/20 bg-white/5"
+                        }`}
+                      >
+                        <div className="text-sm font-bold">{d.split(" ")[0]}</div>
+                        <div className="text-xs text-muted-foreground">{d.split(" ")[2]}</div>
+                      </button>
                     ))}
-                  </select>
-                  {errors.transportDate && <p className="text-xs text-red-400 mt-1">{errors.transportDate}</p>}
+                  </div>
+                  {errors.transportDate && <p className="text-xs text-red-400 mt-2">{errors.transportDate}</p>}
                 </div>
               )}
 
               {form.purchaseType === 'all_days' && (
                 <div className="bg-primary/10 border border-primary/30 rounded-xl p-4">
                   <p className="text-sm text-foreground">✓ Passaporte válido para <span className="font-bold">todos os dias do evento</span></p>
+                  <p className="text-xs text-muted-foreground mt-2">05, 06, 12 e 13 de Junho de 2026</p>
                 </div>
               )}
 
-              {/* Boarding Point - FIXED CONTROLLED COMPONENT */}
-              <div>
-                <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Ponto de Embarque</label>
-                <select
-                  value={form.boardingPointId}
-                  onChange={handleBoardingPointChange}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                >
-                  <option value={0}>Selecione o ponto</option>
-                  {boardingPoints && boardingPoints.length > 0 ? (
-                    boardingPoints.map((bp) => (
-                      <option key={bp.id} value={bp.id}>
-                        {bp.city} - {bp.locationName} (Saída: {bp.departureTime})
-                      </option>
-                    ))
-                  ) : (
-                    <option disabled>Carregando pontos...</option>
-                  )}
-                </select>
-                {errors.boardingPointId && <p className="text-xs text-red-400 mt-1">{errors.boardingPointId}</p>}
+              {/* Total and Continue */}
+              <div className="mt-6 space-y-4">
+                <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex justify-between items-center">
+                  <span className="font-medium">Total:</span>
+                  <span className="text-2xl font-bold text-primary">{formatCurrency(totalCents / 100)}</span>
+                </div>
+                <Button onClick={handleNext} className="w-full gold-gradient text-black font-bold py-3 rounded-xl">
+                  Continuar <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
               </div>
+            </div>
+          </div>
+        )}
 
-              {/* Passengers */}
-              <div className="border-t border-white/5 pt-5">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-bold">Passageiros ({form.passengers.length})</h3>
-                  <Button variant="outline" size="sm" onClick={addPassenger} className="border-primary/30 text-primary hover:bg-primary/10">
-                    <Plus className="w-4 h-4 mr-1" /> Adicionar
-                  </Button>
+        {/* STEP 1: Personal Data & Boarding */}
+        {step === 1 && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-lg sm:text-xl font-bold mb-4">Seus dados</h2>
+              <p className="text-sm text-muted-foreground mb-6">Informações para o ingresso e confirmação</p>
+
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-5">
+                <div>
+                  <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Nome completo *</label>
+                  <input
+                    type="text"
+                    placeholder="Seu nome completo"
+                    value={form.customerName}
+                    onChange={(e) => setForm((f) => ({ ...f, customerName: e.target.value }))}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  />
+                  {errors.customerName && <p className="text-xs text-red-400 mt-1">{errors.customerName}</p>}
                 </div>
 
+                <div>
+                  <label className="text-sm font-medium text-foreground/80 mb-1.5 block">E-mail *</label>
+                  <input
+                    type="email"
+                    placeholder="seu@email.com"
+                    value={form.customerEmail}
+                    onChange={(e) => setForm((f) => ({ ...f, customerEmail: e.target.value }))}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  />
+                  {errors.customerEmail && <p className="text-xs text-red-400 mt-1">{errors.customerEmail}</p>}
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-foreground/80 mb-1.5 block">WhatsApp *</label>
+                  <input
+                    type="tel"
+                    placeholder="(31) 99999-9999"
+                    value={form.customerPhone}
+                    onChange={(e) => setForm((f) => ({ ...f, customerPhone: formatPhone(e.target.value) }))}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  />
+                  {errors.customerPhone && <p className="text-xs text-red-400 mt-1">{errors.customerPhone}</p>}
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Ponto de embarque *</label>
+                  <select
+                    value={form.boardingPointId}
+                    onChange={handleBoardingPointChange}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  >
+                    <option value={0}>Selecione um ponto</option>
+                    {boardingPoints && boardingPoints.length > 0 ? (
+                      boardingPoints.map((bp) => (
+                        <option key={bp.id} value={bp.id}>
+                          {bp.city} - {bp.locationName} (Saída: {bp.departureTime})
+                        </option>
+                      ))
+                    ) : (
+                      <option disabled>Carregando pontos...</option>
+                    )}
+                  </select>
+                  {errors.boardingPointId && <p className="text-xs text-red-400 mt-1">{errors.boardingPointId}</p>}
+                </div>
+              </div>
+            </div>
+
+            {/* Passengers */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">Passageiros ({form.passengers.length})</h3>
+                <Button variant="outline" size="sm" onClick={addPassenger} className="border-primary/30 text-primary hover:bg-primary/10">
+                  <Plus className="w-4 h-4 mr-1" /> Adicionar
+                </Button>
+              </div>
+
+              <div className="space-y-3">
                 {form.passengers.map((p, i) => (
-                  <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-4 mb-3">
+                  <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-4">
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="font-semibold text-sm">Passageiro {i + 1}</h4>
                       {form.passengers.length > 1 && (
@@ -423,64 +471,69 @@ export default function Comprar() {
                   </div>
                 ))}
               </div>
-
-              <div className="flex gap-3 pt-4">
-                <Button variant="outline" onClick={() => setStep(0)} className="flex-1 border-white/10 hover:bg-white/5">
-                  <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
-                </Button>
-                <Button onClick={handleNext} className="flex-1 bg-primary hover:bg-primary/90 text-black font-bold">
-                  PRÓXIMO <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
             </div>
-          )}
 
-          {/* STEP 2: Summary */}
-          {step === 2 && (
-            <div className="space-y-5">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                  <CreditCard className="w-5 h-5 text-primary" />
-                </div>
-                <h2 className="text-lg sm:text-xl font-bold">Resumo</h2>
-              </div>
+            {/* Navigation */}
+            <div className="flex gap-3 pt-4">
+              <Button variant="outline" onClick={() => setStep(0)} className="flex-1 border-white/10 hover:bg-white/5">
+                <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
+              </Button>
+              <Button onClick={handleNext} className="flex-1 gold-gradient text-black font-bold">
+                Revisar <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
 
-              <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Evento:</span>
-                  <span className="font-semibold">{event.name}</span>
+        {/* STEP 2: Summary & Payment */}
+        {step === 2 && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-lg sm:text-xl font-bold mb-4">Confirme e pague</h2>
+              <p className="text-sm text-muted-foreground mb-6">Revise seus dados antes de prosseguir</p>
+
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4 mb-6">
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">INGRESSO</p>
+                  <p className="font-bold text-lg">{form.purchaseType === 'all_days' ? 'Passaporte — Todos os Dias' : 'Dia Único'}</p>
+                  {form.purchaseType === 'single' && <p className="text-sm text-muted-foreground">{form.transportDate}</p>}
+                  {form.purchaseType === 'all_days' && <p className="text-sm text-muted-foreground">05, 06, 12 e 13 de Junho de 2026</p>}
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Data:</span>
-                  <span className="font-semibold">{form.transportDate || "Todos os dias"}</span>
+
+                <div className="border-t border-white/10 pt-4">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">PASSAGEIRO</p>
+                  <p className="font-bold">{form.customerName}</p>
+                  <p className="text-sm text-muted-foreground">{form.customerEmail}</p>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Embarque:</span>
-                  <span className="font-semibold">{selectedBP?.city} - {selectedBP?.locationName}</span>
+
+                <div className="border-t border-white/10 pt-4">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">EMBARQUE</p>
+                  <p className="font-bold flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-primary" />
+                    {selectedBP?.city} - {selectedBP?.locationName}
+                  </p>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Passageiros:</span>
-                  <span className="font-semibold">{form.passengers.length}</span>
-                </div>
-                <div className="border-t border-white/10 pt-3 flex justify-between">
+
+                <div className="border-t border-white/10 pt-4 flex justify-between items-center">
                   <span className="font-bold">Total:</span>
-                  <span className="font-bold text-primary text-lg">{formatCurrency(totalCents / 100)}</span>
+                  <span className="text-2xl font-bold text-primary">{formatCurrency(totalCents / 100)}</span>
                 </div>
               </div>
 
-              <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 flex gap-3">
+              <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 flex gap-3 mb-6">
                 <ShieldCheck className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-green-100">Pagamento seguro via Stripe. Seus dados estão protegidos.</p>
               </div>
 
-              <div className="flex gap-3 pt-4">
+              {/* Navigation */}
+              <div className="flex gap-3">
                 <Button variant="outline" onClick={() => setStep(1)} className="flex-1 border-white/10 hover:bg-white/5">
                   <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
                 </Button>
                 <Button
                   onClick={handleSubmit}
                   disabled={createSession.isPending}
-                  className="flex-1 bg-primary hover:bg-primary/90 text-black font-bold"
+                  className="flex-1 gold-gradient text-black font-bold"
                 >
                   {createSession.isPending ? (
                     <>
@@ -488,14 +541,14 @@ export default function Comprar() {
                     </>
                   ) : (
                     <>
-                      <CreditCard className="w-4 h-4 mr-2" /> FINALIZAR COMPRA
+                      <CreditCard className="w-4 h-4 mr-2" /> Pagar com Stripe
                     </>
                   )}
                 </Button>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </PublicLayout>
   );
