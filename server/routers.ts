@@ -9,6 +9,7 @@ import {
   getAllEvents,
   createEvent,
   updateEvent,
+  deleteEvent,
   getBoardingPointsByEvent,
   getAllBoardingPointsByEvent,
   createBoardingPoint,
@@ -18,6 +19,7 @@ import {
   getOrderById,
   updateOrderStatus,
   updateOrderStripeSession,
+  deleteOrder,
   getAllOrders,
   createPassengers,
   getPassengersByOrder,
@@ -323,6 +325,12 @@ export const appRouter = router({
           await updateEvent(id, data);
           return { success: true };
         }),
+      delete: adminProcedure
+        .input(z.object({ id: z.number().int().positive() }))
+        .mutation(async ({ input }) => {
+          await deleteEvent(input.id);
+          return { success: true };
+        }),
       uploadBanner: adminProcedure
         .input(
           z.object({
@@ -406,6 +414,12 @@ export const appRouter = router({
         const event = await getEventById(order.eventId);
         return { ...order, passengers, eventName: event?.name };
       }),
+      delete: adminProcedure
+        .input(z.object({ id: z.number().int().positive() }))
+        .mutation(async ({ input }) => {
+          await deleteOrder(input.id);
+          return { success: true };
+        }),
     }),
 
     // Passengers

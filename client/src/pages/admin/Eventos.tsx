@@ -2,7 +2,7 @@ import AdminLayout from "@/components/AdminLayout";
 import { trpc } from "@/lib/trpc";
 import { formatCurrency } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
-import { Calendar, Plus, Edit, Loader2, MapPin } from "lucide-react";
+import { Calendar, Plus, Edit, Loader2, MapPin, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -12,15 +12,20 @@ export default function Eventos() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [showBP, setShowBP] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const deleteEvent = trpc.admin.events.delete.useMutation({
+    onSuccess: () => { utils.admin.events.list.invalidate(); toast.success("Evento deletado!"); setDeletingId(null); },
+    onError: (e) => toast.error(e.message),
+  });
 
   return (
     <AdminLayout>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
           <h2 className="text-2xl font-black font-heading">Eventos</h2>
           <p className="text-muted-foreground text-sm">Gerencie seus eventos</p>
         </div>
-        <Button onClick={() => setShowCreate(true)} className="gold-gradient text-black font-bold">
+        <Button onClick={() => setShowCreate(true)} className="gold-gradient text-black font-bold w-full sm:w-auto">
           <Plus className="w-4 h-4 mr-2" /> Novo Evento
         </Button>
       </div>
@@ -35,11 +40,11 @@ export default function Eventos() {
         <div className="space-y-4">
           {events.map((ev) => (
             <div key={ev.id}>
-              <div className="glass-card rounded-2xl p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-lg font-bold">{ev.name}</h3>
+              <div className="glass-card rounded-2xl p-4 sm:p-5">
+                <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                  <div className="flex-1 w-full">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
+                      <h3 className="text-base sm:text-lg font-bold">{ev.name}</h3>
                       <span className={`text-xs px-2 py-0.5 rounded-full ${
                         ev.status === "active" ? "bg-green-500/20 text-green-400" :
                         ev.status === "draft" ? "bg-yellow-500/20 text-yellow-400" :
@@ -49,29 +54,46 @@ export default function Eventos() {
                         {ev.status === "active" ? "Ativo" : ev.status === "draft" ? "Rascunho" : ev.status === "sold_out" ? "Esgotado" : "Finalizado"}
                       </span>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-2">{ev.description}</p>
-                    <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-2">{ev.description}</p>
+                    <div className="flex flex-wrap gap-2 sm:gap-4 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {ev.eventDate}</span>
-                      <span>Preço: {formatCurrency(ev.priceCents)}</span>
-                      <span>Taxa: {formatCurrency(ev.feeCents)}</span>
+                      <span className="hidden sm:inline">Preço: {formatCurrency(ev.priceCents)}</span>
+                      <span className="hidden sm:inline">Taxa: {formatCurrency(ev.feeCents)}</span>
                       <span>Vendidos: {ev.soldCount}/{ev.capacity}</span>
                     </div>
                     <div className="h-1.5 bg-white/5 rounded-full mt-3 overflow-hidden max-w-xs">
                       <div className="h-full gold-gradient rounded-full" style={{ width: `${Math.min((ev.soldCount / ev.capacity) * 100, 100)}%` }} />
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     <Button size="sm" variant="outline" className="border-white/10" onClick={() => setShowBP(showBP === ev.id ? null : ev.id)}>
                       <MapPin className="w-4 h-4 mr-1" /> Embarques
                     </Button>
                     <Button size="sm" variant="outline" className="border-white/10" onClick={() => setEditingId(editingId === ev.id ? null : ev.id)}>
                       <Edit className="w-4 h-4" />
                     </Button>
+                    <Button size="sm" variant="outline" className="border-red-500/20 text-red-400 hover:bg-red-500/10" onClick={() => setDeletingId(ev.id)}>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
                 {editingId === ev.id && <EventForm event={ev} onClose={() => setEditingId(null)} />}
               </div>
               {showBP === ev.id && <BoardingPointsPanel eventId={ev.id} />}
+              {deletingId === ev.id && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+                  <div className="glass-card rounded-2xl p-6 max-w-sm w-full">
+                    <h3 className="text-lg font-bold mb-2">Deletar Evento?</h3>
+                    <p className="text-sm text-muted-foreground mb-4">Tem certeza que deseja deletar <strong>{ev.name}</strong>? Esta ação não pode ser desfeita.</p>
+                    <div className="flex gap-2 justify-end">
+                      <Button size="sm" variant="outline" className="border-white/10" onClick={() => setDeletingId(null)}>Cancelar</Button>
+                      <Button size="sm" className="bg-red-500/20 text-red-400 hover:bg-red-500/30" disabled={deleteEvent.isPending} onClick={() => deleteEvent.mutate({ id: ev.id })}>
+                        {deleteEvent.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Deletar"}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>

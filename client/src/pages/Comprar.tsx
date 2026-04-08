@@ -1,10 +1,11 @@
-import PublicLayout from "@/components/PublicLayout";
+'use client';
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { formatCurrency, formatCPF, formatPhone } from "@/lib/constants";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { ArrowLeft, ArrowRight, Plus, Trash2, Loader2, ShieldCheck, User, MapPin, CreditCard } from "lucide-react";
 import { toast } from "sonner";
+import { PublicLayout } from "@/components/PublicLayout";
 
 // Valida CPF usando algoritmo oficial
 function validateCPF(cpf: string): boolean {
@@ -121,8 +122,8 @@ export default function Comprar() {
 
   function validateStep1(): boolean {
     const e: Record<string, string> = {};
-    if (!form.boardingPointId) e.boardingPointId = "Selecione um ponto de embarque";
-    if (!form.transportDate) e.transportDate = "Selecione uma data";
+    if (form.boardingPointId === 0) e.boardingPointId = "Selecione um ponto de embarque";
+    if (!form.transportDate && form.purchaseType === 'single') e.transportDate = "Selecione uma data";
     form.passengers.forEach((p, i) => {
       if (p.name.trim().length < 3) e[`passenger_${i}_name`] = "Nome obrigatório";
       const cpfClean = p.cpf.replace(/\D/g, "");
@@ -132,6 +133,33 @@ export default function Comprar() {
     setErrors(e);
     return Object.keys(e).length === 0;
   }
+
+  // Controlled component handlers com useCallback
+  const handleTransportDateChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setForm(prev => ({ ...prev, transportDate: value }));
+    // Clear error immediately when user selects
+    if (value && errors.transportDate) {
+      setErrors(prev => {
+        const updated = { ...prev };
+        delete updated.transportDate;
+        return updated;
+      });
+    }
+  }, [errors.transportDate]);
+
+  const handleBoardingPointChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setForm(prev => ({ ...prev, boardingPointId: value }));
+    // Clear error immediately when user selects
+    if (value !== 0 && errors.boardingPointId) {
+      setErrors(prev => {
+        const updated = { ...prev };
+        delete updated.boardingPointId;
+        return updated;
+      });
+    }
+  }, [errors.boardingPointId]);
 
   function handleNext() {
     if (step === 0 && validateStep0()) setStep(1);
@@ -200,285 +228,269 @@ export default function Comprar() {
 
         <StepIndicator current={step} steps={["Dados Pessoais", "Embarque", "Resumo"]} />
 
-        {/* Step 0: Personal Data */}
-        {step === 0 && (
-          <div className="glass-card rounded-2xl p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-5">
-            <div className="flex items-center gap-3 mb-4 sm:mb-5">
-              <User className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-              <h2 className="text-base sm:text-lg font-bold">Dados Pessoais</h2>
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8">
+          {/* STEP 0: Personal Data */}
+          {step === 0 && (
+            <div className="space-y-5">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                  <User className="w-5 h-5 text-primary" />
+                </div>
+                <h2 className="text-lg sm:text-xl font-bold">Dados Pessoais</h2>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Nome Completo</label>
+                <input
+                  type="text"
+                  placeholder="Seu nome completo"
+                  value={form.customerName}
+                  onChange={(e) => setForm((f) => ({ ...f, customerName: e.target.value }))}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+                {errors.customerName && <p className="text-xs text-red-400 mt-1">{errors.customerName}</p>}
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-foreground/80 mb-1.5 block">CPF</label>
+                <input
+                  type="text"
+                  placeholder="000.000.000-00"
+                  value={form.customerCpf}
+                  onChange={(e) => setForm((f) => ({ ...f, customerCpf: formatCPF(e.target.value) }))}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+                {errors.customerCpf && <p className="text-xs text-red-400 mt-1">{errors.customerCpf}</p>}
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-foreground/80 mb-1.5 block">E-mail</label>
+                <input
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={form.customerEmail}
+                  onChange={(e) => setForm((f) => ({ ...f, customerEmail: e.target.value }))}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+                {errors.customerEmail && <p className="text-xs text-red-400 mt-1">{errors.customerEmail}</p>}
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Telefone / WhatsApp</label>
+                <input
+                  type="tel"
+                  placeholder="(31) 99999-9999"
+                  value={form.customerPhone}
+                  onChange={(e) => setForm((f) => ({ ...f, customerPhone: formatPhone(e.target.value) }))}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+                {errors.customerPhone && <p className="text-xs text-red-400 mt-1">{errors.customerPhone}</p>}
+              </div>
+
+              <Button onClick={handleNext} className="w-full mt-6 bg-primary hover:bg-primary/90 text-black font-bold py-3 rounded-xl">
+                PRÓXIMO <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
             </div>
+          )}
 
-            <div>
-              <label className="text-xs sm:text-sm font-medium text-foreground/80 mb-2 block">Nome Completo</label>
-              <input
-                type="text"
-                value={form.customerName}
-                onChange={(e) => setForm((f) => ({ ...f, customerName: e.target.value }))}
-                className="w-full bg-white/5 border border-white/10 rounded-lg sm:rounded-xl px-3 sm:px-4 py-3 sm:py-3 text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[44px]"
-                placeholder="Seu nome completo"
-              />
-              {errors.customerName && <p className="text-xs text-red-400 mt-1">{errors.customerName}</p>}
-            </div>
+          {/* STEP 1: Boarding */}
+          {step === 1 && (
+            <div className="space-y-5">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                  <MapPin className="w-5 h-5 text-primary" />
+                </div>
+                <h2 className="text-lg sm:text-xl font-bold">Embarque e Passageiros</h2>
+              </div>
 
-            <div>
-              <label className="text-xs sm:text-sm font-medium text-foreground/80 mb-2 block">CPF</label>
-              <input
-                type="text"
-                value={form.customerCpf}
-                onChange={(e) => setForm((f) => ({ ...f, customerCpf: formatCPF(e.target.value) }))}
-                className="w-full bg-white/5 border border-white/10 rounded-lg sm:rounded-xl px-3 sm:px-4 py-3 sm:py-3 text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[44px]"
-                placeholder="000.000.000-00"
-                maxLength={14}
-              />
-              {errors.customerCpf && <p className="text-xs text-red-400 mt-1">{errors.customerCpf}</p>}
-            </div>
-
-            <div>
-              <label className="text-xs sm:text-sm font-medium text-foreground/80 mb-2 block">E-mail</label>
-              <input
-                type="email"
-                value={form.customerEmail}
-                onChange={(e) => setForm((f) => ({ ...f, customerEmail: e.target.value }))}
-                className="w-full bg-white/5 border border-white/10 rounded-lg sm:rounded-xl px-3 sm:px-4 py-3 sm:py-3 text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[44px]"
-                placeholder="seu@email.com"
-              />
-              {errors.customerEmail && <p className="text-xs text-red-400 mt-1">{errors.customerEmail}</p>}
-            </div>
-
-            <div>
-              <label className="text-xs sm:text-sm font-medium text-foreground/80 mb-2 block">Telefone / WhatsApp</label>
-              <input
-                type="text"
-                value={form.customerPhone}
-                onChange={(e) => setForm((f) => ({ ...f, customerPhone: formatPhone(e.target.value) }))}
-                className="w-full bg-white/5 border border-white/10 rounded-lg sm:rounded-xl px-3 sm:px-4 py-3 sm:py-3 text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[44px]"
-                placeholder="(31) 99999-9999"
-                maxLength={15}
-              />
-              {errors.customerPhone && <p className="text-xs text-red-400 mt-1">{errors.customerPhone}</p>}
-            </div>
-
-            <Button onClick={handleNext} className="w-full gold-gradient text-black font-bold py-3 sm:py-4 rounded-lg sm:rounded-xl min-h-[44px] text-sm sm:text-base">
-              PRÓXIMO <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-        )}
-
-        {/* Step 1: Boarding & Passengers */}
-        {step === 1 && (
-          <div className="glass-card rounded-2xl p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-5">
-            <div className="flex items-center gap-3 mb-4">
-              <MapPin className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-bold">Embarque e Passageiros</h2>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Tipo de Compra</label>
-              <div className="grid grid-cols-2 gap-3 mb-4">
+              {/* Purchase Type */}
+              <div className="flex gap-3 mb-4">
                 <button
-                  onClick={() => setForm((f) => ({ ...f, purchaseType: 'single', transportDate: '' }))}
-                  className={`px-4 py-3 rounded-xl font-medium text-sm transition-all ${
+                  onClick={() => setForm((f) => ({ ...f, purchaseType: 'single' }))}
+                  className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all ${
                     form.purchaseType === 'single'
-                      ? 'gold-gradient text-black'
-                      : 'bg-white/5 border border-white/10 text-foreground hover:bg-white/10'
+                      ? "gold-gradient text-black"
+                      : "bg-white/5 border border-white/10 text-foreground hover:bg-white/10"
                   }`}
                 >
                   1 Dia
                 </button>
                 <button
-                  onClick={() => setForm((f) => ({ ...f, purchaseType: 'all_days', transportDate: 'Todos os Dias' }))}
-                  className={`px-4 py-3 rounded-xl font-medium text-sm transition-all ${
+                  onClick={() => setForm((f) => ({ ...f, purchaseType: 'all_days' }))}
+                  className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all ${
                     form.purchaseType === 'all_days'
-                      ? 'gold-gradient text-black'
-                      : 'bg-white/5 border border-white/10 text-foreground hover:bg-white/10'
+                      ? "gold-gradient text-black"
+                      : "bg-white/5 border border-white/10 text-foreground hover:bg-white/10"
                   }`}
                 >
                   Todos os Dias
                 </button>
               </div>
-            </div>
 
-            {form.purchaseType === 'single' && (
-            <div>
-              <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Data da Viagem</label>
-              <select
-                value={form.transportDate}
-                onChange={(e) => setForm((f) => ({ ...f, transportDate: e.target.value }))}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-              >
-                <option value="" className="bg-background">Selecione a data</option>
-                {dates.map((d) => (
-                  <option key={d} value={d} className="bg-background">{d}</option>
-                ))}
-              </select>
-              {errors.transportDate && <p className="text-xs text-red-400 mt-1">{errors.transportDate}</p>}
-            </div>
-            )}
-
-            {form.purchaseType === 'all_days' && (
-            <div className="bg-primary/10 border border-primary/30 rounded-xl p-4">
-              <p className="text-sm text-foreground">✓ Passaporte válido para <span className="font-bold">todos os dias do evento</span></p>
-            </div>
-            )}
-
-            <div>
-              <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Ponto de Embarque</label>
-              <select
-                value={form.boardingPointId || ""}
-                onChange={(e) => setForm((f) => ({ ...f, boardingPointId: e.target.value ? Number(e.target.value) : 0 }))}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-              >
-                <option value="" className="bg-background">Selecione o ponto</option>
-                {boardingPoints && boardingPoints.length > 0 ? (
-                  boardingPoints.map((bp) => (
-                    <option key={bp.id} value={String(bp.id)} className="bg-background">
-                      {bp.city} - {bp.locationName} (Saída: {bp.departureTime})
-                    </option>
-                  ))
-                ) : (
-                  <option disabled className="bg-background">Carregando pontos...</option>
-                )}
-              </select>
-              {errors.boardingPointId && <p className="text-xs text-red-400 mt-1">{errors.boardingPointId}</p>}
-            </div>
-
-            <div className="border-t border-white/5 pt-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold">Passageiros ({form.passengers.length})</h3>
-                <Button variant="outline" size="sm" onClick={addPassenger} className="border-primary/30 text-primary hover:bg-primary/10">
-                  <Plus className="w-4 h-4 mr-1" /> Adicionar
-                </Button>
-              </div>
-
-              {form.passengers.map((p, i) => (
-                <div key={i} className="bg-white/3 rounded-xl p-4 mb-3 border border-white/5">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-medium text-primary">Passageiro {i + 1}</span>
-                    {form.passengers.length > 1 && (
-                      <button onClick={() => removePassenger(i)} className="text-red-400 hover:text-red-300">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                  <div className="grid gap-3">
-                    <div>
-                      <input
-                        type="text"
-                        value={p.name}
-                        onChange={(e) => updatePassenger(i, "name", e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                        placeholder="Nome completo do passageiro"
-                      />
-                      {errors[`passenger_${i}_name`] && <p className="text-xs text-red-400 mt-1">{errors[`passenger_${i}_name`]}</p>}
-                    </div>
-                    <div>
-                      <input
-                        type="text"
-                        value={p.cpf}
-                        onChange={(e) => updatePassenger(i, "cpf", formatCPF(e.target.value))}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                        placeholder="CPF do passageiro"
-                        maxLength={14}
-                      />
-                      {errors[`passenger_${i}_cpf`] && <p className="text-xs text-red-400 mt-1">{errors[`passenger_${i}_cpf`]}</p>}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setStep(0)} className="border-white/10 flex-1">
-                <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
-              </Button>
-              <Button onClick={handleNext} className="gold-gradient text-black font-bold flex-1">
-                PRÓXIMO <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 2: Summary */}
-        {step === 2 && (
-          <div className="glass-card rounded-2xl p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-5">
-            <div className="flex items-center gap-3 mb-4">
-              <CreditCard className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-bold">Resumo do Pedido</h2>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Evento</span>
-                <span className="font-medium">{event.name}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Data</span>
-                <span className="font-medium">{form.transportDate}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Embarque</span>
-                <span className="font-medium">{selectedBP ? `${selectedBP.city} - ${selectedBP.locationName}` : "-"}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Comprador</span>
-                <span className="font-medium">{form.customerName}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">E-mail</span>
-                <span className="font-medium">{form.customerEmail}</span>
-              </div>
-            </div>
-
-            <div className="border-t border-white/5 pt-4">
-              <h3 className="font-bold text-sm mb-3">Passageiros ({form.passengers.length})</h3>
-              {form.passengers.map((p, i) => (
-                <div key={i} className="flex justify-between text-sm py-1.5">
-                  <span className="text-muted-foreground">{p.name}</span>
-                  <span className="text-muted-foreground">{p.cpf}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="border-t border-white/5 pt-4 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{form.passengers.length}x Passagem</span>
-                <span>{formatCurrency(event.priceCents * form.passengers.length)}</span>
-              </div>
-              {event.feeCents > 0 && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{form.passengers.length}x Taxa</span>
-                  <span>{formatCurrency(event.feeCents * form.passengers.length)}</span>
+              {/* Transport Date - FIXED CONTROLLED COMPONENT */}
+              {form.purchaseType === 'single' && (
+                <div>
+                  <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Data da Viagem</label>
+                  <select
+                    value={form.transportDate}
+                    onChange={handleTransportDateChange}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  >
+                    <option value="">Selecione a data</option>
+                    {dates.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.transportDate && <p className="text-xs text-red-400 mt-1">{errors.transportDate}</p>}
                 </div>
               )}
-              <div className="flex justify-between text-lg font-black pt-2 border-t border-white/5">
-                <span>Total</span>
-                <span className="text-primary">{formatCurrency(totalCents)}</span>
+
+              {form.purchaseType === 'all_days' && (
+                <div className="bg-primary/10 border border-primary/30 rounded-xl p-4">
+                  <p className="text-sm text-foreground">✓ Passaporte válido para <span className="font-bold">todos os dias do evento</span></p>
+                </div>
+              )}
+
+              {/* Boarding Point - FIXED CONTROLLED COMPONENT */}
+              <div>
+                <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Ponto de Embarque</label>
+                <select
+                  value={form.boardingPointId}
+                  onChange={handleBoardingPointChange}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                >
+                  <option value={0}>Selecione o ponto</option>
+                  {boardingPoints && boardingPoints.length > 0 ? (
+                    boardingPoints.map((bp) => (
+                      <option key={bp.id} value={bp.id}>
+                        {bp.city} - {bp.locationName} (Saída: {bp.departureTime})
+                      </option>
+                    ))
+                  ) : (
+                    <option disabled>Carregando pontos...</option>
+                  )}
+                </select>
+                {errors.boardingPointId && <p className="text-xs text-red-400 mt-1">{errors.boardingPointId}</p>}
+              </div>
+
+              {/* Passengers */}
+              <div className="border-t border-white/5 pt-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold">Passageiros ({form.passengers.length})</h3>
+                  <Button variant="outline" size="sm" onClick={addPassenger} className="border-primary/30 text-primary hover:bg-primary/10">
+                    <Plus className="w-4 h-4 mr-1" /> Adicionar
+                  </Button>
+                </div>
+
+                {form.passengers.map((p, i) => (
+                  <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-4 mb-3">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-semibold text-sm">Passageiro {i + 1}</h4>
+                      {form.passengers.length > 1 && (
+                        <button
+                          onClick={() => removePassenger(i)}
+                          className="text-red-400 hover:text-red-300 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+
+                    <input
+                      type="text"
+                      placeholder="Nome completo do passageiro"
+                      value={p.name}
+                      onChange={(e) => updatePassenger(i, 'name', e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 mb-2"
+                    />
+                    {errors[`passenger_${i}_name`] && <p className="text-xs text-red-400 mb-2">{errors[`passenger_${i}_name`]}</p>}
+
+                    <input
+                      type="text"
+                      placeholder="CPF do passageiro"
+                      value={p.cpf}
+                      onChange={(e) => updatePassenger(i, 'cpf', formatCPF(e.target.value))}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
+                    {errors[`passenger_${i}_cpf`] && <p className="text-xs text-red-400 mt-1">{errors[`passenger_${i}_cpf`]}</p>}
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button variant="outline" onClick={() => setStep(0)} className="flex-1 border-white/10 hover:bg-white/5">
+                  <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
+                </Button>
+                <Button onClick={handleNext} className="flex-1 bg-primary hover:bg-primary/90 text-black font-bold">
+                  PRÓXIMO <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
               </div>
             </div>
+          )}
 
-            <div className="flex items-center gap-2 text-xs text-muted-foreground bg-white/3 rounded-xl p-3">
-              <ShieldCheck className="w-4 h-4 text-green-400 shrink-0" />
-              <span>Pagamento seguro processado pelo Stripe. Seus dados estão protegidos.</span>
-            </div>
+          {/* STEP 2: Summary */}
+          {step === 2 && (
+            <div className="space-y-5">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                  <CreditCard className="w-5 h-5 text-primary" />
+                </div>
+                <h2 className="text-lg sm:text-xl font-bold">Resumo</h2>
+              </div>
 
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setStep(1)} className="border-white/10 flex-1">
-                <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
-              </Button>
-              <Button
-                onClick={handleSubmit}
-                disabled={createSession.isPending}
-                className="gold-gradient text-black font-bold flex-1"
-              >
-                {createSession.isPending ? (
-                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processando...</>
-                ) : (
-                  <>PAGAR {formatCurrency(totalCents)} <CreditCard className="w-4 h-4 ml-2" /></>
-                )}
-              </Button>
+              <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Evento:</span>
+                  <span className="font-semibold">{event.name}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Data:</span>
+                  <span className="font-semibold">{form.transportDate || "Todos os dias"}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Embarque:</span>
+                  <span className="font-semibold">{selectedBP?.city} - {selectedBP?.locationName}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Passageiros:</span>
+                  <span className="font-semibold">{form.passengers.length}</span>
+                </div>
+                <div className="border-t border-white/10 pt-3 flex justify-between">
+                  <span className="font-bold">Total:</span>
+                  <span className="font-bold text-primary text-lg">{formatCurrency(totalCents / 100)}</span>
+                </div>
+              </div>
+
+              <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 flex gap-3">
+                <ShieldCheck className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-green-100">Pagamento seguro via Stripe. Seus dados estão protegidos.</p>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button variant="outline" onClick={() => setStep(1)} className="flex-1 border-white/10 hover:bg-white/5">
+                  <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
+                </Button>
+                <Button
+                  onClick={handleSubmit}
+                  disabled={createSession.isPending}
+                  className="flex-1 bg-primary hover:bg-primary/90 text-black font-bold"
+                >
+                  {createSession.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processando...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard className="w-4 h-4 mr-2" /> FINALIZAR COMPRA
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </PublicLayout>
   );

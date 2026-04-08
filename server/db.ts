@@ -123,6 +123,17 @@ export async function updateEvent(id: number, data: Partial<InsertEvent>) {
   await db.update(events).set(data).where(eq(events.id, id));
 }
 
+export async function deleteEvent(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  // Check if event has orders
+  const eventOrders = await db.select().from(orders).where(eq(orders.eventId, id)).limit(1);
+  if (eventOrders.length > 0) {
+    throw new Error("Não é possível deletar um evento com pedidos associados");
+  }
+  await db.delete(events).where(eq(events.id, id));
+}
+
 // ─── Boarding Points ───
 export async function getBoardingPointsByEvent(eventId: number) {
   const db = await getDb();
@@ -213,6 +224,20 @@ export async function updateOrderStripeSession(id: number, stripeSessionId: stri
   await db.update(orders).set({ stripeSessionId }).where(eq(orders.id, id));
 }
 
+export async function deleteOrder(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  
+  // Delete passengers first (foreign key constraint)
+  await db.delete(passengers).where(eq(passengers.orderId, id));
+  
+  // Delete payments
+  await db.delete(payments).where(eq(payments.orderId, id));
+  
+  // Delete order
+  await db.delete(orders).where(eq(orders.id, id));
+}
+
 export async function getAllOrders(eventId?: number) {
   const db = await getDb();
   if (!db) return [];
@@ -283,7 +308,7 @@ export async function getDashboardMetrics() {
   const [orderCounts] = await db.select({
     total: sql<number>`COUNT(*)`,
     paid: sql<number>`SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END)`,
-    pending: sql<number>`SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END)`,
+    pending: sql<number>`SUM(CASE WHEN status IN ('pending', 'pending_checkout') THEN 1 ELSE 0 END)`,
   }).from(orders);
 
   const [passengerCount] = await db.select({
@@ -292,13 +317,13 @@ export async function getDashboardMetrics() {
 
   const [eventCount] = await db.select({
     total: sql<number>`COUNT(*)`,
-  }).from(events);
+  }).from(events).where(eq(events.status, "active"));
 
   // Recent orders
   const recentOrders = await db.select().from(orders).orderBy(desc(orders.createdAt)).limit(10);
 
-  // Events summary
-  const eventsSummary = await db.select().from(events).orderBy(desc(events.createdAt));
+  // Events summary - only active events
+  const eventsSummary = await db.select().from(events).where(eq(events.status, "active")).orderBy(desc(events.createdAt));
 
   return {
     totalRevenueCents: Number(revenueResult?.total ?? 0),

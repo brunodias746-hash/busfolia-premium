@@ -61,10 +61,10 @@ export default function Dashboard() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         {/* Recent Orders */}
-        <div className="glass-card rounded-2xl p-5">
-          <h3 className="font-bold mb-4 flex items-center gap-2">
+        <div className="glass-card rounded-2xl p-4 sm:p-5">
+          <h3 className="font-bold mb-4 flex items-center gap-2 text-sm sm:text-base">
             <TrendingUp className="w-4 h-4 text-primary" /> Pedidos Recentes
           </h3>
           {metrics?.recentOrders && metrics.recentOrders.length > 0 ? (
@@ -79,10 +79,10 @@ export default function Dashboard() {
                     <p className="text-sm font-bold text-primary">{formatCurrency(order.totalAmountCents)}</p>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
                       order.status === "paid" ? "bg-green-500/20 text-green-400" :
-                      order.status === "pending" ? "bg-yellow-500/20 text-yellow-400" :
+                      order.status === "pending" || order.status === "pending_checkout" ? "bg-yellow-500/20 text-yellow-400" :
                       "bg-red-500/20 text-red-400"
                     }`}>
-                      {order.status === "paid" ? "Pago" : order.status === "pending" ? "Pendente" : "Cancelado"}
+                      {order.status === "paid" ? "Pago" : order.status === "pending" || order.status === "pending_checkout" ? "Pendente" : "Cancelado"}
                     </span>
                   </div>
                 </div>
@@ -94,8 +94,8 @@ export default function Dashboard() {
         </div>
 
         {/* Events Summary */}
-        <div className="glass-card rounded-2xl p-5">
-          <h3 className="font-bold mb-4 flex items-center gap-2">
+        <div className="glass-card rounded-2xl p-4 sm:p-5">
+          <h3 className="font-bold mb-4 flex items-center gap-2 text-sm sm:text-base">
             <Calendar className="w-4 h-4 text-primary" /> Eventos
           </h3>
           {metrics?.eventsSummary && metrics.eventsSummary.length > 0 ? (
