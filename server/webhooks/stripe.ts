@@ -15,7 +15,7 @@ const stripeWebhookRouter = Router();
 
 // CRITICAL: raw body parser BEFORE any JSON parsing for signature verification
 stripeWebhookRouter.post(
-  "/api/stripe/webhook",
+  "/api/webhooks/stripe",
   raw({ type: "application/json" }),
   async (req, res) => {
     const sig = req.headers["stripe-signature"] as string | undefined;
