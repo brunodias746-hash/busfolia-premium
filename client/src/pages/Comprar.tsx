@@ -475,7 +475,7 @@ export default function Comprar() {
               <div className="mt-6 space-y-4">
                 <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex justify-between items-center">
                   <span className="font-medium">Total:</span>
-                  <span className="text-2xl font-bold text-primary">{formatCurrency(totalCents)}</span>
+                  <span className="text-2xl font-bold text-primary">{formatCurrency(basePriceCents)}</span>
                 </div>
                 <Button onClick={handleNext} className="w-full gold-gradient text-black font-bold py-3 rounded-xl">
                   Continuar <ArrowRight className="w-4 h-4 ml-2" />
