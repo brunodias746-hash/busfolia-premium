@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
@@ -10,8 +10,9 @@ import Sucesso from "./pages/Sucesso";
 import Falha from "./pages/Falha";
 import Duvidas from "./pages/Duvidas";
 import Contato from "./pages/Contato";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { trackPageView } from "./utils/meta-pixel";
 
 // Lazy load admin pages
 const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
@@ -30,6 +31,12 @@ function AdminFallback() {
 }
 
 function Router() {
+  const [location] = useLocation();
+  
+  useEffect(() => {
+    trackPageView();
+  }, [location]);
+
   return (
     <Switch>
       {/* Public routes */}
@@ -61,6 +68,11 @@ function Router() {
 // - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
 
 function App() {
+  useEffect(() => {
+    // Track initial page view
+    trackPageView();
+  }, []);
+
   return (
     <ErrorBoundary>
       <ThemeProvider

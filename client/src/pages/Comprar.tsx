@@ -75,6 +75,11 @@ export default function Comprar() {
   const [form, setForm] = useState<FormData>(INITIAL_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Track InitiateCheckout when page loads
+  useEffect(() => {
+    trackInitiateCheckout();
+  }, []);
+
   const { data: events } = trpc.events.active.useQuery();
   const event = events?.[0]; // Use first active event
   const eventId = useMemo(() => event?.id ?? 0, [event]);
