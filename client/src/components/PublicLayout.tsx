@@ -1,12 +1,49 @@
 import { Link, useLocation } from "wouter";
 import { SITE } from "@/lib/constants";
 import { Menu, X, Instagram, MessageCircle, Mail } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import TopAnnouncementBar from "./TopAnnouncementBar";
 
 function Header() {
   const [location] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const logoRef = useRef<HTMLImageElement>(null);
+  const wheelRef = useRef<HTMLDivElement>(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  useEffect(() => {
+    // Check if user prefers reduced motion
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return;
+
+    const handleScroll = () => {
+      // Get scroll position
+      const scrollY = window.scrollY;
+      // Max scroll for animation: 180px (full wheel rotation)
+      const maxScroll = 180;
+      const progress = Math.min(scrollY / maxScroll, 1);
+      setScrollProgress(progress);
+
+      if (logoRef.current) {
+        // Calculate translateX: max 42px to the right
+        const translateX = progress * 42;
+        // Calculate wheel rotation: 360° per 180px scrolled
+        const wheelRotation = progress * 360;
+        
+        // Apply transform to logo
+        logoRef.current.style.transform = `translateX(${translateX}px)`;
+        
+        // Apply rotation to wheel if it exists
+        if (wheelRef.current) {
+          wheelRef.current.style.transform = `rotate(${wheelRotation}deg)`;
+        }
+      }
+    };
+
+    // Use passive listener for better performance
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const links = [
     { href: "/", label: "Início" },
@@ -26,11 +63,15 @@ function Header() {
     >
       <div className="container flex items-center justify-between h-14 sm:h-16">
         <Link href="/" className="flex items-center gap-2 group hover:opacity-90 transition-opacity">
-          <img 
-            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/busfolia-logo-golden_5f41c73a.png" 
-            alt="BusFolia Logo" 
-            className="h-12 sm:h-14 w-auto hover:scale-105 transition-transform duration-300 ease-in-out drop-shadow-[0_0_8px_rgba(217,119,6,0.3)] hover:drop-shadow-[0_0_12px_rgba(217,119,6,0.5)]"
-          />
+          <div className="relative" ref={wheelRef} style={{ transition: "transform 0.1s cubic-bezier(0.4, 0, 0.2, 1)" }}>
+            <img 
+              ref={logoRef}
+              src="https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/busfolia-logo-golden_5f41c73a.png" 
+              alt="BusFolia Logo" 
+              className="max-h-16 md:max-h-[64px] lg:max-h-[64px] w-auto hover:scale-105 transition-transform duration-300 ease-in-out drop-shadow-[0_0_8px_rgba(217,119,6,0.3)] hover:drop-shadow-[0_0_12px_rgba(217,119,6,0.5)]"
+              style={{ transition: "transform 0.1s cubic-bezier(0.4, 0, 0.2, 1)" }}
+            />
+          </div>
         </Link>
 
         {/* Desktop Nav */}
@@ -105,7 +146,7 @@ function Footer() {
               <img 
                 src="https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/busfolia-logo-golden_5f41c73a.png" 
                 alt="BusFolia Logo" 
-                className="h-10 sm:h-12 w-auto hover:scale-105 transition-transform duration-300 ease-in-out drop-shadow-[0_0_8px_rgba(217,119,6,0.3)] hover:drop-shadow-[0_0_12px_rgba(217,119,6,0.5)]"
+                className="max-h-[40px] sm:max-h-[48px] w-auto hover:scale-105 transition-transform duration-300 ease-in-out drop-shadow-[0_0_8px_rgba(217,119,6,0.3)] hover:drop-shadow-[0_0_12px_rgba(217,119,6,0.5)]"
               />
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
