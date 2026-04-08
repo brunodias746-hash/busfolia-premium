@@ -16,33 +16,41 @@ function Header() {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReducedMotion) return;
 
-    const handleScroll = () => {
-      // Get scroll position
-      const scrollY = window.scrollY;
-      // Max scroll for animation: 180px (full wheel rotation)
-      const maxScroll = 180;
-      const progress = Math.min(scrollY / maxScroll, 1);
-      setScrollProgress(progress);
+    let animationFrameId: number;
 
-      if (logoRef.current) {
-        // Calculate translateX: max 42px to the right
-        const translateX = progress * 42;
-        // Calculate wheel rotation: 360° per 180px scrolled
-        const wheelRotation = progress * 360;
-        
-        // Apply transform to logo
-        logoRef.current.style.transform = `translateX(${translateX}px)`;
-        
-        // Apply rotation to wheel if it exists
-        if (wheelRef.current) {
+    const handleScroll = () => {
+      // Cancel previous animation frame
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+      // Use requestAnimationFrame for smooth animation
+      animationFrameId = requestAnimationFrame(() => {
+        const scrollY = window.scrollY;
+        // Max scroll for animation: 160px (full wheel rotation)
+        const maxScroll = 160;
+        const progress = Math.min(scrollY / maxScroll, 1);
+        setScrollProgress(progress);
+
+        if (logoRef.current && wheelRef.current) {
+          // Calculate translateX: max 38px to the right
+          const translateX = progress * 38;
+          // Calculate wheel rotation: 360° per 160px scrolled
+          const wheelRotation = progress * 360;
+          
+          // Apply transform to logo (movement)
+          logoRef.current.style.transform = `translateX(${translateX}px)`;
+          
+          // Apply rotation to wheel container (rotation)
           wheelRef.current.style.transform = `rotate(${wheelRotation}deg)`;
         }
-      }
+      });
     };
 
     // Use passive listener for better performance
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    };
   }, []);
 
   const links = [
