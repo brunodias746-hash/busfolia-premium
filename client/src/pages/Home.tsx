@@ -285,7 +285,7 @@ function EventsSection() {
           <p className="text-xs sm:text-sm font-bold text-primary uppercase tracking-widest mb-3 sm:mb-4">Próximos Eventos</p>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black font-heading mb-4 sm:mb-6">Garanta sua vaga nos melhores eventos de MG</h2>
         </div>
-        <div className="grid gap-6 sm:gap-8 lg:grid-cols-2 max-w-5xl mx-auto">
+        <div className="grid gap-6 sm:gap-8 w-full md:w-[70%] mx-auto">
           {events.map((event) => {
             const spotsLeft = event.capacity - event.soldCount;
             const urgency = spotsLeft < 30;
