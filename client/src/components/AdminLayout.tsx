@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { Link, useLocation } from "wouter";
-import { Bus, LayoutDashboard, Calendar, ShoppingCart, Users, QrCode, DollarSign, LogOut, Menu, X, Loader2 } from "lucide-react";
+import { LayoutDashboard, Calendar, ShoppingCart, Users, QrCode, DollarSign, LogOut, Menu, X, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -57,9 +57,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-between h-16 px-4 border-b border-white/5">
-            <Link href="/admin/dashboard" className="flex items-center gap-2">
-              <Bus className="w-6 h-6 text-primary" />
-              <span className="text-lg font-bold font-heading gold-text">BusFolia</span>
+            <Link href="/admin/dashboard" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
+              <img 
+                src="https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/busfolia-logo-golden_5f41c73a.png" 
+                alt="BusFolia Logo" 
+                className="h-10 w-auto hover:scale-105 transition-transform duration-300 ease-in-out drop-shadow-[0_0_8px_rgba(217,119,6,0.3)] hover:drop-shadow-[0_0_12px_rgba(217,119,6,0.5)]"
+              />
             </Link>
             <button className="lg:hidden text-muted-foreground" onClick={() => setSidebarOpen(false)}>
               <X className="w-5 h-5" />

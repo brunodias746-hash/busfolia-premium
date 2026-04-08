@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { SITE } from "@/lib/constants";
-import { Bus, Menu, X, Instagram, MessageCircle, Mail } from "lucide-react";
+import { Menu, X, Instagram, MessageCircle, Mail } from "lucide-react";
 import { useState } from "react";
 import TopAnnouncementBar from "./TopAnnouncementBar";
 
@@ -25,9 +25,12 @@ function Header() {
       }}
     >
       <div className="container flex items-center justify-between h-14 sm:h-16">
-        <Link href="/" className="flex items-center gap-2 group">
-          <Bus className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
-          <span className="text-lg sm:text-xl font-bold font-heading gold-text">BusFolia</span>
+        <Link href="/" className="flex items-center gap-2 group hover:opacity-90 transition-opacity">
+          <img 
+            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/busfolia-logo-golden_5f41c73a.png" 
+            alt="BusFolia Logo" 
+            className="h-12 sm:h-14 w-auto hover:scale-105 transition-transform duration-300 ease-in-out drop-shadow-[0_0_8px_rgba(217,119,6,0.3)] hover:drop-shadow-[0_0_12px_rgba(217,119,6,0.5)]"
+          />
         </Link>
 
         {/* Desktop Nav */}
@@ -99,8 +102,11 @@ function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2 mb-3 sm:mb-4">
-              <Bus className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-              <span className="text-base sm:text-lg font-bold font-heading gold-text">BusFolia</span>
+              <img 
+                src="https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/busfolia-logo-golden_5f41c73a.png" 
+                alt="BusFolia Logo" 
+                className="h-10 sm:h-12 w-auto hover:scale-105 transition-transform duration-300 ease-in-out drop-shadow-[0_0_8px_rgba(217,119,6,0.3)] hover:drop-shadow-[0_0_12px_rgba(217,119,6,0.5)]"
+              />
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
               Transporte premium para os maiores eventos de Minas Gerais. Segurança, conforto e pontualidade garantidos.

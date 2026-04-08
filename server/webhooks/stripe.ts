@@ -21,7 +21,7 @@ stripeWebhookRouter.post(
     const sig = req.headers["stripe-signature"] as string | undefined;
     if (!sig) {
       console.error("[Webhook] Missing stripe-signature header");
-      return res.status(400).json({ error: "Missing signature" });
+      return res.status(200).json({ verified: false, error: "Missing signature" });
     }
 
     let event: Stripe.Event;
@@ -34,7 +34,7 @@ stripeWebhookRouter.post(
       );
     } catch (err: any) {
       console.error("[Webhook] Signature verification failed:", err.message);
-      return res.status(400).json({ error: `Webhook Error: ${err.message}` });
+      return res.status(200).json({ verified: false, error: `Webhook Error: ${err.message}` });
     }
 
     console.log(`[Webhook] Received event: ${event.type} (${event.id})`);
@@ -133,7 +133,7 @@ stripeWebhookRouter.post(
       return res.status(200).json({ error: "Processing error, acknowledged" });
     }
 
-    return res.json({ received: true });
+    return res.status(200).json({ verified: true, received: true });
   }
 );
 
