@@ -68,7 +68,7 @@ function Header() {
               ref={logoRef}
               src="https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/busfolia-logo-golden_5f41c73a.png" 
               alt="BusFolia Logo" 
-              className="max-h-16 md:max-h-[64px] lg:max-h-[64px] w-auto hover:scale-105 transition-transform duration-300 ease-in-out drop-shadow-[0_0_8px_rgba(217,119,6,0.3)] hover:drop-shadow-[0_0_12px_rgba(217,119,6,0.5)]"
+              className="max-h-10 md:max-h-12 lg:max-h-12 w-auto hover:scale-105 transition-transform duration-300 ease-in-out drop-shadow-[0_0_8px_rgba(217,119,6,0.3)] hover:drop-shadow-[0_0_12px_rgba(217,119,6,0.5)]"
               style={{ transition: "transform 0.1s cubic-bezier(0.4, 0, 0.2, 1)" }}
             />
           </div>
@@ -146,7 +146,7 @@ function Footer() {
               <img 
                 src="https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/busfolia-logo-golden_5f41c73a.png" 
                 alt="BusFolia Logo" 
-                className="max-h-[40px] sm:max-h-[48px] w-auto hover:scale-105 transition-transform duration-300 ease-in-out drop-shadow-[0_0_8px_rgba(217,119,6,0.3)] hover:drop-shadow-[0_0_12px_rgba(217,119,6,0.5)]"
+                className="max-h-8 sm:max-h-10 w-auto hover:scale-105 transition-transform duration-300 ease-in-out drop-shadow-[0_0_8px_rgba(217,119,6,0.3)] hover:drop-shadow-[0_0_12px_rgba(217,119,6,0.5)]"
               />
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
