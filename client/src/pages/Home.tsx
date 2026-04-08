@@ -52,6 +52,7 @@ function CountdownTimer() {
 
 function HeroSection() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isAutoPlay, setIsAutoPlay] = useState(true);
   const { data: events } = trpc.events.list.useQuery();
   
   const bannerSlides = (events || [])
@@ -79,11 +80,30 @@ function HeroSection() {
   }, [slides]);
 
   useEffect(() => {
+    if (!isAutoPlay) return;
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 8000);
+    }, 6000);
     return () => clearInterval(interval);
-  }, [slides.length]);
+  }, [slides.length, isAutoPlay]);
+
+  const goToSlide = (idx: number) => {
+    setCurrentSlide(idx);
+    setIsAutoPlay(false);
+    setTimeout(() => setIsAutoPlay(true), 10000);
+  };
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+    setIsAutoPlay(false);
+    setTimeout(() => setIsAutoPlay(true), 10000);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+    setIsAutoPlay(false);
+    setTimeout(() => setIsAutoPlay(true), 10000);
+  };
 
   const currentSlideData = slides[currentSlide];
 
@@ -106,7 +126,9 @@ function HeroSection() {
             <img
               src={slide.image || ""}
               alt={slide.title}
-              className="w-full h-full object-cover object-center"
+              className={`w-full h-full object-cover object-center transition-transform duration-1000 ${
+                idx === currentSlide ? 'scale-100' : 'scale-105'
+              }`}
               style={{
                 aspectRatio: '16 / 9',
               }}
@@ -178,20 +200,50 @@ function HeroSection() {
         </div>
       </div>
 
+      {/* Botoes de navegacao */}
+      {slides.length > 1 && (
+        <>
+          <button
+            onClick={prevSlide}
+            className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all backdrop-blur-sm group"
+            aria-label="Slide anterior"
+          >
+            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-white rotate-180 group-hover:scale-110 transition-transform" />
+          </button>
+          <button
+            onClick={nextSlide}
+            className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all backdrop-blur-sm group"
+            aria-label="Proximo slide"
+          >
+            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-white group-hover:scale-110 transition-transform" />
+          </button>
+        </>
+      )}
+
       {/* Indicadores de slide */}
       <div className="absolute bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2" style={{ pointerEvents: 'auto' }}>
         {slides.map((_, idx) => (
           <button
             key={idx}
-            onClick={() => setCurrentSlide(idx)}
-            className={`w-2 h-2 rounded-full transition-all ${
+            onClick={() => goToSlide(idx)}
+            className={`rounded-full transition-all duration-300 ${
               idx === currentSlide
-                ? "bg-primary w-8"
-                : "bg-white/30 hover:bg-white/50"
+                ? "bg-primary w-8 h-2 sm:w-10 sm:h-2.5"
+                : "bg-white/30 hover:bg-white/50 w-2 h-2 sm:w-2.5 sm:h-2.5"
             }`}
-            aria-label={`Slide ${idx + 1}`}
+            aria-label={`Ir para slide ${idx + 1}`}
           />
         ))}
+      </div>
+
+      {/* Indicador de progresso */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-white/10 z-20">
+        <div
+          className="h-full bg-gradient-to-r from-primary to-primary/50 transition-all duration-300"
+          style={{
+            width: `${((currentSlide + 1) / slides.length) * 100}%`,
+          }}
+        />
       </div>
     </section>
   );
