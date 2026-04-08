@@ -116,17 +116,18 @@ function HeroSection() {
       {/* Conteúdo do Hero */}
       <div className="container relative z-10 py-8 sm:py-12 md:py-20">
         <div className="max-w-[600px]">
+          {/* H1 sempre visível para SEO */}
+          <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-6xl font-black font-heading leading-[1.1] mb-4 sm:mb-6 uppercase">
+            O transporte oficial para o{" "}
+            <span className="gold-text">Pedro Leopoldo Rodeio Show 2026</span>
+          </h1>
+
           {currentSlideData.type === "content" && (
             <>
               <div className="inline-flex items-center gap-2 glass-card rounded-full px-3 py-1 sm:px-4 sm:py-1.5 mb-4 sm:mb-6">
                 <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                 <span className="text-[10px] sm:text-xs font-medium text-primary">Transporte Oficial</span>
               </div>
-
-              <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-6xl font-black font-heading leading-[1.1] mb-4 sm:mb-6 uppercase">
-                O transporte oficial para o{" "}
-                <span className="gold-text">Pedro Leopoldo Rodeio Show 2026</span>
-              </h1>
 
               <p className="text-base sm:text-base md:text-lg text-muted-foreground leading-relaxed mb-5 sm:mb-8 max-w-lg">
                 Ida e volta garantida, com conforto, segurança e pontos de embarque estratégicos.
