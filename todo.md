@@ -38,20 +38,20 @@
 - [ ] Se múltiplos dias: permitir selecionar dias específicos
 
 ## FASE 7: SUCESSO / PÓS-PAGAMENTO
-- [ ] Corrigir tela de sucesso (atualmente vazia/inválida)
-- [ ] Mostrar resumo real da compra
-- [ ] Exibir dados da passagem
-- [ ] Exibir ponto de embarque
-- [ ] Exibir datas selecionadas
-- [ ] Exibir quantidade de passageiros
+- [x] Corrigir tela de sucesso (atualmente vazia/inválida)
+- [x] Mostrar resumo real da compra
+- [x] Exibir dados da passagem
+- [x] Exibir ponto de embarque
+- [x] Exibir datas selecionadas
+- [x] Exibir quantidade de passageiros
 - [ ] Botão para entrar no grupo WhatsApp
 
 ## FASE 8: EMAIL AUTOMÁTICO
-- [ ] Implementar envio de email após pagamento aprovado
-- [ ] Incluir dados da passagem
-- [ ] Incluir dias selecionados
-- [ ] Incluir ponto de embarque
-- [ ] Incluir quantidade de passageiros
+- [x] Implementar envio de email após pagamento aprovado
+- [x] Incluir dados da passagem
+- [x] Incluir dias selecionados
+- [x] Incluir ponto de embarque
+- [x] Incluir quantidade de passageiros
 - [ ] Incluir link do grupo
 - [ ] Tratamento de erro e retry
 

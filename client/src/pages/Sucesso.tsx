@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { trackPurchase } from "@/utils/meta-pixel";
 
 export default function Sucesso() {
+  // All hooks must be called at the top level, before any conditional returns
   const searchString = useSearch();
   const params = new URLSearchParams(searchString);
   const sessionId = params.get("session_id") ?? "";
@@ -22,6 +23,23 @@ export default function Sucesso() {
     }}
   );
 
+  // Track Purchase event when order is confirmed and paid
+  useEffect(() => {
+    if (data?.order && data?.status === "paid") {
+      const valueInBRL = data.order.totalAmountCents / 100;
+      trackPurchase(valueInBRL, "BRL", data.order.shortId);
+    }
+  }, [data?.order, data?.status]);
+
+  // Format dates for display
+  const formatDates = (dates: string[]): string => {
+    if (dates.length === 1 && dates[0] === "Todos os Dias") {
+      return "Todos os Dias (Passaporte)";
+    }
+    return dates.join(", ");
+  };
+
+  // Now we can have conditional returns
   if (!sessionId) {
     return (
       <PublicLayout>
@@ -70,22 +88,6 @@ export default function Sucesso() {
 
   const order = data?.order;
   const passengers = data?.passengers ?? [];
-
-  // Track Purchase event when order is confirmed and paid
-  useEffect(() => {
-    if (order && data?.status === "paid") {
-      const valueInBRL = order.totalAmountCents / 100; // Convert cents to BRL decimal
-      trackPurchase(valueInBRL, "BRL", order.shortId);
-    }
-  }, [order, data?.status]);
-
-  // Format dates for display
-  const formatDates = (dates: string[]): string => {
-    if (dates.length === 1 && dates[0] === "Todos os Dias") {
-      return "Todos os Dias (Passaporte)";
-    }
-    return dates.join(", ");
-  };
 
   // Calculate discount if applicable
   const baseTotalCents = (order?.unitPriceCents ?? 0) * (order?.quantity ?? 1);
