@@ -81,7 +81,6 @@ export default function Comprar() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [couponCode, setCouponCode] = useState("");
   const [couponMessage, setCouponMessage] = useState<{ type: 'success' | 'error' | null; text: string }>({ type: null, text: "" });
-  const [discountCents, setDiscountCents] = useState(0);
 
   // Carregar dados salvos do localStorage ao montar o componente
   useEffect(() => {
@@ -214,6 +213,7 @@ export default function Comprar() {
       transportDate: form.transportDate,
       passengers: passengersWithBP,
       origin: window.location.origin,
+      couponCode: couponCode || undefined,
     });
   }
 
@@ -270,7 +270,7 @@ export default function Comprar() {
   const totalCents = calculateTotal();
   const basePriceCents = calculateBasePrice();
   const taxCents = calculateTax();
-  const finalTotalCents = totalCents - discountCents;
+  const finalTotalCents = totalCents; // Discount is now handled by Stripe
   const selectedBP = boardingPoints?.find((bp) => bp.id === form.boardingPointId);
   
   const handleApplyCoupon = () => {
@@ -278,16 +278,9 @@ export default function Comprar() {
       setCouponMessage({ type: 'error', text: 'Digite um código de cupom' });
       return;
     }
-    // Simulated coupon validation - in production, this would call a backend API
-    // For now, accept any non-empty code and apply a 10% discount
-    if (couponCode.toLowerCase() === 'test10' || couponCode.toLowerCase() === 'desconto10') {
-      const discount = Math.floor(totalCents * 0.1);
-      setDiscountCents(discount);
-      setCouponMessage({ type: 'success', text: `Cupom aplicado! Desconto de ${formatCurrency(discount)}` });
-    } else {
-      setCouponMessage({ type: 'error', text: 'Cupom inválido ou expirado' });
-      setDiscountCents(0);
-    }
+    // Coupon validation is now handled by Stripe
+    // We just show a confirmation message
+    setCouponMessage({ type: 'success', text: `Cupom "${couponCode}" será validado no Stripe` });
   };
 
   if (!event) {
@@ -663,10 +656,10 @@ export default function Comprar() {
                     <span className="text-sm text-muted-foreground">Taxa:</span>
                     <span className="font-semibold">{formatCurrency(taxCents)}</span>
                   </div>
-                  {discountCents > 0 && (
+                  {couponMessage.type === 'success' && (
                     <div className="flex justify-between items-center text-green-400">
-                      <span className="text-sm">Desconto:</span>
-                      <span className="font-semibold">-{formatCurrency(discountCents)}</span>
+                      <span className="text-sm">Cupom aplicado:</span>
+                      <span className="font-semibold text-xs">{couponCode}</span>
                     </div>
                   )}
                   <div className="border-t border-white/10 pt-3 flex justify-between items-center">

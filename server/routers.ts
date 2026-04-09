@@ -68,6 +68,7 @@ const checkoutSchema = z.object({
   purchaseType: z.enum(["single", "all_days"]).default("single"),
   passengers: z.array(passengerSchema).min(1, "Adicione pelo menos 1 passageiro"),
   origin: z.string().url(),
+  couponCode: z.string().optional(),
 });
 
 export const appRouter = router({
@@ -118,7 +119,7 @@ export const appRouter = router({
       // For "all_days" (Passaporte), use fixed price of R$ 200,00
       if (input.purchaseType === "all_days") {
         unitPriceCents = 20000; // R$ 200,00 in cents
-        feeCents = 0; // No additional fee for all_days
+        feeCents = 610; // R$ 6,10 fee for all_days (same as other types)
       }
       
       const totalAmountCents = (unitPriceCents + feeCents) * qty;
@@ -152,6 +153,13 @@ export const appRouter = router({
 
       // 6. Create Stripe Checkout Session
       const stripe = getStripe();
+      
+      // Build discounts array for Stripe
+      const discounts: Array<{ coupon?: string }> = [];
+      if (input.couponCode) {
+        discounts.push({ coupon: input.couponCode });
+      }
+      
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
         mode: "payment",
@@ -173,10 +181,13 @@ export const appRouter = router({
           short_id: shortId,
           event_id: input.eventId.toString(),
           quantity: qty.toString(),
+          coupon_code: input.couponCode || "",
         },
         customer_email: input.customerEmail,
         success_url: `${input.origin}/sucesso?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${input.origin}/falha?session_id={CHECKOUT_SESSION_ID}`,
+        // Only use discounts if a coupon is provided, otherwise allow promotion codes
+        ...(discounts.length > 0 ? { discounts } : { allow_promotion_codes: true }),
       });
 
       // 7. Save stripe session ID to order

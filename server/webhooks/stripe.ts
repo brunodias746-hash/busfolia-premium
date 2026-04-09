@@ -13,10 +13,11 @@ import type Stripe from "stripe";
 
 const stripeWebhookRouter = Router();
 
-// CRITICAL: raw body parser BEFORE any JSON parsing for signature verification
+// CRITICAL: raw body parser is applied at app level in server/_core/index.ts
+// Do NOT add raw() here as it causes double-parsing
+// Handler for POST requests (path is handled by app.post in index.ts)
 stripeWebhookRouter.post(
-  "/api/webhooks/stripe",
-  raw({ type: "application/json" }),
+  "/",
   async (req, res) => {
     const sig = req.headers["stripe-signature"] as string | undefined;
     if (!sig) {
