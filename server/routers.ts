@@ -194,6 +194,9 @@ export const appRouter = router({
         customer_email: input.customerEmail,
         success_url: `${input.origin}/sucesso?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${input.origin}/falha?session_id={CHECKOUT_SESSION_ID}`,
+        payment_intent_data: {
+          description: `BusFolia - ${event.name} - Pedido ${shortId}`,
+        },
         // Only use discounts if a coupon is provided, otherwise allow promotion codes
         ...(discounts.length > 0 ? { discounts } : { allow_promotion_codes: true }),
       });
