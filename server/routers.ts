@@ -116,16 +116,18 @@ export const appRouter = router({
       // 3. Calculate total
       let unitPriceCents = event.priceCents;
       let feeCents = event.feeCents;
+      let daysCount = 1; // Default for single day
       
       // For "multiple" (Múltiplos Dias), calculate price based on number of selected dates
       if (input.purchaseType === "multiple") {
-        const daysCount = input.transportDatesCount || 1;
+        daysCount = input.transportDatesCount || 1;
         unitPriceCents = event.priceCents * daysCount; // R$ 60 × number of days
+        feeCents = event.feeCents * daysCount; // R$ 6,10 × number of days
       }
       // For "all_days" (Passaporte), use fixed price of R$ 200,00
       else if (input.purchaseType === "all_days") {
         unitPriceCents = 20000; // R$ 200,00 in cents
-        feeCents = 610; // R$ 6,10 fee for all_days (same as other types)
+        feeCents = 610; // R$ 6,10 fee for all_days (fixed, not multiplied)
       }
       
       const totalAmountCents = (unitPriceCents + feeCents) * qty;

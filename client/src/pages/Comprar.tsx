@@ -266,7 +266,13 @@ export default function Comprar() {
   
   const calculateTax = (): number => {
     if (!event) return 0;
-    return event.feeCents * form.passengers.length;
+    let daysMultiplier = 1;
+    if (form.purchaseType === 'multiple') {
+      daysMultiplier = form.transportDates.length || 1;
+    } else if (form.purchaseType === 'all_days') {
+      daysMultiplier = 1; // all_days has fixed fee of 6.10
+    }
+    return event.feeCents * daysMultiplier * form.passengers.length;
   };
   
   const totalCents = calculateTotal();
