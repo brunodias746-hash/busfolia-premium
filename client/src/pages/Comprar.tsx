@@ -211,6 +211,7 @@ export default function Comprar() {
       customerPhone: form.customerPhone,
       boardingPointId: form.boardingPointId,
       transportDate: form.transportDate,
+      transportDatesCount: form.purchaseType === 'multiple' ? form.transportDates.length : undefined,
       purchaseType: form.purchaseType,
       passengers: passengersWithBP,
       origin: window.location.origin,

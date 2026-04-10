@@ -65,7 +65,8 @@ const checkoutSchema = z.object({
   customerPhone: z.string().min(10, "Telefone inválido"),
   boardingPointId: z.number().int().positive(),
   transportDate: z.string().min(1),
-  purchaseType: z.enum(["single", "all_days"]).default("single"),
+  transportDatesCount: z.number().int().min(1).optional(), // For "multiple" purchase type
+  purchaseType: z.enum(["single", "multiple", "all_days"]).default("single"),
   passengers: z.array(passengerSchema).min(1, "Adicione pelo menos 1 passageiro"),
   origin: z.string().url(),
   couponCode: z.string().optional(),
@@ -116,8 +117,13 @@ export const appRouter = router({
       let unitPriceCents = event.priceCents;
       let feeCents = event.feeCents;
       
+      // For "multiple" (Múltiplos Dias), calculate price based on number of selected dates
+      if (input.purchaseType === "multiple") {
+        const daysCount = input.transportDatesCount || 1;
+        unitPriceCents = event.priceCents * daysCount; // R$ 60 × number of days
+      }
       // For "all_days" (Passaporte), use fixed price of R$ 200,00
-      if (input.purchaseType === "all_days") {
+      else if (input.purchaseType === "all_days") {
         unitPriceCents = 20000; // R$ 200,00 in cents
         feeCents = 610; // R$ 6,10 fee for all_days (same as other types)
       }
