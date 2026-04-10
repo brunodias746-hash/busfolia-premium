@@ -1,7 +1,7 @@
 import AdminLayout from "@/components/AdminLayout";
 import { trpc } from "@/lib/trpc";
 import { formatCurrency } from "@/lib/constants";
-import { ShoppingCart, Loader2, Eye, Download, Trash2 } from "lucide-react";
+import { ShoppingCart, Loader2, Eye, Download, Trash2, Mail, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
@@ -20,9 +20,11 @@ function StatusBadge({ status }: { status: string }) {
 
 export default function Pedidos() {
   const { data: orders, isLoading } = trpc.admin.orders.list.useQuery();
+  const { data: exportData } = trpc.admin.orders.exportCsv.useQuery();
   const [detailId, setDetailId] = useState<number | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const deleteOrderMutation = trpc.admin.orders.delete.useMutation();
+  const resendEmailMutation = trpc.admin.orders.resendEmail.useMutation();
   const utils = trpc.useUtils();
 
   const handleDelete = async (orderId: number) => {
@@ -36,31 +38,39 @@ export default function Pedidos() {
     }
   };
 
+  const handleResendEmail = async (orderId: number) => {
+    try {
+      await resendEmailMutation.mutateAsync({ orderId });
+      alert("Email reenviado com sucesso!");
+    } catch (err) {
+      alert("Falha ao reenviar email");
+    }
+  };
+
   function exportCSV() {
-    if (!orders) return;
-    const headers = ["Pedido", "Nome", "CPF", "Telefone", "Ponto de Embarque", "Datas de Transporte", "Quantidade", "Valor (R$)", "Status"];
-    const rows = orders.map((o) => {
-      const boardingPointLabel = o.boardingPointId ? `BP-${o.boardingPointId}` : "N/A";
-      const transportDates = o.transportDates ? JSON.parse(o.transportDates).join("; ") : "N/A";
-      const statusLabel = o.status === "paid" ? "Pago" : o.status === "pending" ? "Pendente" : o.status === "pending_checkout" ? "Aguardando Pagamento" : o.status === "canceled" ? "Cancelado" : o.status === "failed" ? "Falha" : o.status;
-      return [
-        o.shortId,
-        o.customerName,
-        o.customerCpf,
-        o.customerPhone,
-        boardingPointLabel,
-        transportDates,
-        o.quantity,
-        (o.totalAmountCents / 100).toFixed(2),
-        statusLabel,
-      ];
-    });
+    if (!exportData || exportData.length === 0) return;
+    const headers = ["Pedido", "Nome Completo", "CPF", "Telefone", "Email", "Ponto de Embarque", "Datas de Transporte", "Quantidade de Passageiros", "Valor Total (R$)", "Status", "Data da Compra"];
+    const rows = exportData.map((o: any) => [
+      o.pedido,
+      o.nomeCompleto,
+      o.cpf,
+      o.telefone,
+      o.email,
+      o.pontoEmbarque,
+      o.datasTransporte,
+      o.quantidadePassageiros,
+      o.valorTotal,
+      o.status,
+      o.dataCompra,
+    ]);
     const csv = [headers, ...rows].map((r) => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
     const bom = "\uFEFF";
     const blob = new Blob([bom + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = `pedidos-${new Date().toISOString().split("T")[0]}.csv`; a.click();
+    a.href = url;
+    a.download = `pedidos-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
     URL.revokeObjectURL(url);
   }
 
@@ -69,9 +79,9 @@ export default function Pedidos() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
           <h2 className="text-2xl font-black font-heading">Pedidos</h2>
-          <p className="text-muted-foreground text-sm">{orders?.length ?? 0} pedidos no total</p>
+          <p className="text-muted-foreground text-sm">{orders?.length ?? 0} pedidos pagos</p>
         </div>
-        <Button onClick={exportCSV} variant="outline" className="border-white/10 w-full sm:w-auto" disabled={!orders?.length}>
+        <Button onClick={exportCSV} variant="outline" className="border-white/10 w-full sm:w-auto" disabled={!exportData?.length}>
           <Download className="w-4 h-4 mr-2" /> Exportar CSV
         </Button>
       </div>
@@ -104,9 +114,15 @@ export default function Pedidos() {
                     <td className="px-2 sm:px-4 py-2 sm:py-3 text-center text-xs sm:text-base">{order.quantity}</td>
                     <td className="px-2 sm:px-4 py-2 sm:py-3 text-right font-bold text-xs sm:text-base">{formatCurrency(order.totalAmountCents)}</td>
                     <td className="px-2 sm:px-4 py-2 sm:py-3 text-center"><StatusBadge status={order.status} /></td>
-                    <td className="px-2 sm:px-4 py-2 sm:py-3 text-center flex gap-1 justify-center">
-                      <Button size="sm" variant="ghost" onClick={() => setDetailId(detailId === order.id ? null : order.id)}>
+                    <td className="px-2 sm:px-4 py-2 sm:py-3 text-center flex gap-1 justify-center flex-wrap">
+                      <Button size="sm" variant="ghost" onClick={() => setDetailId(detailId === order.id ? null : order.id)} title="Ver Detalhes">
                         <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" className="text-blue-400 hover:text-blue-300" title="Ver Ingresso" onClick={() => window.open(`/ingresso/${order.shortId}`, '_blank')}>
+                        <Ticket className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" className="text-green-400 hover:text-green-300" title="Reenviar Email" onClick={() => handleResendEmail(order.id)} disabled={resendEmailMutation.isPending}>
+                        <Mail className="w-4 h-4" />
                       </Button>
                       <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300" onClick={() => setDeleteConfirm(order.id)}>
                         <Trash2 className="w-4 h-4" />
@@ -121,7 +137,7 @@ export default function Pedidos() {
       ) : (
         <div className="glass-card rounded-2xl p-12 text-center">
           <ShoppingCart className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">Nenhum pedido ainda.</p>
+          <p className="text-muted-foreground">Nenhum pedido pago ainda.</p>
         </div>
       )}
 

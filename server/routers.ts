@@ -451,6 +451,21 @@ export const appRouter = router({
           await deleteOrder(input.id);
           return { success: true };
         }),
+      exportCsv: adminProcedure
+        .input(z.object({ eventId: z.number().optional() }).optional())
+        .query(async ({ input }) => {
+          const { getOrdersForExport } = await import("./db");
+          return getOrdersForExport(input?.eventId);
+        }),
+      resendEmail: adminProcedure
+        .input(z.object({ orderId: z.number().int().positive() }))
+        .mutation(async ({ input }) => {
+          const order = await getOrderById(input.orderId);
+          if (!order) throw new Error("Pedido não encontrado");
+          const { notifyOwner } = await import("./_core/notification");
+          await notifyOwner({ title: "Email de Confirmação Reenviado", content: `Pedido ${order.shortId} - ${order.customerName} (${order.customerEmail})` });
+          return { success: true, message: "Email reenviado com sucesso" };
+        }),
     }),
 
     // Passengers

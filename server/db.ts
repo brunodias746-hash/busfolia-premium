@@ -242,9 +242,9 @@ export async function getAllOrders(eventId?: number) {
   const db = await getDb();
   if (!db) return [];
   if (eventId) {
-    return db.select().from(orders).where(eq(orders.eventId, eventId)).orderBy(desc(orders.createdAt));
+    return db.select().from(orders).where(and(eq(orders.eventId, eventId), eq(orders.status, "paid"))).orderBy(desc(orders.createdAt));
   }
-  return db.select().from(orders).orderBy(desc(orders.createdAt));
+  return db.select().from(orders).where(eq(orders.status, "paid")).orderBy(desc(orders.createdAt));
 }
 
 // ─── Passengers ───
@@ -265,11 +265,13 @@ export async function getAllPassengers(eventId?: number) {
   const db = await getDb();
   if (!db) return [];
   if (eventId) {
-    const orderIds = await db.select({ id: orders.id }).from(orders).where(eq(orders.eventId, eventId));
+    const orderIds = await db.select({ id: orders.id }).from(orders).where(and(eq(orders.eventId, eventId), eq(orders.status, "paid")));
     if (orderIds.length === 0) return [];
     return db.select().from(passengers).where(inArray(passengers.orderId, orderIds.map(o => o.id)));
   }
-  return db.select().from(passengers);
+  const paidOrderIds = await db.select({ id: orders.id }).from(orders).where(eq(orders.status, "paid"));
+  if (paidOrderIds.length === 0) return [];
+  return db.select().from(passengers).where(inArray(passengers.orderId, paidOrderIds.map(o => o.id)));
 }
 
 export async function updatePassengerCheckIn(id: number, status: "pending" | "checked_in") {
@@ -437,6 +439,40 @@ export async function getPassengersForExport(eventId?: number) {
       boardingPoint: bp ? `${bp.city} - ${bp.locationName}` : "",
       transportDate: order.transportDates ? JSON.parse(order.transportDates)[0] : "",
       checkInStatus: p.checkInStatus,
+    });
+  }
+  return enriched;
+}
+
+// ─── Export Functions ───
+export async function getOrdersForExport(eventId?: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const allRows = eventId
+    ? await db.select({ order: orders }).from(orders).where(and(eq(orders.status, "paid"), eq(orders.eventId, eventId))).orderBy(desc(orders.createdAt))
+    : await db.select({ order: orders }).from(orders).where(eq(orders.status, "paid")).orderBy(desc(orders.createdAt));
+
+  // Enrich with passenger data
+  const enriched = [];
+  for (const row of allRows) {
+    const order = row.order;
+    const passengers = await getPassengersByOrder(order.id);
+    const event = await getEventById(order.eventId);
+    const bp = passengers[0]?.boardingPointId ? await getBoardingPointById(passengers[0].boardingPointId) : null;
+    
+    enriched.push({
+      pedido: order.shortId,
+      nomeCompleto: order.customerName,
+      cpf: order.customerCpf,
+      telefone: order.customerPhone,
+      email: order.customerEmail,
+      pontoEmbarque: bp ? `${bp.city} - ${bp.locationName}` : "N/A",
+      datasTransporte: order.transportDates ? JSON.parse(order.transportDates).join(", ") : "N/A",
+      quantidadePassageiros: order.quantity,
+      valorTotal: (order.totalAmountCents / 100).toFixed(2),
+      status: "Pago",
+      dataCompra: new Date(order.createdAt).toLocaleDateString("pt-BR"),
     });
   }
   return enriched;
