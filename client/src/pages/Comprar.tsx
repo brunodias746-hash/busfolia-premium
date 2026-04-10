@@ -211,6 +211,7 @@ export default function Comprar() {
       customerPhone: form.customerPhone,
       boardingPointId: form.boardingPointId,
       transportDate: form.transportDate,
+      purchaseType: form.purchaseType,
       passengers: passengersWithBP,
       origin: window.location.origin,
       couponCode: couponCode || undefined,

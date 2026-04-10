@@ -367,20 +367,16 @@ function HowItWorksSection() {
 
 function FleetSection() {
   const fleetImages = [
-    { src: IMAGES.fleetBus1, label: "Ônibus em Movimento", category: "Exterior" },
-    { src: IMAGES.fleetBus2, label: "Frota Premium", category: "Frota" },
-    { src: IMAGES.fleetBus3, label: "Embarque Confortável", category: "Embarque" },
-    { src: IMAGES.fleetBus4, label: "Portas Automáticas", category: "Conforto" },
-    { src: IMAGES.fleetBus5, label: "Interior Espaçoso", category: "Interior" },
-    { src: IMAGES.fleetBus6, label: "Viagem Segura", category: "Segurança" },
-    { src: IMAGES.fleetBus7, label: "Poltronas Reclináveis", category: "Interior" },
-    { src: IMAGES.fleetBus8, label: "Iluminação Premium", category: "Conforto" },
-    { src: IMAGES.fleetBus9, label: "Entretenimento a Bordo", category: "Interior" },
-    { src: IMAGES.fleetBus10, label: "Ônibus Noturno", category: "Exterior" },
-    { src: IMAGES.fleetBus11, label: "Paisagem Interna", category: "Interior" },
-    { src: IMAGES.fleetBus12, label: "Pôr do Sol em Movimento", category: "Exterior" },
+    { src: IMAGES.fleetBus1, label: "Frota Premium", category: "Frota" },
+    { src: IMAGES.fleetBus2, label: "Embarque Confortável", category: "Embarque" },
+    { src: IMAGES.fleetBus3, label: "Portas Automáticas", category: "Conforto" },
+    { src: IMAGES.fleetBus4, label: "Poltronas Reclináveis", category: "Interior" },
+    { src: IMAGES.fleetBus7, label: "Iluminação Premium", category: "Conforto" },
+    { src: IMAGES.fleetBus8, label: "Entretenimento a Bordo", category: "Interior" },
+    { src: IMAGES.fleetBus9, label: "Ônibus Noturno", category: "Exterior" },
+    { src: IMAGES.fleetBus10, label: "Paisagem Interna", category: "Interior" },
+    { src: IMAGES.fleetBus11, label: "Pôr do Sol em Movimento", category: "Exterior" },
   ];
-
   const col1 = [...fleetImages.slice(0, 6), ...fleetImages.slice(0, 6)];
   const col2 = [...fleetImages.slice(6, 12), ...fleetImages.slice(6, 12)];
 
