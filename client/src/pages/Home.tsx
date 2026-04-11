@@ -456,7 +456,7 @@ function FleetSection() {
           {/* Features */}
           <div className="flex flex-col justify-center w-full">
             <p className="text-base sm:text-base text-muted-foreground leading-relaxed mb-6 sm:mb-8">
-              Esquece aquele transporte básico. Aqui o rolê já começa no ônibus: poltronas reclináveis confortáveis, clima premium que já te coloca no mood do evento, e uma estrutura pensada pra você curtir a viagem. Ida e volta com qualidade de verdade.
+              Esqueça aquele transporte básico. Aqui a experiência começa no embarque: ônibus premium com portas automáticas, entretenimento a bordo, iluminação especial e conforto pensado para você aproveitar cada momento. Ida e volta com qualidade de verdade.
             </p>
             <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
               {features.map((f) => (

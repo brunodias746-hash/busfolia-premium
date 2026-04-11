@@ -196,7 +196,7 @@
 
 .animate-marquee {
   animation: marquee 25s linear infinite;
-  will-change: transform;
+  will-change: auto;
 }
 
 /* Fleet carousel vertical scroll */
@@ -220,12 +220,12 @@
 
 .animate-scroll-up {
   animation: scroll-up 20s linear infinite;
-  will-change: transform;
+  will-change: auto;
 }
 
 .animate-scroll-down {
   animation: scroll-down 20s linear infinite;
-  will-change: transform;
+  will-change: auto;
 }
 
 /* Hero carousel GPU acceleration */
