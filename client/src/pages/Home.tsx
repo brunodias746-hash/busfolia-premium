@@ -53,8 +53,6 @@ function CountdownTimer() {
 function HeroSection() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlay, setIsAutoPlay] = useState(true);
-  const [touchStart, setTouchStart] = useState(0);
-  const [touchEnd, setTouchEnd] = useState(0);
   const { data: events } = trpc.events.list.useQuery();
   
   const bannerSlides = (events || [])
@@ -107,33 +105,10 @@ function HeroSection() {
     setTimeout(() => setIsAutoPlay(true), 10000);
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    setTouchEnd(e.changedTouches[0].clientX);
-    handleSwipe();
-  };
-
-  const handleSwipe = () => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > 50;
-    const isRightSwipe = distance < -50;
-    
-    if (isLeftSwipe) nextSlide();
-    if (isRightSwipe) prevSlide();
-  };
-
   const currentSlideData = slides[currentSlide];
 
   return (
-    <section 
-      className="relative w-full min-h-[45vh] sm:min-h-[55vh] md:min-h-[65vh] flex items-center touch-pan-y"
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-    >
+    <section className="relative w-full min-h-[45vh] sm:min-h-[55vh] md:min-h-[65vh] flex items-center">
       {/* Carrossel de imagens */}
       <div className="absolute inset-0 w-full h-full">
         {slides.map((slide, idx) => (
@@ -395,7 +370,7 @@ function FleetSection() {
     { src: IMAGES.fleetBus1, label: "Frota Premium", category: "Frota" },
     { src: IMAGES.fleetBus2, label: "Embarque Confortável", category: "Embarque" },
     { src: IMAGES.fleetBus3, label: "Portas Automáticas", category: "Conforto" },
-    { src: IMAGES.fleetBus4, label: "Assentos Confortáveis", category: "Interior" },
+    { src: IMAGES.fleetBus4, label: "Poltronas Reclináveis", category: "Interior" },
     { src: IMAGES.fleetBus7, label: "Iluminação Premium", category: "Conforto" },
     { src: IMAGES.fleetBus8, label: "Entretenimento a Bordo", category: "Interior" },
     { src: IMAGES.fleetBus9, label: "Ônibus Noturno", category: "Exterior" },
@@ -456,7 +431,7 @@ function FleetSection() {
           {/* Features */}
           <div className="flex flex-col justify-center w-full">
             <p className="text-base sm:text-base text-muted-foreground leading-relaxed mb-6 sm:mb-8">
-              Esqueça aquele transporte básico. Aqui a experiência começa no embarque: ônibus premium com portas automáticas, entretenimento a bordo, iluminação especial e assentos confortáveis. Tudo pensado para você aproveitar cada momento. Ida e volta com qualidade de verdade.
+              Esquece aquele transporte básico. Aqui o rolê já começa no ônibus: poltronas reclináveis confortáveis, clima premium que já te coloca no mood do evento, e uma estrutura pensada pra você curtir a viagem. Ida e volta com qualidade de verdade.
             </p>
             <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
               {features.map((f) => (
