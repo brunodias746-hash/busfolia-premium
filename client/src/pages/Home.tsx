@@ -370,7 +370,6 @@ function FleetSection() {
     { src: IMAGES.fleetBus1, label: "Frota Premium", category: "Frota" },
     { src: IMAGES.fleetBus2, label: "Embarque Confortável", category: "Embarque" },
     { src: IMAGES.fleetBus3, label: "Portas Automáticas", category: "Conforto" },
-    { src: IMAGES.fleetBus4, label: "Poltronas Reclináveis", category: "Interior" },
     { src: IMAGES.fleetBus7, label: "Iluminação Premium", category: "Conforto" },
     { src: IMAGES.fleetBus8, label: "Entretenimento a Bordo", category: "Interior" },
     { src: IMAGES.fleetBus9, label: "Ônibus Noturno", category: "Exterior" },
@@ -431,7 +430,7 @@ function FleetSection() {
           {/* Features */}
           <div className="flex flex-col justify-center w-full">
             <p className="text-base sm:text-base text-muted-foreground leading-relaxed mb-6 sm:mb-8">
-              Esquece aquele transporte básico. Aqui o rolê já começa no ônibus: poltronas reclináveis confortáveis, clima premium que já te coloca no mood do evento, e uma estrutura pensada pra você curtir a viagem. Ida e volta com qualidade de verdade.
+              Esqueça aquele transporte básico. Aqui o rolê já começa no ônibus: assentos confortáveis, clima premium que já te coloca no mood do evento, entretenimento a bordo e uma estrutura pensada pra você curtir a viagem. Ida e volta com qualidade de verdade.
             </p>
             <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
               {features.map((f) => (
