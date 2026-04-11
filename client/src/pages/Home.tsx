@@ -395,7 +395,7 @@ function FleetSection() {
     { src: IMAGES.fleetBus1, label: "Frota Premium", category: "Frota" },
     { src: IMAGES.fleetBus2, label: "Embarque Confortável", category: "Embarque" },
     { src: IMAGES.fleetBus3, label: "Portas Automáticas", category: "Conforto" },
-    { src: IMAGES.fleetBus4, label: "Poltronas Reclináveis", category: "Interior" },
+    { src: IMAGES.fleetBus4, label: "Assentos Confortáveis", category: "Interior" },
     { src: IMAGES.fleetBus7, label: "Iluminação Premium", category: "Conforto" },
     { src: IMAGES.fleetBus8, label: "Entretenimento a Bordo", category: "Interior" },
     { src: IMAGES.fleetBus9, label: "Ônibus Noturno", category: "Exterior" },
@@ -456,7 +456,7 @@ function FleetSection() {
           {/* Features */}
           <div className="flex flex-col justify-center w-full">
             <p className="text-base sm:text-base text-muted-foreground leading-relaxed mb-6 sm:mb-8">
-              Esqueça aquele transporte básico. Aqui a experiência começa no embarque: ônibus premium com portas automáticas, entretenimento a bordo, iluminação especial e conforto pensado para você aproveitar cada momento. Ida e volta com qualidade de verdade.
+              Esqueça aquele transporte básico. Aqui a experiência começa no embarque: ônibus premium com portas automáticas, entretenimento a bordo, iluminação especial e assentos confortáveis. Tudo pensado para você aproveitar cada momento. Ida e volta com qualidade de verdade.
             </p>
             <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
               {features.map((f) => (
