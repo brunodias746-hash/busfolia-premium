@@ -53,6 +53,8 @@ function CountdownTimer() {
 function HeroSection() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlay, setIsAutoPlay] = useState(true);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
   const { data: events } = trpc.events.list.useQuery();
   
   const bannerSlides = (events || [])
@@ -105,10 +107,33 @@ function HeroSection() {
     setTimeout(() => setIsAutoPlay(true), 10000);
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    setTouchEnd(e.changedTouches[0].clientX);
+    handleSwipe();
+  };
+
+  const handleSwipe = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+    
+    if (isLeftSwipe) nextSlide();
+    if (isRightSwipe) prevSlide();
+  };
+
   const currentSlideData = slides[currentSlide];
 
   return (
-    <section className="relative w-full min-h-[45vh] sm:min-h-[55vh] md:min-h-[65vh] flex items-center">
+    <section 
+      className="relative w-full min-h-[45vh] sm:min-h-[55vh] md:min-h-[65vh] flex items-center touch-pan-y"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       {/* Carrossel de imagens */}
       <div className="absolute inset-0 w-full h-full">
         {slides.map((slide, idx) => (

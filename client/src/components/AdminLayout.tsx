@@ -116,7 +116,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       )}
 
       {/* Main */}
-      <div className="flex-1 lg:ml-64">
+      <div className="flex-1 lg:ml-64 flex flex-col">
         {/* Top bar */}
         <header className="sticky top-0 z-30 h-16 border-b border-white/5 flex items-center px-4 lg:px-6" style={{ background: "rgba(10,10,10,0.9)", backdropFilter: "blur(20px)" }}>
           <button className="lg:hidden mr-4 text-muted-foreground" onClick={() => setSidebarOpen(true)}>
@@ -126,7 +126,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </header>
 
         {/* Content */}
-        <main className="p-4 lg:p-6">{children}</main>
+        <main className="flex-1 p-4 lg:p-6 pb-24 lg:pb-6 overflow-y-auto">{children}</main>
+
+        {/* Bottom Navigation Mobile */}
+        <nav className="fixed bottom-0 left-0 right-0 z-50 flex lg:hidden border-t border-white/5 bg-[#080808]">
+          {navItems.map((item) => {
+            const isActive = location === item.href || (item.href === "/admin/dashboard" && location === "/admin");
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex-1 flex flex-col items-center justify-center py-2 px-1 text-xs font-medium transition-colors min-h-[56px] ${
+                  isActive ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <item.icon className="w-5 h-5 mb-1" />
+                <span className="truncate">{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
       </div>
     </div>
   );

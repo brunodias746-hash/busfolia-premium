@@ -113,9 +113,19 @@ function Header() {
         </button>
       </div>
 
-      {/* Mobile Nav */}
+      {/* Mobile Nav Backdrop */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-white/5 pb-4" style={{ background: "rgba(10,10,10,0.98)" }}>
+        <div
+          className="md:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+          style={{ top: "92px" }}
+          onClick={() => setMobileOpen(false)}
+          role="presentation"
+        />
+      )}
+
+      {/* Mobile Nav Drawer */}
+      {mobileOpen && (
+        <div className="md:hidden fixed left-0 right-0 z-50 border-t border-white/5 pb-4" style={{ background: "rgba(10,10,10,0.98)", top: "56px" }}>
           <nav className="container flex flex-col gap-1 pt-3">
             {links.map((link) => (
               <Link
@@ -177,13 +187,13 @@ function Footer() {
           <div>
             <h4 className="font-semibold text-xs sm:text-sm text-foreground mb-3 sm:mb-4">Contato</h4>
             <div className="flex flex-col gap-2.5 sm:gap-3">
-              <a href={SITE.whatsapp} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors">
+              <a href={SITE.whatsapp} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors min-h-[44px]">
                 <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" /> WhatsApp
               </a>
-              <a href={SITE.instagram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors">
+              <a href={SITE.instagram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors min-h-[44px]">
                 <Instagram className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" /> @busfolia
               </a>
-              <a href={`mailto:${SITE.email}`} className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors">
+              <a href={`mailto:${SITE.email}`} className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors min-h-[44px]">
                 <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" /> {SITE.email}
               </a>
             </div>

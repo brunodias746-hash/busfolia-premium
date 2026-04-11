@@ -304,7 +304,7 @@ export default function Comprar() {
 
   return (
     <PublicLayout>
-      <div className="container max-w-3xl py-8 sm:py-12 px-4 sm:px-6">
+      <div className="container max-w-3xl py-8 sm:py-12 px-4 sm:px-6 pb-24 sm:pb-8">
         <h1 className="text-2xl sm:text-3xl font-black font-heading text-center mb-1 sm:mb-2">
           Escolha seu ingresso
         </h1>
@@ -501,7 +501,7 @@ export default function Comprar() {
                     placeholder="Seu nome completo"
                     value={form.customerName}
                     onChange={(e) => setForm((f) => ({ ...f, customerName: e.target.value }))}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[44px]"
                   />
                   {errors.customerName && <p className="text-xs text-red-400 mt-1">{errors.customerName}</p>}
                 </div>
@@ -513,7 +513,7 @@ export default function Comprar() {
                     placeholder="seu@email.com"
                     value={form.customerEmail}
                     onChange={(e) => setForm((f) => ({ ...f, customerEmail: e.target.value }))}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[44px]"
                   />
                   {errors.customerEmail && <p className="text-xs text-red-400 mt-1">{errors.customerEmail}</p>}
                 </div>
@@ -525,7 +525,8 @@ export default function Comprar() {
                     placeholder="(31) 99999-9999"
                     value={form.customerPhone}
                     onChange={(e) => setForm((f) => ({ ...f, customerPhone: formatPhone(e.target.value) }))}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    inputMode="tel"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[44px]"
                   />
                   {errors.customerPhone && <p className="text-xs text-red-400 mt-1">{errors.customerPhone}</p>}
                 </div>
@@ -537,7 +538,8 @@ export default function Comprar() {
                     placeholder="000.000.000-00"
                     value={form.customerCpf}
                     onChange={(e) => setForm((f) => ({ ...f, customerCpf: formatCPF(e.target.value) }))}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    inputMode="numeric"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[44px]"
                   />
                   {errors.customerCpf && <p className="text-xs text-red-400 mt-1">{errors.customerCpf}</p>}
                 </div>
@@ -547,7 +549,7 @@ export default function Comprar() {
                   <select
                     value={form.boardingPointId}
                     onChange={handleBoardingPointChange}
-                    className="w-full bg-[#1F1F1F] border border-white/10 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    className="w-full bg-[#1F1F1F] border border-white/10 rounded-xl px-4 py-3 text-base text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[44px]"
                   >
                     <option value={0}>Selecione um ponto</option>
                     {boardingPoints && boardingPoints.length > 0 ? (
@@ -712,14 +714,14 @@ export default function Comprar() {
               </div>
 
               {/* Navigation */}
-              <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setStep(1)} className="flex-1 border-white/10 hover:bg-white/5">
+              <div className="flex gap-3 sm:relative">
+                <Button variant="outline" onClick={() => setStep(1)} className="flex-1 border-white/10 hover:bg-white/5 hidden sm:flex">
                   <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
                 </Button>
                 <Button
                   onClick={handleSubmit}
                   disabled={createSession.isPending}
-                  className="flex-1 gold-gradient text-black font-bold"
+                  className="flex-1 gold-gradient text-black font-bold sm:relative fixed bottom-4 left-4 right-4 sm:static min-h-[44px]"
                 >
                   {createSession.isPending ? (
                     <>
