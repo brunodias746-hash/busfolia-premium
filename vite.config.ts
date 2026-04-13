@@ -167,26 +167,6 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
-    rollupOptions: {
-      output: {
-        manualChunks: (id) => {
-          if (id.includes('node_modules')) {
-            if (id.includes('react')) return 'vendor-react';
-            if (id.includes('@radix-ui')) return 'vendor-ui';
-            if (id.includes('@trpc')) return 'vendor-trpc';
-            return 'vendor';
-          }
-        },
-      },
-    },
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-      },
-      mangle: true,
-    } as any,
-    sourcemap: false,
   },
   server: {
     host: true,
