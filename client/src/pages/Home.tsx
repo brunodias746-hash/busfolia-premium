@@ -66,7 +66,7 @@ function HeroSection() {
   const contentSlide = {
     type: "content" as const,
     image: IMAGES.heroRodeo,
-    title: "O transporte oficial para o Pedro Leopoldo Rodeio Show 2026",
+    title: "Transporte Oficial para o Pedro Leopoldo Rodeio Show 2026",
   };
   
   const slides = bannerSlides.length > 0 ? [...bannerSlides, contentSlide] : [contentSlide];
@@ -162,9 +162,8 @@ function HeroSection() {
       }}>
         <div className="max-w-[600px]">
           {/* H1 sempre visível para SEO */}
-          <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-6xl font-black font-heading leading-[1.1] mb-4 sm:mb-6">
-            Garanta seu transporte oficial para o{" "}
-            <span className="gold-text">Pedro Leopoldo Rodeio Show 2026</span>
+          <h1 className="hero-headline mb-4 sm:mb-6">
+            Transporte Oficial para o Pedro Leopoldo Rodeio Show 2026
           </h1>
 
           {currentSlideData.type === "content" && (
