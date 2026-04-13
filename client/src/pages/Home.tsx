@@ -133,6 +133,7 @@ function HeroSection() {
                 aspectRatio: '16 / 9',
               }}
               loading={idx === currentSlide ? 'eager' : 'lazy'}
+              fetchPriority={idx === currentSlide ? 'high' : 'low'}
             />
             {slide.type === "banner" && (
               <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60" />
@@ -294,7 +295,7 @@ function EventsSection() {
                 {urgency && <div className="absolute top-4 left-4 sm:top-5 sm:left-5 bg-red-500/20 text-red-400 text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-full border border-red-500/30 z-10">EM BREVE</div>}
                 {event.bannerUrl && (
                   <div className="relative w-full h-[200px] sm:h-[240px] md:h-[280px] bg-black/20 overflow-hidden">
-                    <img src={event.bannerUrl} alt={event.name} className="w-full h-full object-contain object-center hover:scale-105 transition-transform duration-500" />
+                    <img src={event.bannerUrl} alt={event.name} className="w-full h-full object-contain object-center hover:scale-105 transition-transform duration-500" loading="lazy" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                   </div>
                 )}

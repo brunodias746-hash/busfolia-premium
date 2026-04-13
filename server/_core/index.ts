@@ -174,6 +174,16 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   
+  // Cache headers for static assets
+  app.use((req, res, next) => {
+    if (req.path.match(/\.(js|css|woff2|woff|ttf|eot|svg|png|jpg|jpeg|gif|webp|avif)$/i)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    } else if (req.path === '/' || req.path.match(/\.html$/i)) {
+      res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+    }
+    next();
+  });
+  
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   
