@@ -163,7 +163,7 @@ function HeroSection() {
         <div className="max-w-[600px]">
           {/* H1 sempre visível para SEO */}
           <h1 className="hero-headline mb-4 sm:mb-6">
-            Transporte Oficial para o Pedro Leopoldo Rodeio Show 2026
+            TRANSPORTE OFICIAL PARA O PEDRO LEOPOLDO RODEIO SHOW 2026
           </h1>
 
           {currentSlideData.type === "content" && (
