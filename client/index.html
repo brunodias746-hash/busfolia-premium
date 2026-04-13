@@ -14,6 +14,24 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet" />
+    <!-- Critical CSS Inline for Above-the-Fold -->
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body { font-family: Inter, system-ui, sans-serif; background: #000; color: #fff; line-height: 1.5; }
+      .container { max-width: 1280px; margin: 0 auto; padding: 0 1rem; }
+      .flex { display: flex; }
+      .grid { display: grid; }
+      .w-full { width: 100%; }
+      .h-screen { height: 100vh; }
+      .relative { position: relative; }
+      .absolute { position: absolute; }
+      .inset-0 { inset: 0; }
+      .object-cover { object-fit: cover; }
+      .object-center { object-position: center; }
+      img { max-width: 100%; height: auto; display: block; }
+      @media (prefers-reduced-motion: reduce) { * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }
+    </style>
     <!-- Meta Pixel Code -->
     <script>
       !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -29,11 +47,12 @@
 
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="/src/main.tsx" defer></script>
     <script
       defer
       src="%VITE_ANALYTICS_ENDPOINT%/umami"
-      data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
+      data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"
+      data-domains="busfolia.com.br,www.busfolia.com.br"></script>
   </body>
 
 </html>

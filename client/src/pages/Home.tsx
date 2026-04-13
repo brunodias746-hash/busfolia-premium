@@ -8,7 +8,7 @@ import {
   Headphones,
   MessageCircle, ArrowRight, Zap, Heart
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import {
   Accordion,
   AccordionContent,
@@ -16,22 +16,29 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
+// Lazy loading will be handled per-component if needed
+
 function CountdownTimer() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
+    setMounted(true);
     const target = new Date("2026-06-05T00:00:00-03:00");
-    const interval = setInterval(() => {
+    const updateCountdown = () => {
       const diff = target.getTime() - Date.now();
-      if (diff <= 0) { clearInterval(interval); return; }
+      if (diff <= 0) return;
       setTimeLeft({
         days: Math.floor(diff / 86400000),
         hours: Math.floor((diff / 3600000) % 24),
         minutes: Math.floor((diff / 60000) % 60),
         seconds: Math.floor((diff / 1000) % 60),
       });
-    }, 1000);
+    };
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
     return () => clearInterval(interval);
   }, []);
+  if (!mounted) return null;
   const units = [
     { label: "Dias", value: timeLeft.days },
     { label: "Horas", value: timeLeft.hours },

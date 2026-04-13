@@ -180,6 +180,13 @@ export default defineConfig({
       },
     },
     minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+      },
+      mangle: true,
+    } as any,
+    sourcemap: false,
   },
   server: {
     host: true,
