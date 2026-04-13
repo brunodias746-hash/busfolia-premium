@@ -306,7 +306,7 @@ export default function Comprar() {
     <PublicLayout>
       <div className="container max-w-3xl py-8 sm:py-12 px-4 sm:px-6">
         <h1 className="text-2xl sm:text-3xl font-black font-heading text-center mb-1 sm:mb-2">
-          Escolha seu ingresso
+          Escolha sua passagem
         </h1>
         <p className="text-center text-xs sm:text-base text-muted-foreground mb-6 sm:mb-8">Pedro Leopoldo Rodeio Show 2026</p>
 
@@ -316,7 +316,7 @@ export default function Comprar() {
         {step === 0 && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-lg sm:text-xl font-bold mb-4">Escolha seu ingresso</h2>
+              <h2 className="text-lg sm:text-xl font-bold mb-4">Escolha sua passagem</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 {/* Dia Único */}

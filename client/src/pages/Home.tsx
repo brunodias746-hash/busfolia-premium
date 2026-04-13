@@ -283,7 +283,7 @@ function EventsSection() {
       <div className="container">
         <div className="text-center mb-12 sm:mb-16">
           <p className="text-xs sm:text-sm font-bold text-primary uppercase tracking-widest mb-3 sm:mb-4">Próximos Eventos</p>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black font-heading mb-4 sm:mb-6">Garanta sua vaga nos melhores eventos de MG</h2>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black font-heading mb-4 sm:mb-6">Compre sua passagem para os melhores eventos de MG</h2>
         </div>
         <div className="grid gap-6 sm:gap-8 w-full md:w-[70%] mx-auto">
           {events.map((event) => {
@@ -461,7 +461,7 @@ function WhyChooseSection() {
     { icon: Shield, title: "Segurança Garantida", desc: "Motoristas profissionais, veículos revisados e seguro completo para todos os passageiros." },
     { icon: Clock, title: "Pontualidade", desc: "Horários rigorosos de saída e retorno. Nunca perca o início do evento." },
     { icon: Heart, title: "Experiência Premium", desc: "Conforto de primeira classe com assentos premium, clima controlado e entretenimento a bordo." },
-    { icon: MessageCircle, title: "Suporte 24h", desc: "Equipe disponível via WhatsApp para qualquer dúvida antes, durante e após a viagem." },
+    { icon: MessageCircle, title: "Suporte Rápido", desc: "Equipe disponível via WhatsApp durante o horário comercial para qualquer dúvida sobre sua viagem." },
   ];
   return (
     <section className="py-12 sm:py-20 bg-[#080808]">
@@ -542,7 +542,7 @@ function CTASection() {
     <section className="py-12 sm:py-20 relative overflow-hidden">
       <div className="absolute inset-0 gold-gradient opacity-5" />
       <div className="container relative z-10 text-center px-6">
-        <h2 className="text-2xl sm:text-3xl md:text-5xl font-black font-heading mb-3 sm:mb-4">Não fique de fora.<br /><span className="gold-text">Garanta sua vaga agora.</span></h2>
+        <h2 className="text-2xl sm:text-3xl md:text-5xl font-black font-heading mb-3 sm:mb-4">Não fique de fora.<br /><span className="gold-text">Compre sua passagem agora.</span></h2>
         <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-6 sm:mb-8 max-w-lg mx-auto">Vagas limitadas. Compre sua passagem com segurança e viaje com conforto.</p>
         <Link href="/comprar">
           <Button size="lg" className="gold-gradient text-black font-bold text-sm sm:text-lg px-8 sm:px-10 py-5 sm:py-6 rounded-xl hover:opacity-90 min-h-[44px]">COMPRAR PASSAGEM <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" /></Button>
