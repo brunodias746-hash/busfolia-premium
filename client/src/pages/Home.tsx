@@ -460,7 +460,7 @@ function WhyChooseSection() {
   const reasons = [
     { icon: Shield, title: "Segurança Garantida", desc: "Motoristas profissionais, veículos revisados e seguro completo para todos os passageiros." },
     { icon: Clock, title: "Pontualidade", desc: "Horários rigorosos de saída e retorno. Nunca perca o início do evento." },
-    { icon: Heart, title: "Experiência Premium", desc: "Conforto de primeira classe com poltronas reclináveis e amenidades a bordo." },
+    { icon: Heart, title: "Experiência Premium", desc: "Conforto de primeira classe com assentos premium, clima controlado e entretenimento a bordo." },
     { icon: MessageCircle, title: "Suporte 24h", desc: "Equipe disponível via WhatsApp para qualquer dúvida antes, durante e após a viagem." },
   ];
   return (
