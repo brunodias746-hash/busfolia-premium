@@ -101,6 +101,69 @@ export const appRouter = router({
 
   // ─── Public: Checkout ───
   checkout: router({
+    validateCoupon: publicProcedure
+      .input(z.object({ couponCode: z.string().min(1) }))
+      .query(async ({ input }) => {
+        try {
+          const stripe = getStripe();
+          
+          // Try to retrieve the promotion code from Stripe
+          const promotionCodes = await stripe.promotionCodes.list({
+            code: input.couponCode.toUpperCase(),
+            limit: 1,
+          });
+          
+          if (promotionCodes.data.length === 0) {
+            return { valid: false, error: "Código de cupom não encontrado" };
+          }
+          
+          const promoCode = promotionCodes.data[0];
+          
+          // Check if promotion code is active
+          if (!promoCode.active) {
+            return { valid: false, error: "Código de cupom inativo" };
+          }
+          
+          // Get the coupon ID (it's a string in the API)
+          const couponId = (promoCode as any).coupon as string;
+          if (typeof couponId !== 'string') {
+            return { valid: false, error: "Cupom não encontrado" };
+          }
+
+          
+          // Retrieve the full coupon object
+          const coupon = await stripe.coupons.retrieve(couponId);
+          
+          // Check if coupon has expired
+          if (coupon.redeem_by && coupon.redeem_by < Math.floor(Date.now() / 1000)) {
+            return { valid: false, error: "Código de cupom expirado" };
+          }
+          
+          // Calculate discount info
+          let discountPercentage = 0;
+          let discountAmountCents = 0;
+          
+          if (coupon.percent_off) {
+            discountPercentage = coupon.percent_off;
+          } else if (coupon.amount_off) {
+            discountAmountCents = coupon.amount_off;
+          }
+          
+          return {
+            valid: true,
+            couponId: coupon.id,
+            promoCodeId: promoCode.id,
+            discountPercentage,
+            discountAmountCents,
+            maxRedemptions: coupon.max_redemptions,
+            timesRedeemed: coupon.times_redeemed,
+          };
+        } catch (err: any) {
+          console.error("[Coupon Validation] Error:", err.message);
+          return { valid: false, error: "Erro ao validar cupom" };
+        }
+      }),
+
     createSession: publicProcedure.input(checkoutSchema).mutation(async ({ input }) => {
       // 1. Validate event exists and is active
       const event = await getEventById(input.eventId);
@@ -162,10 +225,25 @@ export const appRouter = router({
       // 6. Create Stripe Checkout Session
       const stripe = getStripe();
       
-      // Build discounts array for Stripe
-      const discounts: Array<{ coupon?: string }> = [];
+      // Build discounts array for Stripe - use promotion code ID if coupon provided
+      const discounts: Array<{ promotion_code?: string }> = [];
       if (input.couponCode) {
-        discounts.push({ coupon: input.couponCode });
+        // Validate coupon and get promotion code ID
+        try {
+          const promotionCodes = await stripe.promotionCodes.list({
+            code: input.couponCode.toUpperCase(),
+            limit: 1,
+          });
+          
+          if (promotionCodes.data.length > 0) {
+            const promoCode = promotionCodes.data[0];
+            if (promoCode.active) {
+              discounts.push({ promotion_code: promoCode.id });
+            }
+          }
+        } catch (err: any) {
+          console.error("[Stripe] Error validating coupon:", err.message);
+        }
       }
       
       const session = await stripe.checkout.sessions.create({

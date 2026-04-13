@@ -1,6 +1,7 @@
 'use client';
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
+import { trpcClient } from "@/lib/trpcClient";
 import { formatCurrency, formatCPF, formatPhone } from "@/lib/constants";
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { ArrowLeft, ArrowRight, Plus, Trash2, Loader2, ShieldCheck, User, MapPin, CreditCard, Check } from "lucide-react";
@@ -81,6 +82,8 @@ export default function Comprar() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [couponCode, setCouponCode] = useState("");
   const [couponMessage, setCouponMessage] = useState<{ type: 'success' | 'error' | null; text: string }>({ type: null, text: "" });
+  const [appliedCoupon, setAppliedCoupon] = useState<{ couponId: string; discountPercentage: number; discountAmountCents: number } | null>(null);
+  const [couponValidating, setCouponValidating] = useState(false);
 
   // Carregar dados salvos do localStorage ao montar o componente
   useEffect(() => {
@@ -124,6 +127,8 @@ export default function Comprar() {
       toast.error(err.message || "Erro ao criar sessão de pagamento");
     },
   });
+
+
 
   const dates = useMemo(() => {
     if (!event?.eventDate) return [];
@@ -215,7 +220,7 @@ export default function Comprar() {
       purchaseType: form.purchaseType,
       passengers: passengersWithBP,
       origin: window.location.origin,
-      couponCode: couponCode || undefined,
+      couponCode: appliedCoupon ? couponCode : undefined,
     });
   }
 
@@ -278,17 +283,46 @@ export default function Comprar() {
   const totalCents = calculateTotal();
   const basePriceCents = calculateBasePrice();
   const taxCents = calculateTax();
-  const finalTotalCents = totalCents; // Discount is now handled by Stripe
+  
+  // Calculate discount
+  let discountCents = 0;
+  if (appliedCoupon) {
+    if (appliedCoupon.discountPercentage > 0) {
+      discountCents = Math.round((basePriceCents * appliedCoupon.discountPercentage) / 100);
+    } else if (appliedCoupon.discountAmountCents > 0) {
+      discountCents = appliedCoupon.discountAmountCents;
+    }
+  }
+  
+  const finalTotalCents = totalCents - discountCents;
   const selectedBP = boardingPoints?.find((bp) => bp.id === form.boardingPointId);
   
-  const handleApplyCoupon = () => {
+  const handleApplyCoupon = async () => {
     if (!couponCode.trim()) {
       setCouponMessage({ type: 'error', text: 'Digite um código de cupom' });
       return;
     }
-    // Coupon validation is now handled by Stripe
-    // We just show a confirmation message
-    setCouponMessage({ type: 'success', text: `Cupom "${couponCode}" será validado no Stripe` });
+    setCouponValidating(true);
+    try {
+      const result = await trpcClient.checkout.validateCoupon.query({ couponCode: couponCode.toUpperCase() });
+      
+      if (result.valid) {
+        setAppliedCoupon({
+          couponId: result.couponId!,
+          discountPercentage: result.discountPercentage || 0,
+          discountAmountCents: result.discountAmountCents || 0,
+        });
+        setCouponMessage({ type: 'success', text: `Cupom "${couponCode}" aplicado com sucesso! Desconto: ${result.discountPercentage}%` });
+      } else {
+        setAppliedCoupon(null);
+        setCouponMessage({ type: 'error', text: result.error || "Cupom inválido" });
+      }
+    } catch (err: any) {
+      setAppliedCoupon(null);
+      setCouponMessage({ type: 'error', text: err?.message || "Erro ao validar cupom" });
+    } finally {
+      setCouponValidating(false);
+    }
   };
 
   if (!event) {
@@ -664,10 +698,10 @@ export default function Comprar() {
                     <span className="text-sm text-muted-foreground">Taxa:</span>
                     <span className="font-semibold">{formatCurrency(taxCents)}</span>
                   </div>
-                  {couponMessage.type === 'success' && (
+                  {appliedCoupon && discountCents > 0 && (
                     <div className="flex justify-between items-center text-green-400">
-                      <span className="text-sm">Cupom aplicado:</span>
-                      <span className="font-semibold text-xs">{couponCode}</span>
+                      <span className="text-sm">Desconto ({appliedCoupon.discountPercentage > 0 ? appliedCoupon.discountPercentage + '%' : 'cupom'}):</span>
+                      <span className="font-semibold">-{formatCurrency(discountCents)}</span>
                     </div>
                   )}
                   <div className="border-t border-white/10 pt-3 flex justify-between items-center">
