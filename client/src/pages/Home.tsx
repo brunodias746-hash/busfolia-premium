@@ -162,9 +162,9 @@ function HeroSection() {
       }}>
         <div className="max-w-[600px]">
           {/* H1 sempre visível para SEO */}
-          <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-6xl font-black font-heading leading-[1.1] mb-4 sm:mb-6">
-            Garanta seu transporte oficial para o{" "}
-            <span className="gold-text">Pedro Leopoldo Rodeio Show 2026</span>
+          <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-6xl font-black font-heading leading-[1.1] mb-4 sm:mb-6 uppercase">
+            TRANSPORTE OFICIAL PARA O{" "}
+            <span className="gold-text">PEDRO LEOPOLDO RODEIO SHOW 2026</span>
           </h1>
 
           {currentSlideData.type === "content" && (
