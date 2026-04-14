@@ -126,11 +126,12 @@ function HeroSection() {
             <img
               src={slide.image || ""}
               alt={slide.title}
-              className={`w-full h-full object-cover object-center transition-transform duration-1000 ${
+              className={`w-full h-full object-cover transition-transform duration-1000 ${
                 idx === currentSlide ? 'scale-100' : 'scale-105'
               }`}
               style={{
                 aspectRatio: '16 / 9',
+                objectPosition: 'center top',
               }}
               loading={idx === currentSlide ? 'eager' : 'lazy'}
             />
@@ -162,7 +163,7 @@ function HeroSection() {
       }}>
         <div className="max-w-[600px]">
           {/* H1 sempre visível para SEO */}
-          <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-6xl font-black font-heading leading-[1.1] mb-4 sm:mb-6 uppercase">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black font-heading leading-[1.1] mb-4 sm:mb-6 uppercase">
             TRANSPORTE OFICIAL PARA O{" "}
             <span className="gold-text">PEDRO LEOPOLDO RODEIO SHOW 2026</span>
           </h1>
