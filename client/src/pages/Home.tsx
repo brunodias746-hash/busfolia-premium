@@ -108,12 +108,13 @@ function HeroSection() {
   const currentSlideData = slides[currentSlide];
 
   return (
-    <section className="relative w-full flex items-center" style={{
+    <section className="relative w-full flex items-center overflow-hidden" style={{
       height: 'clamp(420px, 60vh, 620px)',
       minHeight: 'clamp(420px, 60vh, 620px)',
+      maxHeight: 'clamp(420px, 60vh, 620px)',
     }}>
-      {/* Carrossel de imagens */}
-      <div className="absolute inset-0 w-full h-full">
+      {/* Carrossel de imagens - HeroViewport */}
+      <div className="absolute inset-0 w-full h-full overflow-hidden">
         {slides.map((slide, idx) => (
           <div
             key={idx}
@@ -150,17 +151,17 @@ function HeroSection() {
         ))}
       </div>
 
-      {/* Conteúdo do Hero */}
-      <div className={`container relative z-10 py-8 sm:py-12 md:py-20 will-change-opacity transition-opacity duration-1000 ${
+      {/* Conteúdo do Hero - HeroContent */}
+      <div className={`container relative z-10 py-4 sm:py-6 md:py-10 will-change-opacity transition-opacity duration-1000 flex flex-col justify-center h-full overflow-hidden ${
         currentSlideData.type === "content" ? "opacity-100" : "opacity-0"
       }`}
       style={{
         backfaceVisibility: 'hidden',
         transform: 'translateZ(0)',
       }}>
-        <div className="max-w-[600px]">
+        <div className="max-w-[600px] overflow-hidden">
           {/* H1 sempre visível para SEO */}
-          <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black font-heading leading-[1.1] mb-4 sm:mb-6 uppercase">
+          <h1 className="text-xl sm:text-3xl md:text-5xl lg:text-6xl font-black font-heading leading-[1.1] mb-2 sm:mb-4 uppercase">
             TRANSPORTE OFICIAL PARA O{" "}
             <span className="gold-text">PEDRO LEOPOLDO RODEIO SHOW 2026</span>
           </h1>
@@ -172,11 +173,11 @@ function HeroSection() {
                 <span className="text-[10px] sm:text-xs font-medium text-primary">Transporte Oficial</span>
               </div>
 
-              <p className="text-base sm:text-base md:text-lg text-muted-foreground leading-relaxed mb-5 sm:mb-8 max-w-lg">
+              <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed mb-3 sm:mb-6 max-w-lg">
                 Ida e volta garantida, com conforto, segurança e pontos de embarque estratégicos.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-10">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-3 sm:mb-6">
                 <Link href="/comprar">
                   <Button size="lg" className="gold-gradient text-black font-bold text-sm sm:text-base px-5 sm:px-8 py-4 sm:py-5 rounded-xl hover:opacity-90 transition-opacity w-full sm:w-auto min-h-[44px]">
                     GARANTA SUA VAGA AGORA <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
@@ -189,8 +190,8 @@ function HeroSection() {
                 </a>
               </div>
 
-              <div className="mb-2 sm:mb-4">
-                <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider mb-2">Próximo evento começa em:</p>
+              <div className="mb-0 sm:mb-2 hidden sm:block">
+                <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider mb-1">Próximo evento começa em:</p>
                 <CountdownTimer />
               </div>
             </>
