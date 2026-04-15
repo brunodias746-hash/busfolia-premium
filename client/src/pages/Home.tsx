@@ -127,20 +127,41 @@ function HeroSection() {
               WebkitFontSmoothing: 'antialiased',
             }}
           >
-            <img
-              src={slide.image || ""}
-              alt={slide.title}
-              className={`w-full h-full object-cover transition-transform duration-1000 block ${
-                idx === currentSlide ? 'scale-100' : 'scale-105'
-              }`}
-              style={{
-                objectPosition: 'center top',
-                width: '100%',
-                height: '100%',
-                display: 'block',
-              }}
-              loading={idx === currentSlide ? 'eager' : 'lazy'}
-            />
+            {/* Responsive picture element for hero images */}
+            {slide.type === "content" ? (
+              <picture>
+                <source media="(max-width: 768px)" srcSet={IMAGES.heroRodeoMobile} />
+                <img
+                  src={IMAGES.heroRodeo}
+                  alt={slide.title}
+                  className={`w-full h-full object-cover transition-transform duration-1000 block ${
+                    idx === currentSlide ? 'scale-100' : 'scale-105'
+                  }`}
+                  style={{
+                    objectPosition: 'center top',
+                    width: '100%',
+                    height: '100%',
+                    display: 'block',
+                  }}
+                  loading={idx === currentSlide ? 'eager' : 'lazy'}
+                />
+              </picture>
+            ) : (
+              <img
+                src={slide.image || ""}
+                alt={slide.title}
+                className={`w-full h-full object-cover transition-transform duration-1000 block ${
+                  idx === currentSlide ? 'scale-100' : 'scale-105'
+                }`}
+                style={{
+                  objectPosition: 'center top',
+                  width: '100%',
+                  height: '100%',
+                  display: 'block',
+                }}
+                loading={idx === currentSlide ? 'eager' : 'lazy'}
+              />
+            )}
             {slide.type === "banner" && (
               <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-40" />
             )}
