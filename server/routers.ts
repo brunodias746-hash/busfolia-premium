@@ -176,15 +176,29 @@ export const appRouter = router({
         throw new Error(`Apenas ${event.capacity - event.soldCount} vagas restantes`);
       }
 
-      // 3. Calculate total
-      let unitPriceCents = event.priceCents;
+      // 3. Get boarding point to determine dynamic base price
+      const boardingPoint = await (async () => {
+        const bps = await getBoardingPointsByEvent(input.eventId);
+        return bps.find(bp => bp.id === input.boardingPointId);
+      })();
+      
+      // Dynamic base price based on boarding point city
+      let basePriceCents = 6000; // Default: R$60,00 (BH or SANTA LUZIA)
+      if (boardingPoint) {
+        if (boardingPoint.city === 'BETIM' || boardingPoint.city === 'CONTAGEM') {
+          basePriceCents = 7000; // R$70,00
+        }
+      }
+      
+      // 4. Calculate total
+      let unitPriceCents = basePriceCents;
       let feeCents = event.feeCents;
       let daysCount = 1; // Default for single day
       
       // For "multiple" (Múltiplos Dias), calculate price based on number of selected dates
       if (input.purchaseType === "multiple") {
         daysCount = input.transportDatesCount || 1;
-        unitPriceCents = event.priceCents * daysCount; // R$ 60 × number of days
+        unitPriceCents = basePriceCents * daysCount; // Dynamic base price × number of days
         feeCents = event.feeCents * daysCount; // R$ 6,10 × number of days
       }
       // For "all_days" (Passaporte), use fixed price of R$ 200,00

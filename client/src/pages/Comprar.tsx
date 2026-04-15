@@ -243,13 +243,27 @@ export default function Comprar() {
     }));
   }
 
+  // Get dynamic base price based on boarding point city
+  const getDynamicBasePrice = (): number => {
+    const boardingPoint = boardingPoints?.find(bp => bp.id === form.boardingPointId);
+    if (!boardingPoint) return event?.priceCents || 0;
+    
+    // BETIM or CONTAGEM → R$70,00 (7000 cents)
+    if (boardingPoint.city === 'BETIM' || boardingPoint.city === 'CONTAGEM') {
+      return 7000;
+    }
+    // BH (Belo Horizonte) or SANTA LUZIA → R$60,00 (6000 cents)
+    return 6000;
+  };
+
   const calculateTotal = (): number => {
     if (!event) return 0;
+    const dynamicBasePrice = getDynamicBasePrice();
     let baseCents = 0;
     if (form.purchaseType === 'single') {
-      baseCents = event.priceCents;
+      baseCents = dynamicBasePrice;
     } else if (form.purchaseType === 'multiple') {
-      baseCents = event.priceCents * form.transportDates.length;
+      baseCents = dynamicBasePrice * form.transportDates.length;
     } else if (form.purchaseType === 'all_days') {
       baseCents = 20000; // R$200 fixed price
     }
@@ -258,11 +272,12 @@ export default function Comprar() {
   
   const calculateBasePrice = (): number => {
     if (!event) return 0;
+    const dynamicBasePrice = getDynamicBasePrice();
     let baseCents = 0;
     if (form.purchaseType === 'single') {
-      baseCents = event.priceCents;
+      baseCents = dynamicBasePrice;
     } else if (form.purchaseType === 'multiple') {
-      baseCents = event.priceCents * form.transportDates.length;
+      baseCents = dynamicBasePrice * form.transportDates.length;
     } else if (form.purchaseType === 'all_days') {
       baseCents = 20000; // R$200 fixed price
     }
@@ -370,7 +385,7 @@ export default function Comprar() {
                   <div className="text-left">
                     <h3 className="text-lg font-bold mb-1">Dia Único</h3>
                     <p className="text-sm text-muted-foreground mb-3">Escolha 1 dia do evento</p>
-                    <p className="text-2xl font-bold text-primary">{formatCurrency(event.priceCents)}</p>
+                    <p className="text-2xl font-bold text-primary">{formatCurrency(getDynamicBasePrice())}</p>
                     <p className="text-xs text-muted-foreground mt-1">/dia</p>
                   </div>
                 </button>
@@ -392,7 +407,7 @@ export default function Comprar() {
                   <div className="text-left">
                     <h3 className="text-lg font-bold mb-1">Múltiplos Dias</h3>
                     <p className="text-sm text-muted-foreground mb-3">Escolha 2 ou mais dias</p>
-                    <p className="text-2xl font-bold text-primary">{formatCurrency(event.priceCents * 2)}</p>
+                    <p className="text-2xl font-bold text-primary">{formatCurrency(getDynamicBasePrice() * 2)}</p>
                     <p className="text-xs text-muted-foreground mt-1">/2 dias</p>
                   </div>
                 </button>
