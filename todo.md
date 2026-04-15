@@ -21,8 +21,8 @@
 - [x] Validar pontos de embarque corretos em cada depoimento
 
 ## FASE 5: CHECKOUT - VALIDAÇÃO
-- [ ] Campo nome: validar nome + sobrenome (mínimo 2 palavras)
-- [ ] Revisar validação em todos os cenários
+- [x] Campo nome: validar nome + sobrenome (mínimo 2 palavras)
+- [x] Revisar validação em todos os cenários
 - [ ] Testar com dados inválidos
 - [ ] Testar com dados válidos
 

@@ -152,7 +152,9 @@ export default function Comprar() {
 
   function validateStep1(): boolean {
     const e: Record<string, string> = {};
-    if (form.customerName.trim().length < 5) e.customerName = "Nome completo obrigatório (nome + sobrenome)";
+    // Validate customer name: must have at least 2 words (name + surname)
+    const nameParts = form.customerName.trim().split(/\s+/).filter(part => part.length > 0);
+    if (nameParts.length < 2) e.customerName = "Nome completo obrigatório (nome + sobrenome)";
     const cpfClean = form.customerCpf.replace(/\D/g, "");
     if (cpfClean.length !== 11) e.customerCpf = "CPF inválido (11 dígitos)";
     else if (!validateCPF(cpfClean)) e.customerCpf = "CPF inválido";
@@ -161,7 +163,9 @@ export default function Comprar() {
     if (phoneClean.length < 10) e.customerPhone = "Telefone inválido";
     if (form.boardingPointId === 0) e.boardingPointId = "Selecione um ponto de embarque";
     form.passengers.forEach((p, i) => {
-      if (p.name.trim().length < 3) e[`passenger_${i}_name`] = "Nome obrigatório";
+      // Validate passenger name: must have at least 2 words (name + surname)
+      const passengerNameParts = p.name.trim().split(/\s+/).filter(part => part.length > 0);
+      if (passengerNameParts.length < 2) e[`passenger_${i}_name`] = "Nome completo obrigatório (nome + sobrenome)";
       const cpfClean = p.cpf.replace(/\D/g, "");
       if (cpfClean.length !== 11) e[`passenger_${i}_cpf`] = "CPF inválido (11 dígitos)";
       else if (!validateCPF(cpfClean)) e[`passenger_${i}_cpf`] = "CPF inválido";
