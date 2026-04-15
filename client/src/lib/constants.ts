@@ -1,6 +1,6 @@
 // CDN Image URLs
 export const IMAGES = {
-  heroRodeo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/PHIL9031-1920x780_e90ede74.webp",
+  heroRodeo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/CAPANOVA-1920x780_b387d8aa.png",
   eventBanner: "https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/banner-site-dias_5e4c81df.webp",
   // Real Viacao TG fleet images - 12 unique photos
   fleetBus1: "https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/freepik_ultra-realistic-premium-tourism-bus-advertisement-same-exact-bus-from-reference-image-preserve-original-design-preserve-company-identity-and-real-proportions-enhance-only-visual-quality-a_0013_6893b6e6.webp",
