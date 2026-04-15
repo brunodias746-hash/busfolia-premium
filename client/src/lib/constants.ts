@@ -21,8 +21,8 @@ export const IMAGES = {
 export const SITE = {
   name: "BusFolia",
   tagline: "Transporte Premium para Eventos",
-  whatsapp: "https://wa.me/5531973540425",
-  whatsappPhone: "(31) 9 7354-0425",
+  whatsapp: "https://wa.me/5531990908399",
+  whatsappPhone: "(31) 99090-8399",
   groupLink: "https://chat.whatsapp.com/KjaIneid0P9F6JScKsV7Po",
   instagram: "https://instagram.com/busfolia",
   email: "contato@busfolia.com.br",

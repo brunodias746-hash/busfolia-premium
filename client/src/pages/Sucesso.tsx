@@ -191,7 +191,7 @@ export default function Sucesso() {
 
           {/* Action Buttons */}
           <div className="space-y-2 sm:space-y-3 mt-6 sm:mt-8">
-            <a href="https://wa.me/5531973540425" target="_blank" rel="noopener noreferrer">
+            <a href="https://wa.me/5531990908399" target="_blank" rel="noopener noreferrer">
               <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 sm:py-4 rounded-lg sm:rounded-xl min-h-[44px] text-sm sm:text-base">
                 <MessageCircle className="w-4 h-4 mr-2" />
                 ENTRAR NO GRUPO WHATSAPP
