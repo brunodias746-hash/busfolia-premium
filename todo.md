@@ -23,8 +23,8 @@
 ## FASE 5: CHECKOUT - VALIDAÇÃO
 - [x] Campo nome: validar nome + sobrenome (mínimo 2 palavras)
 - [x] Revisar validação em todos os cenários
-- [ ] Testar com dados inválidos
-- [ ] Testar com dados válidos
+- [x] Testar com dados inválidos ("João" rejeitado)
+- [x] Testar com dados válidos ("João Silva" aceito)
 
 ## FASE 6: FLUXO DE COMPRA - 8 PASSOS
 - [ ] Passo 1: Dados pessoais (nome, CPF, email, telefone)

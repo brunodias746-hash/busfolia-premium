@@ -128,40 +128,20 @@ function HeroSection() {
             }}
           >
             {/* Responsive picture element for hero images */}
-            {slide.type === "content" ? (
-              <picture>
-                <source media="(max-width: 768px)" srcSet={IMAGES.heroRodeoMobile} />
-                <img
-                  src={IMAGES.heroRodeo}
-                  alt={slide.title}
-                  className={`w-full h-full object-cover transition-transform duration-1000 block ${
-                    idx === currentSlide ? 'scale-100' : 'scale-105'
-                  }`}
-                  style={{
-                    objectPosition: 'center top',
-                    width: '100%',
-                    height: '100%',
-                    display: 'block',
-                  }}
-                  loading={idx === currentSlide ? 'eager' : 'lazy'}
-                />
-              </picture>
-            ) : (
-              <img
-                src={slide.image || ""}
-                alt={slide.title}
-                className={`w-full h-full object-cover transition-transform duration-1000 block ${
-                  idx === currentSlide ? 'scale-100' : 'scale-105'
-                }`}
-                style={{
-                  objectPosition: 'center top',
-                  width: '100%',
-                  height: '100%',
-                  display: 'block',
-                }}
-                loading={idx === currentSlide ? 'eager' : 'lazy'}
-              />
-            )}
+            <img
+              src={slide.image || ""}
+              alt={slide.title}
+              className={`w-full h-full object-cover transition-transform duration-1000 block ${
+                idx === currentSlide ? 'scale-100' : 'scale-105'
+              }`}
+              style={{
+                objectPosition: 'center top',
+                width: '100%',
+                height: '100%',
+                display: 'block',
+              }}
+              loading={idx === currentSlide ? 'eager' : 'lazy'}
+            />
             {slide.type === "banner" && (
               <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-40" />
             )}
@@ -172,9 +152,9 @@ function HeroSection() {
         ))}
       </div>
 
-      {/* Conteúdo do Hero - HeroContent */}
+      {/* Conteúdo do Hero - HeroContent (apenas para Hero 1 - content slide) */}
       <div className={`container relative z-10 py-4 sm:py-6 md:py-10 will-change-opacity transition-opacity duration-1000 flex flex-col justify-center h-full overflow-hidden ${
-        currentSlideData.type === "content" ? "opacity-100" : "opacity-0"
+        currentSlideData.type === "content" ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
       }`}
       style={{
         backfaceVisibility: 'hidden',
