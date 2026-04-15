@@ -143,7 +143,7 @@ function HeroSection() {
                 <div
                   className="absolute inset-0"
                   style={{
-                    background: "linear-gradient(to right, rgba(0,0,0,0.85), rgba(0,0,0,0.4))",
+                    background: "linear-gradient(to right, rgba(0,0,0,0.3), rgba(0,0,0,0.15))",
                   }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
