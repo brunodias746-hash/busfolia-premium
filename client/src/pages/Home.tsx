@@ -136,18 +136,10 @@ function HeroSection() {
               loading={idx === currentSlide ? 'eager' : 'lazy'}
             />
             {slide.type === "banner" && (
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60" />
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-40" />
             )}
             {slide.type === "content" && (
-              <>
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background: "linear-gradient(to right, rgba(0,0,0,0.3), rgba(0,0,0,0.15))",
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
-              </>
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
             )}
           </div>
         ))}
