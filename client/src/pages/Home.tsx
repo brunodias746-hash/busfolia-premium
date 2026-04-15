@@ -108,7 +108,10 @@ function HeroSection() {
   const currentSlideData = slides[currentSlide];
 
   return (
-    <section className="relative w-full min-h-[45vh] sm:min-h-[55vh] md:min-h-[65vh] flex items-center">
+    <section className="relative w-full flex items-center" style={{
+      height: 'clamp(420px, 60vh, 620px)',
+      minHeight: 'clamp(420px, 60vh, 620px)',
+    }}>
       {/* Carrossel de imagens */}
       <div className="absolute inset-0 w-full h-full">
         {slides.map((slide, idx) => (
@@ -126,12 +129,14 @@ function HeroSection() {
             <img
               src={slide.image || ""}
               alt={slide.title}
-              className={`w-full h-full object-cover transition-transform duration-1000 ${
+              className={`w-full h-full object-cover transition-transform duration-1000 block ${
                 idx === currentSlide ? 'scale-100' : 'scale-105'
               }`}
               style={{
-                aspectRatio: '16 / 9',
                 objectPosition: 'center top',
+                width: '100%',
+                height: '100%',
+                display: 'block',
               }}
               loading={idx === currentSlide ? 'eager' : 'lazy'}
             />
