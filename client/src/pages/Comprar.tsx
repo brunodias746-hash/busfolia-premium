@@ -744,35 +744,6 @@ export default function Comprar() {
                   </div>
                 </div>
               </div>
-              
-              {/* Coupon Section */}
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-6">
-                <h3 className="text-sm font-bold mb-3 uppercase tracking-wider">Cupom de Desconto</h3>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Digite seu código de cupom"
-                    value={couponCode}
-                    onChange={(e) => {
-                      setCouponCode(e.target.value.toUpperCase());
-                      setCouponMessage({ type: null, text: "" });
-                    }}
-                    className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
-                  />
-                  <Button
-                    onClick={handleApplyCoupon}
-                    variant="outline"
-                    className="border-white/10 hover:bg-white/5"
-                  >
-                    Aplicar
-                  </Button>
-                </div>
-                {couponMessage.type && (
-                  <p className={`text-xs mt-2 ${couponMessage.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
-                    {couponMessage.text}
-                  </p>
-                )}
-              </div>
 
               <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 flex gap-3 mb-6">
                 <ShieldCheck className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
