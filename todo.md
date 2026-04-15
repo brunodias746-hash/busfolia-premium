@@ -44,7 +44,7 @@
 - [x] Exibir ponto de embarque
 - [x] Exibir datas selecionadas
 - [x] Exibir quantidade de passageiros
-- [ ] Botão para entrar no grupo WhatsApp
+- [x] Botão para entrar no grupo WhatsApp
 
 ## FASE 8: EMAIL AUTOMÁTICO
 - [x] Implementar envio de email após pagamento aprovado
@@ -52,7 +52,7 @@
 - [x] Incluir dias selecionados
 - [x] Incluir ponto de embarque
 - [x] Incluir quantidade de passageiros
-- [ ] Incluir link do grupo
+- [x] Incluir link do grupo
 - [ ] Tratamento de erro e retry
 
 ## FASE 9: ADMIN - PEDIDOS
