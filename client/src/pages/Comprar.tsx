@@ -281,7 +281,22 @@ export default function Comprar() {
     } else if (form.purchaseType === 'all_days') {
       baseCents = 20000; // R$200 fixed price
     }
-    return baseCents * form.passengers.length;
+    return baseCents;
+  };
+  
+  // Calculate Step 0 total (ticket only, no passengers multiplier)
+  const calculateStep0Total = (): number => {
+    if (!event) return 0;
+    const dynamicBasePrice = getDynamicBasePrice();
+    let baseCents = 0;
+    if (form.purchaseType === 'single') {
+      baseCents = dynamicBasePrice;
+    } else if (form.purchaseType === 'multiple') {
+      baseCents = dynamicBasePrice * form.transportDates.length;
+    } else if (form.purchaseType === 'all_days') {
+      baseCents = 20000; // R$200 fixed price
+    }
+    return baseCents;
   };
   
   const calculateTax = (): number => {
@@ -525,7 +540,7 @@ export default function Comprar() {
               <div className="mt-6 space-y-4">
                 <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex justify-between items-center">
                   <span className="font-medium">Total:</span>
-                  <span className="text-2xl font-bold text-primary">{formatCurrency(basePriceCents)}</span>
+                  <span className="text-2xl font-bold text-primary">{formatCurrency(calculateStep0Total())}</span>
                 </div>
                 <Button onClick={handleNext} className="w-full gold-gradient text-black font-bold py-3 rounded-xl">
                   Continuar <ArrowRight className="w-4 h-4 ml-2" />
