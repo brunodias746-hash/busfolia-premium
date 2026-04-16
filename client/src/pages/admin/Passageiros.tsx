@@ -3,7 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { Users, Loader2, Download, CheckCircle2, Clock, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { generateProfessionalCSV, downloadCSV, formatDateForCSV } from "@/lib/csvExport";
+import { downloadXLSX, formatDateForXLSX } from "@/lib/xlsxExport";
 import {
   Select,
   SelectContent,
@@ -37,7 +37,7 @@ export default function Passageiros() {
     );
   }, [passengers, search]);
 
-  function exportCSV() {
+  function exportXLSX() {
     if (!exportData || exportData.length === 0) return;
     
     const headers = [
@@ -58,18 +58,29 @@ export default function Passageiros() {
       p.orderShortId || '',
       p.orderStatus || '',
       p.boardingPoint || '',
-      p.transportDate ? formatDateForCSV(p.transportDate) : '',
+      p.transportDate ? formatDateForXLSX(p.transportDate) : '',
       p.checkInStatus === "checked_in" ? "Sim" : "Não",
     ]);
     
-    const csv = generateProfessionalCSV({
+    const totals = [
+      'TOTAL',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      exportData.filter(p => p.checkInStatus === 'checked_in').length
+    ];
+    
+    downloadXLSX({
       title: 'Relatório de Passageiros',
-      filename: `passageiros-${new Date().toISOString().split('T')[0]}.csv`,
+      filename: `passageiros-${new Date().toISOString().split('T')[0]}.xlsx`,
       headers,
       rows,
+      totals,
+      columnWidths: [25, 18, 20, 18, 18, 25, 18, 15]
     });
-    
-    downloadCSV(csv, `passageiros-${new Date().toISOString().split('T')[0]}.csv`);
   }
 
   const checkedIn = filtered.filter((p) => p.checkInStatus === "checked_in").length;
@@ -87,12 +98,12 @@ export default function Passageiros() {
             </p>
           </div>
           <Button
-            onClick={exportCSV}
+            onClick={exportXLSX}
             variant="outline"
             className="border-white/10"
             disabled={!exportData || exportData.length === 0}
           >
-            <Download className="w-4 h-4 mr-2" /> Exportar CSV
+            <Download className="w-4 h-4 mr-2" /> Exportar Excel
           </Button>
         </div>
 

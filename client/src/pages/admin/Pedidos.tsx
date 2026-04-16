@@ -1,7 +1,7 @@
 import AdminLayout from "@/components/AdminLayout";
 import { trpc } from "@/lib/trpc";
 import { formatCurrency } from "@/lib/constants";
-import { generateProfessionalCSV, downloadCSV, formatCurrencyForCSV, formatDateForCSV } from "@/lib/csvExport";
+import { downloadXLSX, formatCurrencyForXLSX, formatDateForXLSX } from "@/lib/xlsxExport";
 import { ShoppingCart, Loader2, Eye, Download, Trash2, Mail, Ticket, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -49,7 +49,7 @@ export default function Pedidos() {
     }
   };
 
-  function exportCSV() {
+  function exportXLSX() {
     if (!exportData || exportData.length === 0) return;
     
     const headers = [
@@ -75,19 +75,39 @@ export default function Pedidos() {
       o.pontoEmbarque || '',
       o.datasTransporte || '',
       o.quantidadePassageiros || '',
-      o.valorTotal ? formatCurrencyForCSV(parseInt(o.valorTotal.replace(/[^0-9]/g, '')) || 0) : 'R$ 0,00',
+      o.valorTotal ? formatCurrencyForXLSX(parseInt(o.valorTotal.replace(/[^0-9]/g, '')) || 0) : 'R$ 0,00',
       o.status || '',
-      o.dataCompra ? formatDateForCSV(o.dataCompra) : '',
+      o.dataCompra ? formatDateForXLSX(o.dataCompra) : '',
     ]);
     
-    const csv = generateProfessionalCSV({
+    // Calculate total
+    const totalValue = exportData.reduce((sum: number, o: any) => {
+      const val = parseInt(o.valorTotal?.replace(/[^0-9]/g, '') || '0');
+      return sum + val;
+    }, 0);
+    
+    const totals = [
+      'TOTAL',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      exportData.length,
+      formatCurrencyForXLSX(totalValue),
+      '',
+      ''
+    ];
+    
+    downloadXLSX({
       title: 'Relatório de Pedidos',
-      filename: `pedidos-${new Date().toISOString().split('T')[0]}.csv`,
+      filename: `pedidos-${new Date().toISOString().split('T')[0]}.xlsx`,
       headers,
       rows,
+      totals,
+      columnWidths: [12, 20, 15, 15, 25, 25, 20, 18, 18, 15, 15]
     });
-    
-    downloadCSV(csv, `pedidos-${new Date().toISOString().split('T')[0]}.csv`);
   }
 
   return (
@@ -101,8 +121,8 @@ export default function Pedidos() {
           <Button onClick={() => setShowPixForm(true)} className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto">
             <Plus className="w-4 h-4 mr-2" /> Nova Compra via PIX
           </Button>
-          <Button onClick={exportCSV} variant="outline" className="border-white/10 w-full sm:w-auto" disabled={!exportData?.length}>
-            <Download className="w-4 h-4 mr-2" /> Exportar CSV
+          <Button onClick={exportXLSX} variant="outline" className="border-white/10 w-full sm:w-auto" disabled={!exportData?.length}>
+            <Download className="w-4 h-4 mr-2" /> Exportar Excel
           </Button>
         </div>
       </div>

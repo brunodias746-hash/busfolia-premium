@@ -1,7 +1,7 @@
 import AdminLayout from "@/components/AdminLayout";
 import { trpc } from "@/lib/trpc";
 import { formatCurrency } from "@/lib/constants";
-import { generateProfessionalCSV, downloadCSV, formatCurrencyForCSV } from "@/lib/csvExport";
+import { downloadXLSX, formatCurrencyForXLSX } from "@/lib/xlsxExport";
 import {
   DollarSign,
   TrendingUp,
@@ -30,7 +30,7 @@ export default function Financeiro() {
     eventId ? { eventId } : undefined
   );
 
-  const handleExportCSV = () => {
+  const handleExportXLSX = () => {
     if (!data) return;
     
     const headers = [
@@ -44,21 +44,36 @@ export default function Financeiro() {
     
     const rows = data.byEvent.map((e) => [
       e.eventName || '',
-      formatCurrencyForCSV(e.totalRevenue),
-      formatCurrencyForCSV(e.totalFees),
-      formatCurrencyForCSV(e.totalRevenue - e.totalFees),
+      formatCurrencyForXLSX(e.totalRevenue),
+      formatCurrencyForXLSX(e.totalFees),
+      formatCurrencyForXLSX(e.totalRevenue - e.totalFees),
       e.orderCount.toString(),
       e.passengerCount.toString(),
     ]);
     
-    const csv = generateProfessionalCSV({
+    // Calculate totals
+    const totalRevenue = data.byEvent.reduce((sum, e) => sum + e.totalRevenue, 0);
+    const totalFees = data.byEvent.reduce((sum, e) => sum + e.totalFees, 0);
+    const totalOrders = data.byEvent.reduce((sum, e) => sum + e.orderCount, 0);
+    const totalPassengers = data.byEvent.reduce((sum, e) => sum + e.passengerCount, 0);
+    
+    const totals = [
+      'TOTAL',
+      formatCurrencyForXLSX(totalRevenue),
+      formatCurrencyForXLSX(totalFees),
+      formatCurrencyForXLSX(totalRevenue - totalFees),
+      totalOrders.toString(),
+      totalPassengers.toString(),
+    ];
+    
+    downloadXLSX({
       title: 'Relatório Financeiro',
-      filename: `financeiro-${new Date().toISOString().split('T')[0]}.csv`,
+      filename: `financeiro-${new Date().toISOString().split('T')[0]}.xlsx`,
       headers,
       rows,
+      totals,
+      columnWidths: [25, 20, 20, 20, 20, 20]
     });
-    
-    downloadCSV(csv, `financeiro-${new Date().toISOString().split('T')[0]}.csv`);
   };
 
   if (isLoading) {
@@ -95,11 +110,11 @@ export default function Financeiro() {
           <Button
             variant="outline"
             size="sm"
-            onClick={handleExportCSV}
+            onClick={handleExportXLSX}
             disabled={!data || data.byEvent.length === 0}
             className="border-white/10"
           >
-            <Download className="w-4 h-4 mr-1" /> CSV
+            <Download className="w-4 h-4 mr-1" /> Excel
           </Button>
         </div>
       </div>
