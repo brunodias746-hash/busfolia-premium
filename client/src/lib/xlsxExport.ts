@@ -60,59 +60,63 @@ export function formatDateTimeForXLSX(date: Date | string): string {
 export function generateProfessionalXLSX(options: XLSXExportOptions): void {
   const { title, filename, headers, rows, totals, columnWidths } = options;
   
-  // Create workbook and worksheet
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.aoa_to_sheet([]);
+  // Build complete data array
+  const data: (string | number)[][] = [];
   
   // Row 1: Title
-  ws['A1'] = { v: title, t: 's' };
+  data.push([title]);
   
   // Row 2: Generation timestamp
   const now = new Date();
   const timestamp = formatDateTimeForXLSX(now);
-  ws['A2'] = { v: `Gerado em: ${timestamp}`, t: 's' };
+  data.push([`Gerado em: ${timestamp}`]);
   
   // Row 3: Empty
-  // (skip)
+  data.push([]);
   
   // Row 4: Headers
-  headers.forEach((header, idx) => {
-    const cellRef = XLSX.utils.encode_cell({ r: 3, c: idx });
-    ws[cellRef] = {
-      v: header,
-      t: 's',
-      s: {
-        font: { bold: true, color: { rgb: 'FFFFFF' } },
-        fill: { fgColor: { rgb: 'D3D3D3' } },
-        alignment: { horizontal: 'center', vertical: 'center' }
-      }
-    };
+  data.push(headers);
+  
+  // Data rows
+  rows.forEach(row => {
+    data.push(row);
   });
   
-  // Data rows (starting from row 5)
-  rows.forEach((row, rowIdx) => {
-    row.forEach((cell, colIdx) => {
-      const cellRef = XLSX.utils.encode_cell({ r: 4 + rowIdx, c: colIdx });
-      ws[cellRef] = {
-        v: cell,
-        t: typeof cell === 'number' ? 'n' : 's'
-      };
-    });
-  });
-  
-  // Totals row (if provided)
+  // Empty row before totals
   if (totals && totals.length > 0) {
-    const totalsRowIdx = 4 + rows.length + 1; // +1 for empty row before totals
-    totals.forEach((total, colIdx) => {
-      const cellRef = XLSX.utils.encode_cell({ r: totalsRowIdx, c: colIdx });
-      ws[cellRef] = {
-        v: total,
-        t: typeof total === 'number' ? 'n' : 's',
-        s: {
-          font: { bold: true },
-          fill: { fgColor: { rgb: 'E8E8E8' } }
-        }
+    data.push([]);
+    data.push(totals);
+  }
+  
+  // Create workbook and worksheet from complete data array
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  
+  // Apply formatting to headers row (row 4, index 3)
+  const headerRowIndex = 3;
+  headers.forEach((_, colIdx) => {
+    const cellRef = XLSX.utils.encode_cell({ r: headerRowIndex, c: colIdx });
+    if (ws[cellRef]) {
+      ws[cellRef].s = {
+        font: { bold: true, color: { rgb: 'FFFFFF' } },
+        fill: { fgColor: { rgb: '4472C4' } },
+        alignment: { horizontal: 'center', vertical: 'center' }
       };
+    }
+  });
+  
+  // Apply formatting to totals row (if exists)
+  if (totals && totals.length > 0) {
+    const totalsRowIndex = data.length - 1;
+    totals.forEach((_, colIdx) => {
+      const cellRef = XLSX.utils.encode_cell({ r: totalsRowIndex, c: colIdx });
+      if (ws[cellRef]) {
+        ws[cellRef].s = {
+          font: { bold: true },
+          fill: { fgColor: { rgb: 'E8E8E8' } },
+          alignment: { horizontal: 'right' }
+        };
+      }
     });
   }
   
