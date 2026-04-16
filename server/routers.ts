@@ -397,6 +397,198 @@ export const appRouter = router({
           passengers: passengers.map((p) => ({ name: p.name, cpf: p.cpf })),
         };
       }),
+
+    // PIX Payment Flow
+    createPixOrder: publicProcedure.input(checkoutSchema).mutation(async ({ input }) => {
+      // 1. Validate event exists and is active
+      const event = await getEventById(input.eventId);
+      if (!event) throw new Error("Evento não encontrado");
+      if (event.status !== "active") throw new Error("Evento não está disponível para compra");
+
+      // 2. Check capacity
+      const qty = input.passengers.length;
+      if (event.soldCount + qty > event.capacity) {
+        throw new Error(`Apenas ${event.capacity - event.soldCount} vagas restantes`);
+      }
+
+      // 3. Get boarding point to determine dynamic base price
+      const boardingPoint = await (async () => {
+        const bps = await getBoardingPointsByEvent(input.eventId);
+        return bps.find(bp => bp.id === input.boardingPointId);
+      })();
+      
+      // Dynamic base price based on boarding point city
+      let basePriceCents = 6000; // Default: R$60,00 (BH or SANTA LUZIA)
+      if (boardingPoint) {
+        if (boardingPoint.city === 'BETIM' || boardingPoint.city === 'CONTAGEM') {
+          basePriceCents = 7000; // R$70,00
+        }
+      }
+      
+      // 4. Calculate total
+      let unitPriceCents = basePriceCents;
+      let feeCents = event.feeCents;
+      let daysCount = 1; // Default for single day
+      
+      // For "multiple" (Múltiplos Dias), calculate price based on number of selected dates
+      if (input.purchaseType === "multiple") {
+        daysCount = input.transportDatesCount || 1;
+        unitPriceCents = basePriceCents * daysCount;
+        feeCents = event.feeCents * daysCount;
+      }
+      // For "all_days" (Passaporte), use fixed price of R$ 200,00
+      else if (input.purchaseType === "all_days") {
+        unitPriceCents = 20000; // R$ 200,00 in cents
+        feeCents = 610; // R$ 6,10 fee for all_days (fixed, not multiplied)
+      }
+      
+      const totalAmountCents = (unitPriceCents + feeCents) * qty;
+
+      // 5. Create order in DB with "pending" status (waiting for PIX payment)
+      const { id: orderId, shortId } = await createOrder({
+        eventId: input.eventId,
+        customerName: input.customerName,
+        customerCpf: input.customerCpf.replace(/\D/g, ""),
+        customerEmail: input.customerEmail,
+        customerPhone: input.customerPhone.replace(/\D/g, ""),
+        boardingPointId: input.boardingPointId,
+        transportDates: input.purchaseType === "all_days" ? JSON.stringify(["Todos os Dias"]) : JSON.stringify([input.transportDate]),
+        purchaseType: input.purchaseType,
+        quantity: qty,
+        unitPriceCents,
+        feeCents,
+        totalAmountCents,
+        status: "pending", // PIX orders start as pending (not pending_checkout)
+      });
+
+      // 6. Create passengers
+      await createPassengers(
+        input.passengers.map((p) => ({
+          orderId,
+          name: p.name,
+          cpf: p.cpf.replace(/\D/g, ""),
+          boardingPointId: p.boardingPointId,
+        }))
+      );
+
+      // 7. Generate PIX QR Code
+      const { generatePixQrCode } = await import("./lib/pix");
+      const { qrCodeDataUrl, pixCopyPaste } = await generatePixQrCode(
+        orderId,
+        shortId,
+        totalAmountCents
+      );
+
+      return {
+        orderId,
+        shortId,
+        totalAmountCents,
+        qrCodeDataUrl,
+        pixCopyPaste,
+        expirationMinutes: 5,
+      };
+    }),
+
+    // Check PIX payment status
+    checkPixStatus: publicProcedure
+      .input(z.object({ orderId: z.number().int().positive() }))
+      .query(async ({ input }) => {
+        const order = await getOrderById(input.orderId);
+        if (!order) return { status: "not_found" as const, order: null };
+
+        // Check if order is paid
+        if (order.status === "paid") {
+          const passengers = await getPassengersByOrder(order.id);
+          const event = await getEventById(order.eventId);
+          const orderDetails = await getOrderWithDetails(order.id);
+          const transportDates = order.transportDates ? JSON.parse(order.transportDates) as string[] : [];
+          const boardingPointLabel = orderDetails?.boardingPoint ? `${orderDetails.boardingPoint.city} - ${orderDetails.boardingPoint.locationName}` : "";
+          
+          return {
+            status: "paid" as const,
+            order: {
+              shortId: order.shortId,
+              customerName: order.customerName,
+              customerEmail: order.customerEmail,
+              quantity: order.quantity,
+              unitPriceCents: order.unitPriceCents,
+              feeCents: order.feeCents,
+              totalAmountCents: order.totalAmountCents,
+              transportDate: transportDates[0] ?? "",
+              transportDates: transportDates,
+              eventName: event?.name ?? "",
+              boardingPoint: boardingPointLabel,
+              purchaseType: order.purchaseType,
+            },
+            passengers: passengers.map((p) => ({ name: p.name, cpf: p.cpf })),
+          };
+        }
+
+        // Check if order has expired (5 minutes)
+        const { isPixExpired } = await import("./lib/pix");
+        if (isPixExpired(order.createdAt)) {
+          // Mark as failed/canceled
+          await updateOrderStatus(order.id, "canceled");
+          return { status: "expired" as const, order: null };
+        }
+
+        return { status: "pending" as const, order: null };
+      }),
+
+    // Mark PIX order as paid (called after manual verification or webhook)
+    confirmPixPayment: publicProcedure
+      .input(z.object({ orderId: z.number().int().positive() }))
+      .mutation(async ({ input }) => {
+        const order = await getOrderById(input.orderId);
+        if (!order) throw new Error("Pedido não encontrado");
+        if (order.status !== "pending") throw new Error("Pedido não está aguardando pagamento PIX");
+
+        // Update order status to paid
+        await updateOrderStatus(order.id, "paid");
+
+        // Create payment record
+        await createPayment({
+          orderId: order.id,
+          stripePaymentIntentId: null,
+          stripeSessionId: null,
+          method: "pix",
+          amountReceivedCents: order.totalAmountCents,
+          status: "succeeded",
+          processedAt: new Date(),
+        });
+
+        // Increment sold count
+        await incrementEventSoldCount(order.eventId, order.quantity);
+
+        // Send confirmation email
+        const orderDetails = await getOrderWithDetails(order.id);
+        if (orderDetails && orderDetails.boardingPoint) {
+          const { sendEmail, generateOrderConfirmationEmail } = await import("./_core/email");
+          const boardingPointLabel = `${orderDetails.boardingPoint.city} - ${orderDetails.boardingPoint.locationName}`;
+          const transportDates = JSON.parse(orderDetails.transportDates || "[]") as string[];
+          const event = await getEventById(order.eventId);
+          
+          const emailHtml = generateOrderConfirmationEmail({
+            customerName: orderDetails.customerName,
+            customerEmail: orderDetails.customerEmail,
+            shortId: orderDetails.shortId,
+            boardingPoint: boardingPointLabel,
+            transportDates,
+            quantity: orderDetails.quantity,
+            totalAmountCents: orderDetails.totalAmountCents,
+            whatsappLink: event?.groupLink || "https://chat.whatsapp.com/busfolia",
+            purchaseType: orderDetails.purchaseType as 'single' | 'multiple' | 'all_days' | undefined,
+          });
+          
+          await sendEmail({
+            to: orderDetails.customerEmail,
+            subject: `Confirmação de Pedido - BusFolia ${orderDetails.shortId}`,
+            html: emailHtml,
+          });
+        }
+
+        return { success: true, message: "Pagamento confirmado com sucesso" };
+      }),
   }),
 
   // ─── Admin: Dashboard ───

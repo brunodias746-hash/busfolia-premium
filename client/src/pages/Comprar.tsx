@@ -84,6 +84,9 @@ export default function Comprar() {
   const [couponMessage, setCouponMessage] = useState<{ type: 'success' | 'error' | null; text: string }>({ type: null, text: "" });
   const [appliedCoupon, setAppliedCoupon] = useState<{ couponId: string; discountPercentage: number; discountAmountCents: number } | null>(null);
   const [couponValidating, setCouponValidating] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'pix'>('stripe');
+  const [pixData, setPixData] = useState<{ orderId: number; shortId: string; qrCodeDataUrl: string; pixCopyPaste: string; totalAmountCents: number } | null>(null);
+  const [pixOrderId, setPixOrderId] = useState<number | null>(null);
 
   // Carregar dados salvos do localStorage ao montar o componente
   useEffect(() => {
@@ -128,7 +131,43 @@ export default function Comprar() {
     },
   });
 
+  const createPixOrder = trpc.checkout.createPixOrder.useMutation({
+    onSuccess: (data) => {
+      setPixData(data);
+      setPixOrderId(data.orderId);
+      setStep(3);
+      toast.success("Codigo PIX gerado com sucesso!");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Erro ao criar pedido PIX");
+    },
+  });
 
+  const checkPixStatus = trpc.checkout.checkPixStatus.useQuery(
+    { orderId: pixOrderId ?? 0 },
+    { enabled: pixOrderId !== null && step === 3, refetchInterval: 2000 }
+  );
+
+  const confirmPixPayment = trpc.checkout.confirmPixPayment.useMutation({
+    onSuccess: () => {
+      toast.success("Pagamento confirmado! Redirecionando...");
+      setTimeout(() => {
+        if (pixOrderId) {
+          window.location.href = `/sucesso?order_id=${pixOrderId}`;
+        }
+      }, 1500);
+    },
+    onError: (err) => {
+      toast.error(err.message || "Erro ao confirmar pagamento");
+    },
+  });
+
+  // Auto-confirm PIX payment when status changes to paid
+  useEffect(() => {
+    if (checkPixStatus.data?.status === "paid" && pixOrderId && !confirmPixPayment.isPending) {
+      confirmPixPayment.mutate({ orderId: pixOrderId });
+    }
+  }, [checkPixStatus.data?.status, pixOrderId, confirmPixPayment.isPending, confirmPixPayment]);
 
   const dates = useMemo(() => {
     if (!event?.eventDate) return [];
@@ -745,9 +784,58 @@ export default function Comprar() {
                 </div>
               </div>
 
-              <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 flex gap-3 mb-6">
-                <ShieldCheck className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-green-100">Pagamento seguro via Stripe. Seus dados estão protegidos.</p>
+              {/* Payment Method Selection */}
+              <div className="space-y-3 mb-6">
+                <p className="text-sm font-semibold mb-3">Escolha o metodo de pagamento:</p>
+                
+                <div 
+                  onClick={() => setPaymentMethod('stripe')}
+                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                    paymentMethod === 'stripe' 
+                      ? 'border-primary bg-primary/10' 
+                      : 'border-white/10 hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                      paymentMethod === 'stripe' ? 'border-primary' : 'border-white/30'
+                    }`}>
+                      {paymentMethod === 'stripe' && <div className="w-2 h-2 bg-primary rounded-full" />}
+                    </div>
+                    <div>
+                      <p className="font-semibold">Cartao de Credito (Stripe)</p>
+                      <p className="text-xs text-muted-foreground">Seguro e rapido</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div 
+                  onClick={() => setPaymentMethod('pix')}
+                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                    paymentMethod === 'pix' 
+                      ? 'border-primary bg-primary/10' 
+                      : 'border-white/10 hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                      paymentMethod === 'pix' ? 'border-primary' : 'border-white/30'
+                    }`}>
+                      {paymentMethod === 'pix' && <div className="w-2 h-2 bg-primary rounded-full" />}
+                    </div>
+                    <div>
+                      <p className="font-semibold">PIX</p>
+                      <p className="text-xs text-muted-foreground">Instantaneo - Valido por 5 minutos</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 flex gap-3 mb-6">
+                <ShieldCheck className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-blue-100">
+                  {paymentMethod === 'stripe' ? 'Pagamento seguro via Stripe' : 'PIX instantaneo - Nenhuma taxa adicional'}
+                </p>
               </div>
 
               {/* Navigation */}
@@ -755,20 +843,154 @@ export default function Comprar() {
                 <Button variant="outline" onClick={() => setStep(1)} className="flex-1 border-white/10 hover:bg-white/5">
                   <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
                 </Button>
-                <Button
-                  onClick={handleSubmit}
-                  disabled={createSession.isPending}
-                  className="flex-1 gold-gradient text-black font-bold"
+                {paymentMethod === 'stripe' ? (
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={createSession.isPending}
+                    className="flex-1 gold-gradient text-black font-bold"
+                  >
+                    {createSession.isPending ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processando...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="w-4 h-4 mr-2" /> Pagar com Stripe
+                      </>
+                    )}
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => {
+                      if (!event) return;
+                      const passengersWithBP = form.passengers.map((p) => ({
+                        ...p,
+                        boardingPointId: p.boardingPointId || form.boardingPointId,
+                      }));
+                      createPixOrder.mutate({
+                        eventId: event.id,
+                        customerName: form.customerName,
+                        customerCpf: form.customerCpf,
+                        customerEmail: form.customerEmail,
+                        customerPhone: form.customerPhone,
+                        boardingPointId: form.boardingPointId,
+                        transportDate: form.transportDate,
+                        transportDatesCount: form.purchaseType === 'multiple' ? form.transportDates.length : undefined,
+                        purchaseType: form.purchaseType,
+                        passengers: passengersWithBP,
+                        origin: window.location.origin,
+                        couponCode: appliedCoupon ? couponCode : undefined,
+                      });
+                    }}
+                    disabled={createPixOrder.isPending}
+                    className="flex-1 gold-gradient text-black font-bold"
+                  >
+                    {createPixOrder.isPending ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Gerando QR Code...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="w-4 h-4 mr-2" /> Gerar QR Code PIX
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 3: PIX Payment */}
+        {step === 3 && pixData && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-lg sm:text-xl font-bold mb-2">Escaneie o codigo PIX</h2>
+              <p className="text-sm text-muted-foreground mb-6">Abra seu app bancario e escaneie o QR Code abaixo</p>
+
+              {/* QR Code Display */}
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-8 mb-6 flex flex-col items-center">
+                <img 
+                  src={pixData.qrCodeDataUrl} 
+                  alt="PIX QR Code" 
+                  className="w-64 h-64 rounded-lg"
+                />
+                <p className="text-xs text-muted-foreground mt-4">Codigo PIX valido por 5 minutos</p>
+              </div>
+
+              {/* Copy PIX Code */}
+              <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-6">
+                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Ou copie o codigo PIX:</p>
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    value={pixData.pixCopyPaste}
+                    readOnly
+                    className="flex-1 bg-white/5 border border-white/10 rounded px-3 py-2 text-sm font-mono text-muted-foreground"
+                  />
+                  <Button
+                    onClick={() => {
+                      navigator.clipboard.writeText(pixData.pixCopyPaste);
+                      toast.success("Codigo copiado!");
+                    }}
+                    className="gold-gradient text-black font-bold"
+                  >
+                    Copiar
+                  </Button>
+                </div>
+              </div>
+
+              {/* Order Details */}
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4 mb-6">
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">PEDIDO</p>
+                  <p className="font-bold text-lg">#{pixData.shortId}</p>
+                </div>
+
+                <div className="border-t border-white/10 pt-4">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">VALOR</p>
+                  <p className="font-bold text-2xl text-primary">{formatCurrency(pixData.totalAmountCents)}</p>
+                </div>
+
+                <div className="border-t border-white/10 pt-4">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">STATUS</p>
+                  {checkPixStatus.isLoading && <p className="text-sm">Aguardando pagamento...</p>}
+                  {checkPixStatus.data?.status === "pending" && <p className="text-sm text-yellow-400">Aguardando pagamento...</p>}
+                  {checkPixStatus.data?.status === "paid" && <p className="text-sm text-green-400">Pagamento confirmado!</p>}
+                  {checkPixStatus.data?.status === "expired" && <p className="text-sm text-red-400">Codigo expirado</p>}
+                </div>
+              </div>
+
+              {/* Instructions */}
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-6">
+                <p className="text-sm text-blue-100">
+                  <strong>Como funciona:</strong><br/>
+                  1. Abra seu app bancario<br/>
+                  2. Selecione a opcao PIX<br/>
+                  3. Escaneie o QR Code ou copie o codigo<br/>
+                  4. Confirme o pagamento<br/>
+                  5. Voce recebera a confirmacao automaticamente
+                </p>
+              </div>
+
+              {/* Navigation */}
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setStep(2);
+                    setPixData(null);
+                    setPixOrderId(null);
+                  }} 
+                  className="flex-1 border-white/10 hover:bg-white/5"
                 >
-                  {createSession.isPending ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processando...
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard className="w-4 h-4 mr-2" /> Pagar com Stripe
-                    </>
-                  )}
+                  <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
+                </Button>
+                <Button
+                  disabled={true}
+                  className="flex-1 bg-white/10 text-muted-foreground cursor-not-allowed"
+                >
+                  Aguardando pagamento...
                 </Button>
               </div>
             </div>
@@ -777,4 +999,5 @@ export default function Comprar() {
       </div>
     </PublicLayout>
   );
+
 }
