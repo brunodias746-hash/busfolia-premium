@@ -262,3 +262,15 @@
 - [x] Primeira linha: titulo + data/hora geracao
 - [x] Testar em Excel
 - [x] Checkpoint: busfolia-professional-export-templates-v2
+
+## PHASE 12: CRITICAL TICKET/INGRESSO SYSTEM FIXES
+- [x] Fix rota /ingresso/[shortId] que retorna 404
+- [x] Corrigir exibição de múltiplas datas em order details modal
+- [x] Corrigir exibição de múltiplas datas em ticket/ingresso gerado
+- [x] Corrigir exibição de múltiplas datas em email de confirmação
+- [x] Fix validação do Passaporte no formulário PIX manual
+- [x] Testar "Ver Ingresso" button
+- [x] Testar múltiplas datas em Múltiplos Dias
+- [x] Testar múltiplas datas em Passaporte
+- [x] Testar manual PIX com Passaporte
+- [x] Checkpoint: busfolia-ticket-view-manual-pix-fixes-v2

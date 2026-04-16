@@ -294,10 +294,19 @@ function PixOrderForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
     setError("");
     setSuccess("");
 
-    if (!eventId || !customerName || !customerEmail || !boardingPointId || selectedDates.length === 0 || !totalAmountPaid) {
+    // Validate required fields - dates not required for Passaporte (all_days)
+    const requiresDates = purchaseType !== "all_days";
+    const hasDates = selectedDates.length > 0;
+    
+    if (!eventId || !customerName || !customerEmail || !boardingPointId || !totalAmountPaid || (requiresDates && !hasDates)) {
       setError("Preencha todos os campos obrigatórios");
       return;
     }
+    
+    // For Passaporte, use a default date if none selected
+    const datesForSubmit = purchaseType === "all_days" && selectedDates.length === 0 
+      ? [new Date().toISOString().split('T')[0]] 
+      : selectedDates;
 
     if (passengers.some(p => !p.name || !p.email)) {
       setError("Preencha nome e email de todos os passageiros");
@@ -317,7 +326,7 @@ function PixOrderForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
         customerEmail,
         boardingPointId,
         purchaseType,
-        transportDates: selectedDates,
+        transportDates: datesForSubmit,
         quantity: passengers.length,
         passengers: passengers.map(p => ({ name: p.name, email: p.email })),
         totalAmountPaid: Math.round(amountValue * 100), // Convert to cents

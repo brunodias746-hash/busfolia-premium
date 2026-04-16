@@ -197,6 +197,21 @@ export async function getOrderById(id: number) {
   return result[0];
 }
 
+export async function getOrderByShortId(shortId: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(orders).where(eq(orders.shortId, shortId)).limit(1);
+  if (!result.length) return undefined;
+  
+  const order = result[0];
+  const boardingPoint = await db.select().from(boardingPoints).where(eq(boardingPoints.id, order.boardingPointId)).limit(1);
+  
+  return {
+    ...order,
+    boardingPointLabel: boardingPoint[0] ? `${boardingPoint[0].city} - ${boardingPoint[0].locationName}` : 'Ponto desconhecido',
+  };
+}
+
 export async function getOrderWithDetails(id: number) {
   const db = await getDb();
   if (!db) return undefined;

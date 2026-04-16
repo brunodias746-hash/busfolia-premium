@@ -17,6 +17,7 @@ import {
   createOrder,
   getOrderByStripeSession,
   getOrderById,
+  getOrderByShortId,
   updateOrderStatus,
   updateOrderStripeSession,
   deleteOrder,
@@ -525,6 +526,11 @@ export const appRouter = router({
 
     // Orders
     orders: router({
+      getByShortId: publicProcedure
+        .input(z.object({ shortId: z.string() }))
+        .query(async ({ input }) => {
+          return getOrderByShortId(input.shortId);
+        }),
       list: adminProcedure
         .input(z.object({ eventId: z.number().optional() }).optional())
         .query(async ({ input }) => {

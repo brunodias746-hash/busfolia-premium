@@ -21,6 +21,7 @@ const AdminPedidos = lazy(() => import("./pages/admin/Pedidos"));
 const AdminPassageiros = lazy(() => import("./pages/admin/Passageiros"));
 const AdminCheckin = lazy(() => import("./pages/admin/Checkin"));
 const AdminFinanceiro = lazy(() => import("./pages/admin/Financeiro"));
+const Ingresso = lazy(() => import("./pages/Ingresso"));
 
 function AdminFallback() {
   return (
@@ -46,6 +47,7 @@ function Router() {
       <Route path="/falha" component={Falha} />
       <Route path="/duvidas" component={Duvidas} />
       <Route path="/contato" component={Contato} />
+      <Route path="/ingresso/:shortId">{() => <Suspense fallback={<AdminFallback />}><Ingresso /></Suspense>}</Route>
 
       {/* Admin routes */}
       <Route path="/admin">{() => <Suspense fallback={<AdminFallback />}><AdminDashboard /></Suspense>}</Route>
