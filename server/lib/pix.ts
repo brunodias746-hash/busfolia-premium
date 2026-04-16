@@ -7,12 +7,15 @@ export const PIX_CONFIG = {
   KEY: 'busfolia@hotmail.com',
   MERCHANT_NAME: 'BusFolia',
   CITY: 'Belo Horizonte',
+  COUNTRY_CODE: 'BR',
+  MERCHANT_CATEGORY: '5411', // Passenger Transport
+  CURRENCY: '986', // BRL
   EXPIRATION_MINUTES: 5,
 };
 
 /**
  * Generate PIX QR Code for a specific order
- * Uses EMV standard for PIX
+ * Uses correct EMV standard for PIX BR Code
  */
 export async function generatePixQrCode(
   orderId: number,
@@ -23,9 +26,8 @@ export async function generatePixQrCode(
     // Amount in BRL (convert from cents)
     const amountBRL = (amountCents / 100).toFixed(2);
 
-    // Generate PIX copy-paste code (EMV standard)
-    // Format: 00020126580014br.gov.bcb.brcode01051.0.0 + additional fields
-    const pixCopyPaste = generatePixEmvCode(
+    // Generate PIX copy-paste code (EMV BR Code standard)
+    const pixCopyPaste = generateBrCode(
       PIX_CONFIG.KEY,
       PIX_CONFIG.MERCHANT_NAME,
       PIX_CONFIG.CITY,
@@ -33,7 +35,7 @@ export async function generatePixQrCode(
       shortId
     );
 
-    // Generate QR Code from the EMV code
+    // Generate QR Code from the BR Code
     const qrCodeDataUrl = await QRCode.toDataURL(pixCopyPaste, {
       errorCorrectionLevel: 'H',
       type: 'image/png',
@@ -56,10 +58,10 @@ export async function generatePixQrCode(
 }
 
 /**
- * Generate PIX EMV code (copy-paste version)
- * Based on BC (Banco Central) standard
+ * Generate BR Code (PIX EMV code) according to Banco Central specification
+ * Reference: https://www.bcb.gov.br/content/dam/Microsites/Pix/Regulamentacao_Pix/Especificacao_QRCode.pdf
  */
-function generatePixEmvCode(
+function generateBrCode(
   pixKey: string,
   merchantName: string,
   city: string,
@@ -72,71 +74,78 @@ function generatePixEmvCode(
     return `${tag}${length}${value}`;
   };
 
-  // Build the EMV structure
-  let emv = '';
+  // Helper to create nested TLV
+  const nestedTlv = (tag: string, fields: string): string => {
+    const length = fields.length.toString().padStart(2, '0');
+    return `${tag}${length}${fields}`;
+  };
 
-  // Payload Format Indicator (00)
-  emv += tlv('00', '01');
+  let brCode = '';
 
-  // Point of Initiation Method (01) - 12 = Static QR Code
-  emv += tlv('01', '12');
+  // 00 - Payload Format Indicator (mandatory, always "01")
+  brCode += tlv('00', '01');
 
-  // Merchant Account Information (26)
+  // 01 - Point of Initiation Method (11 = Dynamic QR Code)
+  brCode += tlv('01', '11');
+
+  // 26 - Merchant Account Information (PIX Key)
   let merchantInfo = '';
-  merchantInfo += tlv('00', '0br.gov.bcb.brcode'); // GUI
+  merchantInfo += tlv('00', '0br.gov.bcb.brcode'); // GUI (Global Unique Identifier)
   merchantInfo += tlv('01', '01'); // Version
-  merchantInfo += tlv('02', pixKey); // PIX Key (email)
-  emv += tlv('26', merchantInfo);
+  merchantInfo += tlv('02', pixKey); // PIX Key (email, CPF, phone, etc)
+  brCode += nestedTlv('26', merchantInfo);
 
-  // Merchant Category Code (52) - 5411 = Passenger Transport
-  emv += tlv('52', '5411');
+  // 52 - Merchant Category Code (5411 = Passenger Transport)
+  brCode += tlv('52', PIX_CONFIG.MERCHANT_CATEGORY);
 
-  // Transaction Currency (53) - 986 = BRL
-  emv += tlv('53', '986');
+  // 53 - Transaction Currency (986 = BRL)
+  brCode += tlv('53', PIX_CONFIG.CURRENCY);
 
-  // Transaction Amount (54) - only if fixed amount
+  // 54 - Transaction Amount (only for fixed amount)
   if (amount && amount !== '0.00') {
-    emv += tlv('54', amount);
+    brCode += tlv('54', amount);
   }
 
-  // Country Code (58) - BR
-  emv += tlv('58', 'BR');
+  // 58 - Country Code (BR)
+  brCode += tlv('58', PIX_CONFIG.COUNTRY_CODE);
 
-  // Merchant Name (59)
-  emv += tlv('59', merchantName.substring(0, 25));
+  // 59 - Merchant Name (max 25 chars)
+  brCode += tlv('59', merchantName.substring(0, 25));
 
-  // Merchant City (60)
-  emv += tlv('60', city.substring(0, 15));
+  // 60 - Merchant City (max 15 chars)
+  brCode += tlv('60', city.substring(0, 15));
 
-  // Additional Data Field Template (62)
+  // 62 - Additional Data Field Template
   let additionalData = '';
-  additionalData += tlv('05', txId.substring(0, 25)); // Reference Label (Transaction ID)
-  emv += tlv('62', additionalData);
+  // 05 - Reference Label (Transaction ID, max 25 chars)
+  additionalData += tlv('05', txId.substring(0, 25));
+  brCode += nestedTlv('62', additionalData);
 
-  // CRC16 checksum (63)
-  const crc = calculateCrc16(emv + '6304');
-  emv += `6304${crc}`;
+  // 63 - CRC16 checksum (mandatory, calculated over entire code including this field)
+  // The CRC field itself is "6304" + 4-digit hex checksum
+  const crc = calculateCrc16CCITT(brCode + '6304');
+  brCode += `6304${crc}`;
 
-  return emv;
+  return brCode;
 }
 
 /**
- * Calculate CRC16 checksum for PIX EMV code
+ * Calculate CRC16-CCITT checksum for BR Code
+ * This is the correct algorithm used by Banco Central
  */
-function calculateCrc16(data: string): string {
+function calculateCrc16CCITT(data: string): string {
   let crc = 0xffff;
   const poly = 0x1021;
 
   for (let i = 0; i < data.length; i++) {
     const byte = data.charCodeAt(i);
-    crc ^= byte << 8;
+    crc ^= (byte << 8);
 
     for (let j = 0; j < 8; j++) {
-      crc <<= 1;
+      crc = crc << 1;
       if (crc & 0x10000) {
-        crc ^= poly;
+        crc = (crc ^ poly) & 0xffff;
       }
-      crc &= 0xffff;
     }
   }
 
