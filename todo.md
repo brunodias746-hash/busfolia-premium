@@ -232,3 +232,12 @@
 - [x] Manter styling do dropdown de ponto de embarque
 - [x] Testar com valor manual e múltiplos passageiros
 - [x] Checkpoint: busfolia-admin-manual-pix-form-final-update-v1
+
+## PHASE 9: ADD OFFICIAL LOGO TO CONFIRMATION EMAILS
+- [x] Upload logo BusFolia para CDN/S3
+- [x] Atualizar generateOrderConfirmationEmail para incluir logo no topo
+- [x] Logo centralizado com padding/margin apropriado
+- [x] Manter proporcoes originais da logo
+- [x] Logo em todos os tipos de confirmacao (Stripe, PIX manual)
+- [x] Testar emails com logo
+- [x] Checkpoint: busfolia-email-logo-official-v1

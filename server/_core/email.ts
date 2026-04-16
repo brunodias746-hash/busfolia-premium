@@ -196,7 +196,8 @@ export function generateOrderConfirmationEmail(data: OrderEmailData): string {
 <body>
   <div class="container">
     <div class="header">
-      <h1>🚌 BusFolia</h1>
+      <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/LGOOOOO_0bc4a8e8.png" alt="BusFolia Logo" style="max-width: 200px; height: auto; margin-bottom: 15px;">
+      <h1>BusFolia</h1>
       <p>Transporte Premium para Eventos</p>
     </div>
 
