@@ -202,3 +202,14 @@
 - [x] Adicionar importação de getOrderWithDetails ao routers.ts
 - [ ] Instruções para usuário configurar webhook no Stripe Dashboard
 - [ ] Testes manuais de pagamento com cartão de teste (4242 4242 4242 4242)
+
+## PHASE 6: MANUAL PIX ORDER CREATION IN ADMIN
+- [x] Adicionar botão "Nova Compra via PIX" no topo da página Pedidos
+- [x] Criar formulário com campos: nome, email, ponto embarque, tipo passagem, data(s), quantidade passageiros
+- [x] Implementar tRPC procedure para criar pedido com status "paid"
+- [x] Calcular preço correto (base + taxa R$6,10)
+- [x] Reutilizar template de email existente
+- [x] Enviar email de confirmação automático
+- [x] Testar fluxo completo
+- [x] Checkpoint: busfolia-admin-manual-pix-order-creation-v1
+- [x] Deploy para produção

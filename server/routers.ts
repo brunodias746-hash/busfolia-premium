@@ -530,6 +530,124 @@ export const appRouter = router({
         .query(async ({ input }) => {
           return getAllOrders(input?.eventId);
         }),
+      createPixOrder: adminProcedure
+        .input(
+          z.object({
+            eventId: z.number().int().positive(),
+            customerName: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
+            customerEmail: z.string().email("E-mail inválido"),
+            boardingPointId: z.number().int().positive(),
+            purchaseType: z.enum(["single", "multiple", "all_days"]),
+            transportDates: z.array(z.string()).min(1, "Selecione pelo menos uma data"),
+            quantity: z.number().int().min(1, "Quantidade mínima é 1"),
+          })
+        )
+        .mutation(async ({ input }) => {
+          // 1. Validate event exists and is active
+          const event = await getEventById(input.eventId);
+          if (!event) throw new Error("Evento não encontrado");
+          if (event.status !== "active") throw new Error("Evento não está disponível");
+
+          // 2. Check capacity
+          if (event.soldCount + input.quantity > event.capacity) {
+            throw new Error(`Apenas ${event.capacity - event.soldCount} vagas restantes`);
+          }
+
+          // 3. Get boarding point to determine dynamic base price
+          const boardingPoint = await (async () => {
+            const bps = await getBoardingPointsByEvent(input.eventId);
+            return bps.find(bp => bp.id === input.boardingPointId);
+          })();
+          
+          if (!boardingPoint) throw new Error("Ponto de embarque não encontrado");
+          
+          // Dynamic base price based on boarding point city
+          let basePriceCents = 6000; // Default: R$60,00 (BH or SANTA LUZIA)
+          if (boardingPoint.city === 'BETIM' || boardingPoint.city === 'CONTAGEM') {
+            basePriceCents = 7000; // R$70,00
+          }
+          
+          // 4. Calculate total
+          let unitPriceCents = basePriceCents;
+          let feeCents = 610; // R$6,10 fixed fee
+          let daysCount = 1;
+          
+          if (input.purchaseType === "multiple") {
+            daysCount = input.transportDates.length;
+            unitPriceCents = basePriceCents * daysCount;
+            feeCents = 610 * daysCount;
+          } else if (input.purchaseType === "all_days") {
+            unitPriceCents = 20000; // R$200,00
+            feeCents = 610; // R$6,10 fixed
+          }
+          
+          const totalAmountCents = (unitPriceCents + feeCents) * input.quantity;
+
+          // 5. Create order in DB
+          const { id: orderId, shortId } = await createOrder({
+            eventId: input.eventId,
+            customerName: input.customerName,
+            customerCpf: "", // PIX orders don't require CPF initially
+            customerEmail: input.customerEmail,
+            customerPhone: "", // PIX orders don't require phone initially
+            boardingPointId: input.boardingPointId,
+            transportDates: JSON.stringify(input.transportDates),
+            purchaseType: input.purchaseType,
+            quantity: input.quantity,
+            unitPriceCents,
+            feeCents,
+            totalAmountCents,
+            status: "paid", // Manually created PIX orders are marked as paid
+          });
+
+          // 6. Create passengers (use customer name for first passenger)
+          await createPassengers([
+            {
+              orderId,
+              name: input.customerName,
+              cpf: "",
+              boardingPointId: input.boardingPointId,
+            },
+          ]);
+
+          // 7. Create payment record
+          await createPayment({
+            orderId,
+            method: "pix",
+            amountReceivedCents: totalAmountCents,
+            status: "completed",
+            processedAt: new Date(),
+          });
+
+          // 8. Increment event sold count
+          await incrementEventSoldCount(input.eventId, input.quantity);
+
+          // 9. Send confirmation email
+          try {
+            const { generateOrderConfirmationEmail, sendEmail } = await import("./_core/email");
+            const emailHtml = generateOrderConfirmationEmail({
+              customerName: input.customerName,
+              customerEmail: input.customerEmail,
+              shortId,
+              boardingPoint: `${boardingPoint.city} - ${boardingPoint.locationName}`,
+              transportDates: input.transportDates,
+              quantity: input.quantity,
+              totalAmountCents,
+              whatsappLink: event.groupLink || "https://chat.whatsapp.com/KjaIneid0P9F6JScKsV7Po",
+            });
+            
+            await sendEmail({
+              to: input.customerEmail,
+              subject: `Confirmação de Pedido PIX - BusFolia ${shortId}`,
+              html: emailHtml,
+            });
+          } catch (err: any) {
+            console.error("[PIX Order] Error sending email:", err.message);
+            // Don't fail the order creation if email fails
+          }
+
+          return { success: true, orderId, shortId, totalAmountCents };
+        }),
       byId: adminProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => {
         const order = await getOrderById(input.id);
         if (!order) return null;

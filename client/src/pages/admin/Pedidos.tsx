@@ -1,7 +1,7 @@
 import AdminLayout from "@/components/AdminLayout";
 import { trpc } from "@/lib/trpc";
 import { formatCurrency } from "@/lib/constants";
-import { ShoppingCart, Loader2, Eye, Download, Trash2, Mail, Ticket } from "lucide-react";
+import { ShoppingCart, Loader2, Eye, Download, Trash2, Mail, Ticket, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
@@ -23,6 +23,7 @@ export default function Pedidos() {
   const { data: exportData } = trpc.admin.orders.exportCsv.useQuery();
   const [detailId, setDetailId] = useState<number | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [showPixForm, setShowPixForm] = useState(false);
   const deleteOrderMutation = trpc.admin.orders.delete.useMutation();
   const resendEmailMutation = trpc.admin.orders.resendEmail.useMutation();
   const utils = trpc.useUtils();
@@ -81,9 +82,14 @@ export default function Pedidos() {
           <h2 className="text-2xl font-black font-heading">Pedidos</h2>
           <p className="text-muted-foreground text-sm">{orders?.length ?? 0} pedidos pagos</p>
         </div>
-        <Button onClick={exportCSV} variant="outline" className="border-white/10 w-full sm:w-auto" disabled={!exportData?.length}>
-          <Download className="w-4 h-4 mr-2" /> Exportar CSV
-        </Button>
+        <div className="flex gap-3 w-full sm:w-auto flex-col sm:flex-row">
+          <Button onClick={() => setShowPixForm(true)} className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto">
+            <Plus className="w-4 h-4 mr-2" /> Nova Compra via PIX
+          </Button>
+          <Button onClick={exportCSV} variant="outline" className="border-white/10 w-full sm:w-auto" disabled={!exportData?.length}>
+            <Download className="w-4 h-4 mr-2" /> Exportar CSV
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -143,6 +149,8 @@ export default function Pedidos() {
 
       {detailId && <OrderDetail orderId={detailId} onClose={() => setDetailId(null)} />}
 
+      {showPixForm && <PixOrderForm onClose={() => setShowPixForm(false)} onSuccess={() => { setShowPixForm(false); utils.admin.orders.list.invalidate(); utils.admin.dashboard.invalidate(); }} />}
+
       {deleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setDeleteConfirm(null)}>
           <div className="glass-card rounded-2xl p-6 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
@@ -199,6 +207,210 @@ function OrderDetail({ orderId, onClose }: { orderId: number; onClose: () => voi
           </div>
         )}
         <Button onClick={onClose} variant="outline" className="w-full mt-4 border-white/10">Fechar</Button>
+      </div>
+    </div>
+  );
+}
+
+
+function PixOrderForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
+  const { data: events } = trpc.events.list.useQuery();
+  const [eventId, setEventId] = useState<number | null>(null);
+  const [customerName, setCustomerName] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [boardingPointId, setBoardingPointId] = useState<number | null>(null);
+  const [purchaseType, setPurchaseType] = useState<"single" | "multiple" | "all_days">("single");
+  const [selectedDates, setSelectedDates] = useState<string[]>([]);
+  const [quantity, setQuantity] = useState(1);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const { data: boardingPoints } = trpc.events.boardingPoints.useQuery(
+    { eventId: eventId ?? 0 },
+    { enabled: !!eventId }
+  );
+
+  const createPixOrderMutation = trpc.admin.orders.createPixOrder.useMutation();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    if (!eventId || !customerName || !customerEmail || !boardingPointId || selectedDates.length === 0) {
+      setError("Preencha todos os campos obrigatórios");
+      return;
+    }
+
+    try {
+      const result = await createPixOrderMutation.mutateAsync({
+        eventId,
+        customerName,
+        customerEmail,
+        boardingPointId,
+        purchaseType,
+        transportDates: selectedDates,
+        quantity,
+      });
+
+      setSuccess(`Pedido criado com sucesso! Número: ${result.shortId}`);
+      setTimeout(() => {
+        onSuccess();
+      }, 2000);
+    } catch (err: any) {
+      setError(err.message || "Erro ao criar pedido");
+    }
+  };
+
+  const availableDates = ["05 Junho", "06 Junho", "12 Junho", "13 Junho"];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+      <div className="glass-card rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-bold">Nova Compra via PIX</h3>
+          <button onClick={onClose} className="text-muted-foreground hover:text-white">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {error && <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 mb-4 text-red-200 text-sm">{error}</div>}
+        {success && <div className="bg-green-500/20 border border-green-500/50 rounded-lg p-3 mb-4 text-green-200 text-sm">{success}</div>}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Evento *</label>
+            <select
+              value={eventId ?? ""}
+              onChange={(e) => { setEventId(Number(e.target.value)); setBoardingPointId(null); }}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              required
+            >
+              <option value="">Selecione um evento</option>
+              {events?.map((e) => (
+                <option key={e.id} value={e.id}>{e.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Nome Completo *</label>
+              <input
+                type="text"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="João Silva"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">E-mail *</label>
+              <input
+                type="email"
+                value={customerEmail}
+                onChange={(e) => setCustomerEmail(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="joao@example.com"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Ponto de Embarque *</label>
+            <select
+              value={boardingPointId ?? ""}
+              onChange={(e) => setBoardingPointId(Number(e.target.value))}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              required
+              disabled={!eventId}
+            >
+              <option value="">Selecione um ponto</option>
+              {boardingPoints?.map((bp) => (
+                <option key={bp.id} value={bp.id}>{bp.city} - {bp.locationName}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Tipo de Passagem *</label>
+            <div className="grid grid-cols-3 gap-2">
+              {["single", "multiple", "all_days"].map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => { setPurchaseType(type as any); setSelectedDates([]); }}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    purchaseType === type
+                      ? "bg-primary text-black"
+                      : "bg-white/5 border border-white/10 text-white hover:bg-white/10"
+                  }`}
+                >
+                  {type === "single" ? "Dia Único" : type === "multiple" ? "Múltiplos" : "Passaporte"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {purchaseType !== "all_days" && (
+            <div>
+              <label className="block text-sm font-medium mb-2">Data(s) da Viagem *</label>
+              <div className="grid grid-cols-2 gap-2">
+                {availableDates.map((date) => (
+                  <button
+                    key={date}
+                    type="button"
+                    onClick={() => {
+                      if (purchaseType === "single") {
+                        setSelectedDates([date]);
+                      } else {
+                        setSelectedDates((prev) =>
+                          prev.includes(date) ? prev.filter((d) => d !== date) : [...prev, date]
+                        );
+                      }
+                    }}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      selectedDates.includes(date)
+                        ? "bg-primary text-black"
+                        : "bg-white/5 border border-white/10 text-white hover:bg-white/10"
+                    }`}
+                  >
+                    {date}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Quantidade de Passageiros *</label>
+            <input
+              type="number"
+              value={quantity}
+              onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              min="1"
+              required
+            />
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <Button type="button" variant="outline" className="flex-1 border-white/10" onClick={onClose}>
+              Cancelar
+            </Button>
+            <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700" disabled={createPixOrderMutation.isPending}>
+              {createPixOrderMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Criando...
+                </>
+              ) : (
+                "Criar Pedido e Enviar Email"
+              )}
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );
