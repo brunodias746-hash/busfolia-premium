@@ -717,11 +717,49 @@ export const appRouter = router({
       resendEmail: adminProcedure
         .input(z.object({ orderId: z.number().int().positive() }))
         .mutation(async ({ input }) => {
-          const order = await getOrderById(input.orderId);
+          const order = await getOrderWithDetails(input.orderId);
           if (!order) throw new Error("Pedido não encontrado");
+          
+          const passengers = await getPassengersByOrder(input.orderId);
+          if (passengers.length === 0) throw new Error("Nenhum passageiro encontrado para este pedido");
+          
+          const { generateOrderConfirmationEmail, sendEmail } = await import("./_core/email");
           const { notifyOwner } = await import("./_core/notification");
-          await notifyOwner({ title: "Email de Confirmação Reenviado", content: `Pedido ${order.shortId} - ${order.customerName} (${order.customerEmail})` });
-          return { success: true, message: "Email reenviado com sucesso" };
+          
+          // Get event to fetch whatsapp link
+          const event = await getEventById(order.eventId);
+          const whatsappLink = event?.groupLink || "https://chat.whatsapp.com/busfolia";
+          
+          // Parse transport dates
+          const transportDates = order.transportDates ? JSON.parse(order.transportDates as any) : [];
+          
+          // Generate email
+          const emailHtml = generateOrderConfirmationEmail({
+            customerName: order.customerName,
+            customerEmail: order.customerEmail,
+            shortId: order.shortId,
+            boardingPoint: order.boardingPoint?.locationName || "Ponto de Embarque",
+            transportDates,
+            quantity: passengers.length,
+            totalAmountCents: order.totalAmountCents,
+            whatsappLink,
+            purchaseType: order.purchaseType as 'single' | 'multiple' | 'all_days' | undefined,
+          });
+          
+          // Send email to customer
+          const result = await sendEmail({
+            to: order.customerEmail,
+            subject: `Confirmação de Pedido BusFolia - ${order.shortId}`,
+            html: emailHtml,
+          });
+          
+          // Notify owner
+          await notifyOwner({ 
+            title: "Email de Confirmação Reenviado", 
+            content: `Pedido ${order.shortId} - ${order.customerName} (${order.customerEmail})` 
+          });
+          
+          return { success: result.success, message: result.success ? "Email reenviado com sucesso" : "Erro ao reenviar email" };
         }),
     }),
 

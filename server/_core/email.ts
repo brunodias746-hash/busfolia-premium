@@ -65,9 +65,50 @@ function formatDatesInPortuguese(dates: string[]): string {
   };
   
   const parsedDates = dates.map(d => {
-    const [year, month, day] = d.split('-');
-    return { day: parseInt(day), month: monthNames[month], year };
-  });
+    if (!d) return null;
+    
+    let day: number, month: string, year: string;
+    
+    // Try to parse different date formats
+    if (d.includes('-')) {
+      // ISO format: "2026-06-05" or "2026-06-05T00:00:00Z"
+      const parts = d.split('-');
+      if (parts.length >= 3) {
+        year = parts[0];
+        month = monthNames[parts[1]];
+        day = parseInt(parts[2]);
+      } else {
+        return null;
+      }
+    } else if (d.includes('/')) {
+      // Brazilian format: "05/06/2026"
+      const parts = d.split('/');
+      if (parts.length === 3) {
+        day = parseInt(parts[0]);
+        month = monthNames[parts[1].padStart(2, '0')];
+        year = parts[2];
+      } else {
+        return null;
+      }
+    } else if (d.includes(' ')) {
+      // Already formatted: "05 Junho 2026" or similar
+      const parts = d.split(' ');
+      if (parts.length >= 2) {
+        day = parseInt(parts[0]);
+        month = parts[1]; // Assume already in Portuguese
+        year = parts[2] || new Date().getFullYear().toString();
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+    
+    if (isNaN(day) || !month || !year) return null;
+    return { day, month, year };
+  }).filter(d => d !== null) as { day: number; month: string; year: string }[];
+  
+  if (parsedDates.length === 0) return "";
   
   // Group by month
   const grouped: { [key: string]: { day: number; month: string; year: string }[] } = {};
