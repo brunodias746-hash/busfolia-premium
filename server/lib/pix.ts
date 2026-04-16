@@ -15,7 +15,7 @@ export const PIX_CONFIG = {
 
 /**
  * Generate PIX QR Code for a specific order
- * Uses correct EMV standard for PIX BR Code
+ * Uses correct EMV standard for PIX BR Code (Static with fixed amount)
  */
 export async function generatePixQrCode(
   orderId: number,
@@ -26,7 +26,7 @@ export async function generatePixQrCode(
     // Amount in BRL (convert from cents)
     const amountBRL = (amountCents / 100).toFixed(2);
 
-    // Generate PIX copy-paste code (EMV BR Code standard)
+    // Generate PIX copy-paste code (EMV BR Code standard - STATIC with fixed amount)
     const pixCopyPaste = generateBrCode(
       PIX_CONFIG.KEY,
       PIX_CONFIG.MERCHANT_NAME,
@@ -59,6 +59,8 @@ export async function generatePixQrCode(
 
 /**
  * Generate BR Code (PIX EMV code) according to Banco Central specification
+ * Uses STATIC QR Code format (01=12) with fixed amount
+ * This is the correct format for immediate payment with specified amount
  * Reference: https://www.bcb.gov.br/content/dam/Microsites/Pix/Regulamentacao_Pix/Especificacao_QRCode.pdf
  */
 function generateBrCode(
@@ -85,8 +87,9 @@ function generateBrCode(
   // 00 - Payload Format Indicator (mandatory, always "01")
   brCode += tlv('00', '01');
 
-  // 01 - Point of Initiation Method (11 = Dynamic QR Code)
-  brCode += tlv('01', '11');
+  // 01 - Point of Initiation Method (12 = Static QR Code with fixed amount)
+  // This is the key fix: use 12 for static with amount, not 11 for dynamic
+  brCode += tlv('01', '12');
 
   // 26 - Merchant Account Information (PIX Key)
   let merchantInfo = '';
@@ -101,7 +104,7 @@ function generateBrCode(
   // 53 - Transaction Currency (986 = BRL)
   brCode += tlv('53', PIX_CONFIG.CURRENCY);
 
-  // 54 - Transaction Amount (only for fixed amount)
+  // 54 - Transaction Amount (MANDATORY for static QR code)
   if (amount && amount !== '0.00') {
     brCode += tlv('54', amount);
   }
@@ -132,6 +135,7 @@ function generateBrCode(
 /**
  * Calculate CRC16-CCITT checksum for BR Code
  * This is the correct algorithm used by Banco Central
+ * Using polynomial 0x1021 with initial value 0xFFFF
  */
 function calculateCrc16CCITT(data: string): string {
   let crc = 0xffff;
