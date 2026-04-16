@@ -15,6 +15,7 @@ interface OrderEmailData {
   quantity: number;
   totalAmountCents: number;
   whatsappLink: string;
+  purchaseType?: 'single' | 'multiple' | 'all_days';
 }
 
 export async function sendEmail({ to, subject, html }: SendEmailParams) {
@@ -53,8 +54,52 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
   }
 }
 
+// Format dates in Portuguese (e.g., "05, 06, 12 e 13 de Junho de 2026")
+function formatDatesInPortuguese(dates: string[]): string {
+  if (dates.length === 0) return "";
+  
+  const monthNames: { [key: string]: string } = {
+    '01': 'Janeiro', '02': 'Fevereiro', '03': 'Março', '04': 'Abril',
+    '05': 'Maio', '06': 'Junho', '07': 'Julho', '08': 'Agosto',
+    '09': 'Setembro', '10': 'Outubro', '11': 'Novembro', '12': 'Dezembro'
+  };
+  
+  const parsedDates = dates.map(d => {
+    const [year, month, day] = d.split('-');
+    return { day: parseInt(day), month: monthNames[month], year };
+  });
+  
+  // Group by month
+  const grouped: { [key: string]: { day: number; month: string; year: string }[] } = {};
+  parsedDates.forEach(d => {
+    const key = `${d.month} de ${d.year}`;
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(d);
+  });
+  
+  // Format each group
+  const formatted = Object.entries(grouped).map(([monthYear, days]) => {
+    const dayNumbers = days.map(d => d.day).sort((a, b) => a - b);
+    return `${dayNumbers.join(', ')} de ${monthYear}`;
+  });
+  
+  // Join with "e" before last item
+  if (formatted.length === 1) return formatted[0];
+  return formatted.slice(0, -1).join(', ') + ' e ' + formatted[formatted.length - 1];
+}
+
+function getPurchaseTypeName(type?: string): string {
+  switch (type) {
+    case 'single': return 'Dia Único';
+    case 'multiple': return 'Múltiplos Dias';
+    case 'all_days': return 'Passaporte — Todos os Dias';
+    default: return 'Ingresso';
+  }
+}
+
 export function generateOrderConfirmationEmail(data: OrderEmailData): string {
-  const formattedDates = data.transportDates.join(", ");
+  const formattedDates = formatDatesInPortuguese(data.transportDates);
+  const purchaseTypeName = getPurchaseTypeName(data.purchaseType);
   const totalBRL = (data.totalAmountCents / 100).toLocaleString("pt-BR", {
     style: "currency",
     currency: "BRL",
@@ -213,6 +258,10 @@ export function generateOrderConfirmationEmail(data: OrderEmailData): string {
         <div class="detail-row">
           <span class="detail-label">Número do Pedido:</span>
           <span class="detail-value"><strong>${data.shortId}</strong></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Tipo de Passagem:</span>
+          <span class="detail-value">${purchaseTypeName}</span>
         </div>
         <div class="detail-row">
           <span class="detail-label">Ponto de Embarque:</span>

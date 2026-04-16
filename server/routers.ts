@@ -350,6 +350,7 @@ export const appRouter = router({
                   quantity: orderDetails.quantity,
                   totalAmountCents: orderDetails.totalAmountCents,
                   whatsappLink: "https://chat.whatsapp.com/KjaIneid0P9F6JScKsV7Po",
+                  purchaseType: orderDetails.purchaseType as 'single' | 'multiple' | 'all_days',
                 });
                 
                 await sendEmail({
@@ -663,6 +664,7 @@ export const appRouter = router({
               quantity: input.quantity,
               totalAmountCents,
               whatsappLink: event.groupLink || "https://chat.whatsapp.com/KjaIneid0P9F6JScKsV7Po",
+              purchaseType: input.purchaseType as 'single' | 'multiple' | 'all_days',
             });
             
             // Send email to main customer
