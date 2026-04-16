@@ -1,6 +1,7 @@
 import AdminLayout from "@/components/AdminLayout";
 import { trpc } from "@/lib/trpc";
 import { formatCurrency } from "@/lib/constants";
+import { generateProfessionalCSV, downloadCSV, formatCurrencyForCSV, formatDateForCSV } from "@/lib/csvExport";
 import { ShoppingCart, Loader2, Eye, Download, Trash2, Mail, Ticket, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -50,29 +51,43 @@ export default function Pedidos() {
 
   function exportCSV() {
     if (!exportData || exportData.length === 0) return;
-    const headers = ["Pedido", "Nome Completo", "CPF", "Telefone", "Email", "Ponto de Embarque", "Datas de Transporte", "Quantidade de Passageiros", "Valor Total (R$)", "Status", "Data da Compra"];
+    
+    const headers = [
+      "Pedido",
+      "Nome Completo",
+      "CPF",
+      "Telefone",
+      "Email",
+      "Ponto de Embarque",
+      "Datas de Transporte",
+      "Quantidade de Passageiros",
+      "Valor Total (R$)",
+      "Status",
+      "Data da Compra"
+    ];
+    
     const rows = exportData.map((o: any) => [
-      o.pedido,
-      o.nomeCompleto,
-      o.cpf,
-      o.telefone,
-      o.email,
-      o.pontoEmbarque,
-      o.datasTransporte,
-      o.quantidadePassageiros,
-      o.valorTotal,
-      o.status,
-      o.dataCompra,
+      o.pedido || '',
+      o.nomeCompleto || '',
+      o.cpf || '',
+      o.telefone || '',
+      o.email || '',
+      o.pontoEmbarque || '',
+      o.datasTransporte || '',
+      o.quantidadePassageiros || '',
+      o.valorTotal ? formatCurrencyForCSV(parseInt(o.valorTotal.replace(/[^0-9]/g, '')) || 0) : 'R$ 0,00',
+      o.status || '',
+      o.dataCompra ? formatDateForCSV(o.dataCompra) : '',
     ]);
-    const csv = [headers, ...rows].map((r) => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
-    const bom = "\uFEFF";
-    const blob = new Blob([bom + csv], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `pedidos-${new Date().toISOString().split("T")[0]}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    
+    const csv = generateProfessionalCSV({
+      title: 'Relatório de Pedidos',
+      filename: `pedidos-${new Date().toISOString().split('T')[0]}.csv`,
+      headers,
+      rows,
+    });
+    
+    downloadCSV(csv, `pedidos-${new Date().toISOString().split('T')[0]}.csv`);
   }
 
   return (

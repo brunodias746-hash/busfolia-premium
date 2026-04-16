@@ -250,3 +250,15 @@
 - [x] Sem cropping de conteudo importante (artistas, QR code, textos)
 - [x] Testar desktop (1920px) e mobile
 - [x] Checkpoint: busfolia-hero-slides-mobile-proportion-fix-v1
+
+## PHASE 11: PROFESSIONAL CSV/EXCEL EXPORT TEMPLATES
+- [x] Criar funcao utilitaria para gerar CSV com UTF-8 BOM
+- [x] Export Pedidos: multi-coluna, formatacao profissional
+- [x] Export Passageiros: multi-coluna, formatacao profissional
+- [x] Export Financeiro: multi-coluna, formatacao profissional
+- [x] Headers em portugues profissional
+- [x] Moeda em R$ 1.234,56 (virgula como separador decimal)
+- [x] Datas em DD/MM/YYYY
+- [x] Primeira linha: titulo + data/hora geracao
+- [x] Testar em Excel
+- [x] Checkpoint: busfolia-professional-export-templates-v2

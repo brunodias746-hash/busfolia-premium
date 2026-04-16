@@ -1,6 +1,7 @@
 import AdminLayout from "@/components/AdminLayout";
 import { trpc } from "@/lib/trpc";
 import { formatCurrency } from "@/lib/constants";
+import { generateProfessionalCSV, downloadCSV, formatCurrencyForCSV } from "@/lib/csvExport";
 import {
   DollarSign,
   TrendingUp,
@@ -31,23 +32,33 @@ export default function Financeiro() {
 
   const handleExportCSV = () => {
     if (!data) return;
-    const headers = ["Evento", "Receita Bruta", "Taxas", "Receita Líquida", "Pedidos", "Passageiros"];
+    
+    const headers = [
+      "Evento",
+      "Receita Bruta (R$)",
+      "Taxas (R$)",
+      "Receita Líquida (R$)",
+      "Quantidade de Pedidos",
+      "Quantidade de Passageiros"
+    ];
+    
     const rows = data.byEvent.map((e) => [
-      e.eventName,
-      (e.totalRevenue / 100).toFixed(2),
-      (e.totalFees / 100).toFixed(2),
-      ((e.totalRevenue - e.totalFees) / 100).toFixed(2),
+      e.eventName || '',
+      formatCurrencyForCSV(e.totalRevenue),
+      formatCurrencyForCSV(e.totalFees),
+      formatCurrencyForCSV(e.totalRevenue - e.totalFees),
       e.orderCount.toString(),
       e.passengerCount.toString(),
     ]);
-    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `financeiro_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    
+    const csv = generateProfessionalCSV({
+      title: 'Relatório Financeiro',
+      filename: `financeiro-${new Date().toISOString().split('T')[0]}.csv`,
+      headers,
+      rows,
+    });
+    
+    downloadCSV(csv, `financeiro-${new Date().toISOString().split('T')[0]}.csv`);
   };
 
   if (isLoading) {

@@ -3,6 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { Users, Loader2, Download, CheckCircle2, Clock, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { generateProfessionalCSV, downloadCSV, formatDateForCSV } from "@/lib/csvExport";
 import {
   Select,
   SelectContent,
@@ -38,26 +39,37 @@ export default function Passageiros() {
 
   function exportCSV() {
     if (!exportData || exportData.length === 0) return;
-    const headers = ["Nome", "CPF", "Evento", "Pedido", "Status Pedido", "Ponto de Embarque", "Data Transporte", "Check-in"];
+    
+    const headers = [
+      "Nome Completo",
+      "CPF",
+      "Evento",
+      "Número do Pedido",
+      "Status do Pedido",
+      "Ponto de Embarque",
+      "Data de Transporte",
+      "Check-in"
+    ];
+    
     const rows = exportData.map((p) => [
-      `"${p.name}"`,
-      p.cpf,
-      `"${p.eventName}"`,
-      p.orderShortId,
-      p.orderStatus,
-      `"${p.boardingPoint}"`,
-      p.transportDate,
-      p.checkInStatus === "checked_in" ? "Sim" : "Nao",
+      p.name || '',
+      p.cpf || '',
+      p.eventName || '',
+      p.orderShortId || '',
+      p.orderStatus || '',
+      p.boardingPoint || '',
+      p.transportDate ? formatDateForCSV(p.transportDate) : '',
+      p.checkInStatus === "checked_in" ? "Sim" : "Não",
     ]);
-    const bom = "\uFEFF";
-    const csv = bom + [headers.join(";"), ...rows.map((r) => r.join(";"))].join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `passageiros_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    
+    const csv = generateProfessionalCSV({
+      title: 'Relatório de Passageiros',
+      filename: `passageiros-${new Date().toISOString().split('T')[0]}.csv`,
+      headers,
+      rows,
+    });
+    
+    downloadCSV(csv, `passageiros-${new Date().toISOString().split('T')[0]}.csv`);
   }
 
   const checkedIn = filtered.filter((p) => p.checkInStatus === "checked_in").length;
