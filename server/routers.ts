@@ -674,15 +674,17 @@ export const appRouter = router({
               html: emailHtml,
             });
             
-            // Send email to all additional passengers
+            // Send email to all passengers (including additional ones)
+            const emailsSent = new Set([input.customerEmail]);
             if (input.passengers && input.passengers.length > 0) {
               for (const passenger of input.passengers) {
-                if (passenger.email !== input.customerEmail) {
+                if (!emailsSent.has(passenger.email)) {
                   await sendEmail({
                     to: passenger.email,
                     subject: `Confirmação de Pedido PIX - BusFolia ${shortId}`,
                     html: emailHtml,
                   });
+                  emailsSent.add(passenger.email);
                 }
               }
             }
