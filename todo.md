@@ -241,3 +241,12 @@
 - [x] Logo em todos os tipos de confirmacao (Stripe, PIX manual)
 - [x] Testar emails com logo
 - [x] Checkpoint: busfolia-email-logo-official-v1
+
+## PHASE 10: HERO RESPONSIVE MOBILE FIX
+- [x] Localizar Hero 1 e Hero 2 em Home.tsx
+- [x] Hero 1: altura aumentada clamp(500px, 70vh, 780px) para melhor visibilidade
+- [x] Hero 2: altura mantida clamp(420px, 60vh, 620px) com center center positioning
+- [x] Usar object-fit: cover + objectPosition dinamico
+- [x] Sem cropping de conteudo importante (artistas, QR code, textos)
+- [x] Testar desktop (1920px) e mobile
+- [x] Checkpoint: busfolia-hero-slides-mobile-proportion-fix-v1

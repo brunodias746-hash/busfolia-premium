@@ -109,9 +109,15 @@ function HeroSection() {
 
   return (
     <section className="relative w-full flex items-center overflow-hidden" style={{
-      height: 'clamp(420px, 60vh, 620px)',
-      minHeight: 'clamp(420px, 60vh, 620px)',
-      maxHeight: 'clamp(420px, 60vh, 620px)',
+      height: currentSlideData.type === 'content' 
+        ? 'clamp(500px, 70vh, 780px)' 
+        : 'clamp(420px, 60vh, 620px)',
+      minHeight: currentSlideData.type === 'content' 
+        ? 'clamp(500px, 70vh, 780px)' 
+        : 'clamp(420px, 60vh, 620px)',
+      maxHeight: currentSlideData.type === 'content' 
+        ? 'clamp(500px, 70vh, 780px)' 
+        : 'clamp(420px, 60vh, 620px)',
     }}>
       {/* Carrossel de imagens - HeroViewport */}
       <div className="absolute inset-0 w-full h-full overflow-hidden">
@@ -131,11 +137,13 @@ function HeroSection() {
             <img
               src={slide.image || ""}
               alt={slide.title}
-              className={`w-full h-full object-cover transition-transform duration-1000 block ${
+              className={`w-full h-full transition-transform duration-1000 block ${
                 idx === currentSlide ? 'scale-100' : 'scale-105'
+              } ${
+                slide.type === 'content' ? 'object-cover' : 'object-cover'
               }`}
               style={{
-                objectPosition: 'center top',
+                objectPosition: slide.type === 'content' ? 'center top' : 'center center',
                 width: '100%',
                 height: '100%',
                 display: 'block',
