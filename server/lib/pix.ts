@@ -2,20 +2,21 @@ import QRCode from 'qrcode';
 
 /**
  * PIX Payment Configuration
+ * Using exact format from working examples
  */
 export const PIX_CONFIG = {
   KEY: 'busfolia@hotmail.com',
-  MERCHANT_NAME: 'BusFolia',
-  CITY: 'Belo Horizonte',
+  MERCHANT_NAME: 'Bruno Henrique do Carmo D', // Exactly 25 chars as in working examples
+  CITY: 'SAO PAULO', // City from working examples
   COUNTRY_CODE: 'BR',
-  MERCHANT_CATEGORY: '5411', // Passenger Transport
+  MERCHANT_CATEGORY: '0400', // From working examples
   CURRENCY: '986', // BRL
   EXPIRATION_MINUTES: 5,
 };
 
 /**
  * Generate PIX QR Code for a specific order
- * Uses correct EMV standard for PIX BR Code (Static with fixed amount)
+ * Uses exact format from working examples provided by user
  */
 export async function generatePixQrCode(
   orderId: number,
@@ -26,13 +27,13 @@ export async function generatePixQrCode(
     // Amount in BRL (convert from cents)
     const amountBRL = (amountCents / 100).toFixed(2);
 
-    // Generate PIX copy-paste code (EMV BR Code standard - STATIC with fixed amount)
+    // Generate PIX copy-paste code (EMV BR Code standard)
     const pixCopyPaste = generateBrCode(
       PIX_CONFIG.KEY,
       PIX_CONFIG.MERCHANT_NAME,
       PIX_CONFIG.CITY,
       amountBRL,
-      shortId
+      generateUniqueId() // Generate unique 10-char ID for field 62
     );
 
     // Generate QR Code from the BR Code
@@ -58,17 +59,28 @@ export async function generatePixQrCode(
 }
 
 /**
- * Generate BR Code (PIX EMV code) according to Banco Central specification
- * Uses STATIC QR Code format (01=12) with fixed amount
- * This is the correct format for immediate payment with specified amount
- * Reference: https://www.bcb.gov.br/content/dam/Microsites/Pix/Regulamentacao_Pix/Especificacao_QRCode.pdf
+ * Generate a unique 10-character ID for the PIX transaction
+ * Based on the format seen in working examples
+ */
+function generateUniqueId(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < 10; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+/**
+ * Generate BR Code (PIX EMV code) using exact format from working examples
+ * Reference examples provided by user (all tested and working)
  */
 function generateBrCode(
   pixKey: string,
   merchantName: string,
   city: string,
   amount: string,
-  txId: string
+  uniqueId: string
 ): string {
   // Helper function to create TLV (Tag-Length-Value) format
   const tlv = (tag: string, value: string): string => {
@@ -87,24 +99,23 @@ function generateBrCode(
   // 00 - Payload Format Indicator (mandatory, always "01")
   brCode += tlv('00', '01');
 
-  // 01 - Point of Initiation Method (12 = Static QR Code with fixed amount)
-  // This is the key fix: use 12 for static with amount, not 11 for dynamic
+  // 01 - Point of Initiation Method (12 = Static QR Code)
   brCode += tlv('01', '12');
 
   // 26 - Merchant Account Information (PIX Key)
   let merchantInfo = '';
-  merchantInfo += tlv('00', '0br.gov.bcb.brcode'); // GUI (Global Unique Identifier)
+  merchantInfo += tlv('00', '0br.gov.bcb.brcode'); // GUI
   merchantInfo += tlv('01', '01'); // Version
-  merchantInfo += tlv('02', pixKey); // PIX Key (email, CPF, phone, etc)
+  merchantInfo += tlv('02', pixKey); // PIX Key
   brCode += nestedTlv('26', merchantInfo);
 
-  // 52 - Merchant Category Code (5411 = Passenger Transport)
+  // 52 - Merchant Category Code (0400 as in working examples)
   brCode += tlv('52', PIX_CONFIG.MERCHANT_CATEGORY);
 
   // 53 - Transaction Currency (986 = BRL)
   brCode += tlv('53', PIX_CONFIG.CURRENCY);
 
-  // 54 - Transaction Amount (MANDATORY for static QR code)
+  // 54 - Transaction Amount (fixed amount)
   if (amount && amount !== '0.00') {
     brCode += tlv('54', amount);
   }
@@ -112,7 +123,7 @@ function generateBrCode(
   // 58 - Country Code (BR)
   brCode += tlv('58', PIX_CONFIG.COUNTRY_CODE);
 
-  // 59 - Merchant Name (max 25 chars)
+  // 59 - Merchant Name (max 25 chars, exactly as in working examples)
   brCode += tlv('59', merchantName.substring(0, 25));
 
   // 60 - Merchant City (max 15 chars)
@@ -120,12 +131,11 @@ function generateBrCode(
 
   // 62 - Additional Data Field Template
   let additionalData = '';
-  // 05 - Reference Label (Transaction ID, max 25 chars)
-  additionalData += tlv('05', txId.substring(0, 25));
+  // 05 - Reference Label (unique 10-char ID as in working examples)
+  additionalData += tlv('05', uniqueId.substring(0, 10));
   brCode += nestedTlv('62', additionalData);
 
-  // 63 - CRC16 checksum (mandatory, calculated over entire code including this field)
-  // The CRC field itself is "6304" + 4-digit hex checksum
+  // 63 - CRC16 checksum (mandatory)
   const crc = calculateCrc16CCITT(brCode + '6304');
   brCode += `6304${crc}`;
 
@@ -134,7 +144,6 @@ function generateBrCode(
 
 /**
  * Calculate CRC16-CCITT checksum for BR Code
- * This is the correct algorithm used by Banco Central
  * Using polynomial 0x1021 with initial value 0xFFFF
  */
 function calculateCrc16CCITT(data: string): string {
