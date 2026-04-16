@@ -213,6 +213,12 @@ function OrderDetail({ orderId, onClose }: { orderId: number; onClose: () => voi
 }
 
 
+interface Passenger {
+  id: string;
+  name: string;
+  email: string;
+}
+
 function PixOrderForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
   const { data: events } = trpc.events.list.useQuery();
   const [eventId, setEventId] = useState<number | null>(null);
@@ -221,7 +227,7 @@ function PixOrderForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
   const [boardingPointId, setBoardingPointId] = useState<number | null>(null);
   const [purchaseType, setPurchaseType] = useState<"single" | "multiple" | "all_days">("single");
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
-  const [quantity, setQuantity] = useState(1);
+  const [passengers, setPassengers] = useState<Passenger[]>([{ id: "1", name: "", email: "" }]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -231,6 +237,21 @@ function PixOrderForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
   );
 
   const createPixOrderMutation = trpc.admin.orders.createPixOrder.useMutation();
+
+  const addPassenger = () => {
+    const newId = String(Math.max(...passengers.map(p => Number(p.id)), 0) + 1);
+    setPassengers([...passengers, { id: newId, name: "", email: "" }]);
+  };
+
+  const removePassenger = (id: string) => {
+    if (passengers.length > 1) {
+      setPassengers(passengers.filter(p => p.id !== id));
+    }
+  };
+
+  const updatePassenger = (id: string, field: "name" | "email", value: string) => {
+    setPassengers(passengers.map(p => p.id === id ? { ...p, [field]: value } : p));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -242,6 +263,11 @@ function PixOrderForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
       return;
     }
 
+    if (passengers.some(p => !p.name || !p.email)) {
+      setError("Preencha nome e email de todos os passageiros");
+      return;
+    }
+
     try {
       const result = await createPixOrderMutation.mutateAsync({
         eventId,
@@ -250,7 +276,8 @@ function PixOrderForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
         boardingPointId,
         purchaseType,
         transportDates: selectedDates,
-        quantity,
+        quantity: passengers.length,
+        passengers: passengers.map(p => ({ name: p.name, email: p.email })),
       });
 
       setSuccess(`Pedido criado com sucesso! Número: ${result.shortId}`);
@@ -323,13 +350,20 @@ function PixOrderForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
             <select
               value={boardingPointId ?? ""}
               onChange={(e) => setBoardingPointId(Number(e.target.value))}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full bg-black/40 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
+              style={{
+                backgroundImage: `url(\"data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e\")`,
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right 0.5rem center',
+                backgroundSize: '1.5em 1.5em',
+                paddingRight: '2.5rem',
+              }}
               required
               disabled={!eventId}
             >
-              <option value="">Selecione um ponto</option>
+              <option value="" className="bg-slate-900 text-white">Selecione um ponto</option>
               {boardingPoints?.map((bp) => (
-                <option key={bp.id} value={bp.id}>{bp.city} - {bp.locationName}</option>
+                <option key={bp.id} value={bp.id} className="bg-slate-900 text-white">{bp.city} - {bp.locationName}</option>
               ))}
             </select>
           </div>
@@ -385,15 +419,54 @@ function PixOrderForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
           )}
 
           <div>
-            <label className="block text-sm font-medium mb-1">Quantidade de Passageiros *</label>
-            <input
-              type="number"
-              value={quantity}
-              onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-              min="1"
-              required
-            />
+            <div className="flex items-center justify-between mb-3">
+              <label className="block text-sm font-medium">Passageiros *</label>
+              <button
+                type="button"
+                onClick={addPassenger}
+                className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded transition-colors"
+              >
+                + Adicionar Passageiro
+              </button>
+            </div>
+            <div className="space-y-3 bg-white/5 border border-white/10 rounded-lg p-3">
+              {passengers.map((passenger, idx) => (
+                <div key={passenger.id} className="flex gap-2 items-end">
+                  <div className="flex-1">
+                    <label className="text-xs text-muted-foreground block mb-1">Nome {idx === 0 ? "(Comprador)" : ""}</label>
+                    <input
+                      type="text"
+                      value={passenger.name}
+                      onChange={(e) => updatePassenger(passenger.id, "name", e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 rounded px-2 py-1.5 text-white text-sm placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                      placeholder="Nome completo"
+                      required
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-xs text-muted-foreground block mb-1">E-mail</label>
+                    <input
+                      type="email"
+                      value={passenger.email}
+                      onChange={(e) => updatePassenger(passenger.id, "email", e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 rounded px-2 py-1.5 text-white text-sm placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                      placeholder="email@example.com"
+                      required
+                    />
+                  </div>
+                  {passengers.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removePassenger(passenger.id)}
+                      className="text-red-400 hover:text-red-300 transition-colors px-2 py-1.5"
+                      title="Remover passageiro"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="flex gap-3 pt-4">
@@ -406,7 +479,7 @@ function PixOrderForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Criando...
                 </>
               ) : (
-                "Criar Pedido e Enviar Email"
+                `Criar Pedido e Enviar Email (${passengers.length} passageiro${passengers.length > 1 ? "s" : ""})`
               )}
             </Button>
           </div>

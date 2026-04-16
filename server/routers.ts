@@ -540,6 +540,10 @@ export const appRouter = router({
             purchaseType: z.enum(["single", "multiple", "all_days"]),
             transportDates: z.array(z.string()).min(1, "Selecione pelo menos uma data"),
             quantity: z.number().int().min(1, "Quantidade mínima é 1"),
+            passengers: z.array(z.object({
+              name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
+              email: z.string().email("E-mail inválido"),
+            })).optional(),
           })
         )
         .mutation(async ({ input }) => {
@@ -600,15 +604,22 @@ export const appRouter = router({
             status: "paid", // Manually created PIX orders are marked as paid
           });
 
-          // 6. Create passengers (use customer name for first passenger)
-          await createPassengers([
-            {
-              orderId,
-              name: input.customerName,
-              cpf: "",
-              boardingPointId: input.boardingPointId,
-            },
-          ]);
+          // 6. Create passengers (use provided passengers or default to customer name)
+          const passengersToCreate = input.passengers && input.passengers.length > 0
+            ? input.passengers.map(p => ({
+                orderId,
+                name: p.name,
+                cpf: "",
+                boardingPointId: input.boardingPointId,
+              }))
+            : [{
+                orderId,
+                name: input.customerName,
+                cpf: "",
+                boardingPointId: input.boardingPointId,
+              }];
+          
+          await createPassengers(passengersToCreate);
 
           // 7. Create payment record
           await createPayment({
@@ -622,7 +633,7 @@ export const appRouter = router({
           // 8. Increment event sold count
           await incrementEventSoldCount(input.eventId, input.quantity);
 
-          // 9. Send confirmation email
+          // 9. Send confirmation email to all passengers
           try {
             const { generateOrderConfirmationEmail, sendEmail } = await import("./_core/email");
             const emailHtml = generateOrderConfirmationEmail({
@@ -636,11 +647,25 @@ export const appRouter = router({
               whatsappLink: event.groupLink || "https://chat.whatsapp.com/KjaIneid0P9F6JScKsV7Po",
             });
             
+            // Send email to main customer
             await sendEmail({
               to: input.customerEmail,
               subject: `Confirmação de Pedido PIX - BusFolia ${shortId}`,
               html: emailHtml,
             });
+            
+            // Send email to all additional passengers
+            if (input.passengers && input.passengers.length > 0) {
+              for (const passenger of input.passengers) {
+                if (passenger.email !== input.customerEmail) {
+                  await sendEmail({
+                    to: passenger.email,
+                    subject: `Confirmação de Pedido PIX - BusFolia ${shortId}`,
+                    html: emailHtml,
+                  });
+                }
+              }
+            }
           } catch (err: any) {
             console.error("[PIX Order] Error sending email:", err.message);
             // Don't fail the order creation if email fails

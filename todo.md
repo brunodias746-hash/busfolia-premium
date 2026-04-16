@@ -213,3 +213,13 @@
 - [x] Testar fluxo completo
 - [x] Checkpoint: busfolia-admin-manual-pix-order-creation-v1
 - [x] Deploy para produção
+
+## PHASE 7: PIX FORM FIXES
+- [x] Corrigir styling do dropdown "Ponto de Embarque" (fundo escuro, texto visível)
+- [x] Adicionar suporte para múltiplos passageiros
+- [x] Botão "+ Adicionar Passageiro" funcional
+- [x] Campos dinâmicos para cada passageiro (Nome + Email)
+- [x] Botão para remover passageiros (mínimo 1)
+- [x] Email enviado para todos os passageiros
+- [x] Testar com 3+ passageiros
+- [x] Checkpoint: busfolia-admin-manual-pix-form-fixes-v1
