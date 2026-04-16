@@ -7,7 +7,7 @@ import { useState, useMemo, useCallback, useEffect } from "react";
 import { ArrowLeft, ArrowRight, Plus, Trash2, Loader2, ShieldCheck, User, MapPin, CreditCard, Check, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { PublicLayout } from "@/components/PublicLayout";
-import { ManualPixPayment } from "@/components/ManualPixPayment";
+import { SimpleManualPixPayment } from "@/components/SimpleManualPixPayment";
 import { trackInitiateCheckout } from "@/utils/meta-pixel";
 
 // Valida CPF usando algoritmo oficial
@@ -883,7 +883,7 @@ export default function Comprar() {
         {/* STEP 3: Manual PIX Payment */}
         {step === 3 && paymentMethod === 'pix' && (
           <div className="bg-gradient-to-b from-red-900/20 to-transparent rounded-2xl p-8">
-            <ManualPixPayment
+            <SimpleManualPixPayment
               amount={(() => {
                 const boardingPoint = boardingPoints?.find(
                   (bp: any) => bp.id === form.boardingPointId
@@ -909,35 +909,6 @@ export default function Comprar() {
                 } else {
                   return pricePerDay * form.passengers.length;
                 }
-              })()}
-              pixCode={(() => {
-                const boardingPoint = boardingPoints?.find(
-                  (bp: any) => bp.id === form.boardingPointId
-                )?.locationName || '';
-                
-                let pricePerDay = 60;
-                if (
-                  boardingPoint.toLowerCase().includes('belo') ||
-                  boardingPoint.toLowerCase().includes('santa')
-                ) {
-                  pricePerDay = 60;
-                } else if (
-                  boardingPoint.toLowerCase().includes('betim') ||
-                  boardingPoint.toLowerCase().includes('contagem')
-                ) {
-                  pricePerDay = 70;
-                }
-
-                let amount = pricePerDay;
-                if (form.purchaseType === 'all_days') {
-                  amount = 200;
-                } else if (form.purchaseType === 'multiple') {
-                  amount = pricePerDay * form.transportDates.length * form.passengers.length;
-                } else {
-                  amount = pricePerDay * form.passengers.length;
-                }
-
-                return MANUAL_PIX_CODES[amount] || MANUAL_PIX_CODES[60];
               })()}
               boardingPoint={boardingPoints?.find(
                 (bp) => bp.id === form.boardingPointId
