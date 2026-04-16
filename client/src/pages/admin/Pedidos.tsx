@@ -228,6 +228,7 @@ function PixOrderForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
   const [purchaseType, setPurchaseType] = useState<"single" | "multiple" | "all_days">("single");
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [passengers, setPassengers] = useState<Passenger[]>([{ id: "1", name: "", email: "" }]);
+  const [totalAmountPaid, setTotalAmountPaid] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -258,13 +259,19 @@ function PixOrderForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
     setError("");
     setSuccess("");
 
-    if (!eventId || !customerName || !customerEmail || !boardingPointId || selectedDates.length === 0) {
+    if (!eventId || !customerName || !customerEmail || !boardingPointId || selectedDates.length === 0 || !totalAmountPaid) {
       setError("Preencha todos os campos obrigatórios");
       return;
     }
 
     if (passengers.some(p => !p.name || !p.email)) {
       setError("Preencha nome e email de todos os passageiros");
+      return;
+    }
+
+    const amountValue = parseFloat(totalAmountPaid);
+    if (isNaN(amountValue) || amountValue <= 0) {
+      setError("Valor total deve ser um número positivo");
       return;
     }
 
@@ -278,6 +285,7 @@ function PixOrderForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
         transportDates: selectedDates,
         quantity: passengers.length,
         passengers: passengers.map(p => ({ name: p.name, email: p.email })),
+        totalAmountPaid: Math.round(amountValue * 100), // Convert to cents
       });
 
       setSuccess(`Pedido criado com sucesso! Número: ${result.shortId}`);
@@ -417,6 +425,23 @@ function PixOrderForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
               </div>
             </div>
           )}
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Valor Total Pago (PIX) *</label>
+            <div className="flex items-center gap-2">
+              <span className="text-white font-medium">R$</span>
+              <input
+                type="number"
+                value={totalAmountPaid}
+                onChange={(e) => setTotalAmountPaid(e.target.value)}
+                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="0.00"
+                step="0.01"
+                min="0"
+                required
+              />
+            </div>
+          </div>
 
           <div>
             <div className="flex items-center justify-between mb-3">

@@ -223,3 +223,12 @@
 - [x] Email enviado para todos os passageiros
 - [x] Testar com 3+ passageiros
 - [x] Checkpoint: busfolia-admin-manual-pix-form-fixes-v1
+
+## PHASE 8: PIX FORM FINAL UPDATE
+- [x] Adicionar campo "Valor Total Pago (PIX)" - numérico, obrigatório
+- [x] Remover cálculo automático de taxa (R$6,10) para pedidos manuais
+- [x] Total = valor digitado pelo admin (sem adições)
+- [x] Manter suporte para múltiplos passageiros
+- [x] Manter styling do dropdown de ponto de embarque
+- [x] Testar com valor manual e múltiplos passageiros
+- [x] Checkpoint: busfolia-admin-manual-pix-form-final-update-v1

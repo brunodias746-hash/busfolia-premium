@@ -544,6 +544,7 @@ export const appRouter = router({
               name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
               email: z.string().email("E-mail inválido"),
             })).optional(),
+            totalAmountPaid: z.number().int().positive("Valor deve ser positivo").optional(),
           })
         )
         .mutation(async ({ input }) => {
@@ -565,27 +566,38 @@ export const appRouter = router({
           
           if (!boardingPoint) throw new Error("Ponto de embarque não encontrado");
           
-          // Dynamic base price based on boarding point city
-          let basePriceCents = 6000; // Default: R$60,00 (BH or SANTA LUZIA)
-          if (boardingPoint.city === 'BETIM' || boardingPoint.city === 'CONTAGEM') {
-            basePriceCents = 7000; // R$70,00
+          // 4. Use manual totalAmountPaid if provided (no tax for manual PIX orders)
+          let totalAmountCents: number;
+          let unitPriceCents: number;
+          let feeCents: number;
+          
+          if (input.totalAmountPaid) {
+            // Manual PIX order: use exact amount provided, no tax
+            totalAmountCents = input.totalAmountPaid;
+            unitPriceCents = Math.floor(input.totalAmountPaid / input.quantity);
+            feeCents = 0; // No tax for manual PIX orders
+          } else {
+            // Fallback to automatic calculation
+            let basePriceCents = 6000; // Default: R$60,00 (BH or SANTA LUZIA)
+            if (boardingPoint.city === 'BETIM' || boardingPoint.city === 'CONTAGEM') {
+              basePriceCents = 7000; // R$70,00
+            }
+            
+            let daysCount = 1;
+            unitPriceCents = basePriceCents;
+            feeCents = 610; // R$6,10 fixed fee
+            
+            if (input.purchaseType === "multiple") {
+              daysCount = input.transportDates.length;
+              unitPriceCents = basePriceCents * daysCount;
+              feeCents = 610 * daysCount;
+            } else if (input.purchaseType === "all_days") {
+              unitPriceCents = 20000; // R$200,00
+              feeCents = 610; // R$6,10 fixed
+            }
+            
+            totalAmountCents = (unitPriceCents + feeCents) * input.quantity;
           }
-          
-          // 4. Calculate total
-          let unitPriceCents = basePriceCents;
-          let feeCents = 610; // R$6,10 fixed fee
-          let daysCount = 1;
-          
-          if (input.purchaseType === "multiple") {
-            daysCount = input.transportDates.length;
-            unitPriceCents = basePriceCents * daysCount;
-            feeCents = 610 * daysCount;
-          } else if (input.purchaseType === "all_days") {
-            unitPriceCents = 20000; // R$200,00
-            feeCents = 610; // R$6,10 fixed
-          }
-          
-          const totalAmountCents = (unitPriceCents + feeCents) * input.quantity;
 
           // 5. Create order in DB
           const { id: orderId, shortId } = await createOrder({
