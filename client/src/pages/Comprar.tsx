@@ -4,9 +4,10 @@ import { trpc } from "@/lib/trpc";
 import { trpcClient } from "@/lib/trpcClient";
 import { formatCurrency, formatCPF, formatPhone } from "@/lib/constants";
 import { useState, useMemo, useCallback, useEffect } from "react";
-import { ArrowLeft, ArrowRight, Plus, Trash2, Loader2, ShieldCheck, User, MapPin, CreditCard, Check } from "lucide-react";
+import { ArrowLeft, ArrowRight, Plus, Trash2, Loader2, ShieldCheck, User, MapPin, CreditCard, Check, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { PublicLayout } from "@/components/PublicLayout";
+import { ManualPixPayment } from "@/components/ManualPixPayment";
 import { trackInitiateCheckout } from "@/utils/meta-pixel";
 
 // Valida CPF usando algoritmo oficial
@@ -43,6 +44,13 @@ interface FormData {
   purchaseType: 'single' | 'multiple' | 'all_days';
   passengers: PassengerData[];
 }
+
+// Manual PIX configuration
+const MANUAL_PIX_CODES: Record<number, string> = {
+  60: '00020126420014BR.GOV.BCB.PIX0120busfolia@hotmail.com520400005303986540560.005802BR5925Bruno Henrique do Carmo D6009SAO PAULO62140510eNMid5GzMz630452F0',
+  70: '00020126420014BR.GOV.BCB.PIX0120busfolia@hotmail.com520400005303986540570.005802BR5925Bruno Henrique do Carmo D6009SAO PAULO62140510HSq7zElPGL6304703F',
+  200: '00020126420014BR.GOV.BCB.PIX0120busfolia@hotmail.com5204000053039865406200.005802BR5925Bruno Henrique do Carmo D6009SAO PAULO62140510c6l8sYydLG63045FBE',
+};
 
 const INITIAL_FORM: FormData = {
   customerName: "",
@@ -824,8 +832,8 @@ export default function Comprar() {
                       {paymentMethod === 'pix' && <div className="w-2 h-2 bg-primary rounded-full" />}
                     </div>
                     <div>
-                      <p className="font-semibold">PIX</p>
-                      <p className="text-xs text-muted-foreground">Instantaneo - Valido por 5 minutos</p>
+                      <p className="font-semibold">PIX Manual</p>
+                      <p className="text-xs text-muted-foreground">Sem taxa - Comprovante via WhatsApp</p>
                     </div>
                   </div>
                 </div>
@@ -834,7 +842,7 @@ export default function Comprar() {
               <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 flex gap-3 mb-6">
                 <ShieldCheck className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-blue-100">
-                  {paymentMethod === 'stripe' ? 'Pagamento seguro via Stripe' : 'PIX instantaneo - Nenhuma taxa adicional'}
+                  {paymentMethod === 'stripe' ? 'Pagamento seguro via Stripe' : 'PIX sem taxa - Comprovante via WhatsApp'}
                 </p>
               </div>
 
@@ -861,39 +869,10 @@ export default function Comprar() {
                   </Button>
                 ) : (
                   <Button
-                    onClick={() => {
-                      if (!event) return;
-                      const passengersWithBP = form.passengers.map((p) => ({
-                        ...p,
-                        boardingPointId: p.boardingPointId || form.boardingPointId,
-                      }));
-                      createPixOrder.mutate({
-                        eventId: event.id,
-                        customerName: form.customerName,
-                        customerCpf: form.customerCpf,
-                        customerEmail: form.customerEmail,
-                        customerPhone: form.customerPhone,
-                        boardingPointId: form.boardingPointId,
-                        transportDate: form.transportDate,
-                        transportDatesCount: form.purchaseType === 'multiple' ? form.transportDates.length : undefined,
-                        purchaseType: form.purchaseType,
-                        passengers: passengersWithBP,
-                        origin: window.location.origin,
-                        couponCode: appliedCoupon ? couponCode : undefined,
-                      });
-                    }}
-                    disabled={createPixOrder.isPending}
+                    onClick={() => setStep(3)}
                     className="flex-1 gold-gradient text-black font-bold"
                   >
-                    {createPixOrder.isPending ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Gerando QR Code...
-                      </>
-                    ) : (
-                      <>
-                        <CreditCard className="w-4 h-4 mr-2" /> Gerar QR Code PIX
-                      </>
-                    )}
+                    <MessageCircle className="w-4 h-4 mr-2" /> Pagar com PIX Manual
                   </Button>
                 )}
               </div>
@@ -901,101 +880,73 @@ export default function Comprar() {
           </div>
         )}
 
-        {/* STEP 3: PIX Payment */}
-        {step === 3 && pixData && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-lg sm:text-xl font-bold mb-2">Escaneie o codigo PIX</h2>
-              <p className="text-sm text-muted-foreground mb-6">Abra seu app bancario e escaneie o QR Code abaixo</p>
+        {/* STEP 3: Manual PIX Payment */}
+        {step === 3 && paymentMethod === 'pix' && (
+          <div className="bg-gradient-to-b from-red-900/20 to-transparent rounded-2xl p-8">
+            <ManualPixPayment
+              amount={(() => {
+                const boardingPoint = boardingPoints?.find(
+                  (bp: any) => bp.id === form.boardingPointId
+                )?.locationName || '';
+                
+                let pricePerDay = 60;
+                if (
+                  boardingPoint.toLowerCase().includes('belo') ||
+                  boardingPoint.toLowerCase().includes('santa')
+                ) {
+                  pricePerDay = 60;
+                } else if (
+                  boardingPoint.toLowerCase().includes('betim') ||
+                  boardingPoint.toLowerCase().includes('contagem')
+                ) {
+                  pricePerDay = 70;
+                }
 
-              {/* QR Code Display */}
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-8 mb-6 flex flex-col items-center">
-                <img 
-                  src={pixData.qrCodeDataUrl} 
-                  alt="PIX QR Code" 
-                  className="w-64 h-64 rounded-lg"
-                />
-                <p className="text-xs text-muted-foreground mt-4">Codigo PIX valido por 5 minutos</p>
-              </div>
+                if (form.purchaseType === 'all_days') {
+                  return 200;
+                } else if (form.purchaseType === 'multiple') {
+                  return pricePerDay * form.transportDates.length * form.passengers.length;
+                } else {
+                  return pricePerDay * form.passengers.length;
+                }
+              })()}
+              pixCode={(() => {
+                const boardingPoint = boardingPoints?.find(
+                  (bp: any) => bp.id === form.boardingPointId
+                )?.locationName || '';
+                
+                let pricePerDay = 60;
+                if (
+                  boardingPoint.toLowerCase().includes('belo') ||
+                  boardingPoint.toLowerCase().includes('santa')
+                ) {
+                  pricePerDay = 60;
+                } else if (
+                  boardingPoint.toLowerCase().includes('betim') ||
+                  boardingPoint.toLowerCase().includes('contagem')
+                ) {
+                  pricePerDay = 70;
+                }
 
-              {/* Copy PIX Code */}
-              <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-6">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Ou copie o codigo PIX:</p>
-                <div className="flex gap-2">
-                  <input 
-                    type="text" 
-                    value={pixData.pixCopyPaste}
-                    readOnly
-                    className="flex-1 bg-white/5 border border-white/10 rounded px-3 py-2 text-sm font-mono text-muted-foreground"
-                  />
-                  <Button
-                    onClick={() => {
-                      navigator.clipboard.writeText(pixData.pixCopyPaste);
-                      toast.success("Codigo copiado!");
-                    }}
-                    className="gold-gradient text-black font-bold"
-                  >
-                    Copiar
-                  </Button>
-                </div>
-              </div>
+                let amount = pricePerDay;
+                if (form.purchaseType === 'all_days') {
+                  amount = 200;
+                } else if (form.purchaseType === 'multiple') {
+                  amount = pricePerDay * form.transportDates.length * form.passengers.length;
+                } else {
+                  amount = pricePerDay * form.passengers.length;
+                }
 
-              {/* Order Details */}
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4 mb-6">
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">PEDIDO</p>
-                  <p className="font-bold text-lg">#{pixData.shortId}</p>
-                </div>
-
-                <div className="border-t border-white/10 pt-4">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">VALOR</p>
-                  <p className="font-bold text-2xl text-primary">{formatCurrency(pixData.totalAmountCents)}</p>
-                </div>
-
-                <div className="border-t border-white/10 pt-4">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">STATUS</p>
-                  {checkPixStatus.isLoading && <p className="text-sm">Aguardando pagamento...</p>}
-                  {checkPixStatus.data?.status === "pending" && <p className="text-sm text-yellow-400">Aguardando pagamento...</p>}
-                  {checkPixStatus.data?.status === "paid" && <p className="text-sm text-green-400">Pagamento confirmado!</p>}
-                  {checkPixStatus.data?.status === "expired" && <p className="text-sm text-red-400">Codigo expirado</p>}
-                </div>
-              </div>
-
-              {/* Instructions */}
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-6">
-                <p className="text-sm text-blue-100">
-                  <strong>Como funciona:</strong><br/>
-                  1. Abra seu app bancario<br/>
-                  2. Selecione a opcao PIX<br/>
-                  3. Escaneie o QR Code ou copie o codigo<br/>
-                  4. Confirme o pagamento<br/>
-                  5. Voce recebera a confirmacao automaticamente
-                </p>
-              </div>
-
-              {/* Navigation */}
-              <div className="flex gap-3">
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setStep(2);
-                    setPixData(null);
-                    setPixOrderId(null);
-                  }} 
-                  className="flex-1 border-white/10 hover:bg-white/5"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
-                </Button>
-                <Button
-                  disabled={true}
-                  className="flex-1 bg-white/10 text-muted-foreground cursor-not-allowed"
-                >
-                  Aguardando pagamento...
-                </Button>
-              </div>
-            </div>
+                return MANUAL_PIX_CODES[amount] || MANUAL_PIX_CODES[60];
+              })()}
+              boardingPoint={boardingPoints?.find(
+                (bp) => bp.id === form.boardingPointId
+              )?.locationName || 'Desconhecido'}
+              onBack={() => setStep(2)}
+            />
           </div>
         )}
+
       </div>
     </PublicLayout>
   );
