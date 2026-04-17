@@ -70,6 +70,7 @@ export const orders = mysqlTable("orders", {
   feeCents: int("feeCents").notNull().default(0),
   totalAmountCents: int("totalAmountCents").notNull(),
   status: mysqlEnum("status", ["pending", "pending_checkout", "paid", "failed", "canceled"]).default("pending_checkout").notNull(),
+  paymentMethod: mysqlEnum("paymentMethod", ["card", "pix_manual"]).default("card").notNull(),
   stripeSessionId: varchar("stripeSessionId", { length: 255 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
