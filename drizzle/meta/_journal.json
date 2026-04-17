@@ -22,6 +22,34 @@
       "when": 1775532119561,
       "tag": "0002_famous_puppet_master",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1776440340046,
+      "tag": "0003_bright_radioactive_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1776440681294,
+      "tag": "0004_secret_the_renegades",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1776440896395,
+      "tag": "0005_careful_lake",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1776441060346,
+      "tag": "0006_naive_shiver_man",
+      "breakpoints": true
     }
   ]
 }

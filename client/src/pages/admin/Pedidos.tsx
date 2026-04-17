@@ -19,6 +19,19 @@ function StatusBadge({ status }: { status: string }) {
   return <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${s.cls}`}>{s.label}</span>;
 }
 
+function PaymentMethodBadge({ order }: { order: any }) {
+  // Determine payment method: if has stripeSessionId, it's card; otherwise PIX Manual
+  const isCard = !!order.stripeSessionId;
+  const method = isCard ? 'card' : 'pix_manual';
+  
+  const map: Record<string, { label: string; cls: string }> = {
+    card: { label: "Cartão", cls: "bg-blue-500/20 text-blue-400" },
+    pix_manual: { label: "PIX Manual", cls: "bg-green-500/20 text-green-400" },
+  };
+  const m = map[method];
+  return <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${m.cls}`}>{m.label}</span>;
+}
+
 export default function Pedidos() {
   const { data: orders, isLoading } = trpc.admin.orders.list.useQuery();
   const { data: exportData } = trpc.admin.orders.exportCsv.useQuery();
@@ -142,6 +155,7 @@ export default function Pedidos() {
                   <th className="text-left px-2 sm:px-4 py-2 sm:py-3 text-xs text-muted-foreground font-medium hidden md:table-cell">E-mail</th>
                   <th className="text-center px-2 sm:px-4 py-2 sm:py-3 text-xs text-muted-foreground font-medium">Qtd</th>
                   <th className="text-right px-2 sm:px-4 py-2 sm:py-3 text-xs text-muted-foreground font-medium">Total</th>
+                  <th className="text-center px-2 sm:px-4 py-2 sm:py-3 text-xs text-muted-foreground font-medium hidden sm:table-cell">Pagamento</th>
                   <th className="text-center px-2 sm:px-4 py-2 sm:py-3 text-xs text-muted-foreground font-medium">Status</th>
                   <th className="text-center px-2 sm:px-4 py-2 sm:py-3 text-xs text-muted-foreground font-medium">Ações</th>
                 </tr>
@@ -154,6 +168,7 @@ export default function Pedidos() {
                     <td className="px-2 sm:px-4 py-2 sm:py-3 text-muted-foreground hidden md:table-cell text-xs">{order.customerEmail}</td>
                     <td className="px-2 sm:px-4 py-2 sm:py-3 text-center text-xs sm:text-base">{order.quantity}</td>
                     <td className="px-2 sm:px-4 py-2 sm:py-3 text-right font-bold text-xs sm:text-base">{formatCurrency(order.totalAmountCents)}</td>
+                    <td className="px-2 sm:px-4 py-2 sm:py-3 text-center hidden sm:table-cell"><PaymentMethodBadge order={order} /></td>
                     <td className="px-2 sm:px-4 py-2 sm:py-3 text-center"><StatusBadge status={order.status} /></td>
                     <td className="px-2 sm:px-4 py-2 sm:py-3 text-center flex gap-1 justify-center flex-wrap">
                       <Button size="sm" variant="ghost" onClick={() => setDetailId(detailId === order.id ? null : order.id)} title="Ver Detalhes">
