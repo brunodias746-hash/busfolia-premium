@@ -1,1 +1,0 @@
-ALTER TABLE `orders` ADD `paymentMethod` enum('card','pix_manual') DEFAULT 'card' NOT NULL;
