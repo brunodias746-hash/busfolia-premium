@@ -39,11 +39,11 @@ function CountdownTimer() {
     { label: "Seg", value: timeLeft.seconds },
   ];
   return (
-    <div className="grid grid-cols-4 gap-2 sm:gap-3 md:gap-4 w-full">
+    <div className="grid grid-cols-4 gap-3 sm:gap-4 md:gap-5 w-full">
       {units.map((u) => (
-        <div key={u.label} className="glass-card rounded-lg px-2 py-2 sm:px-3 sm:py-2.5 text-center">
-          <div className="text-lg sm:text-2xl md:text-3xl font-bold font-heading text-primary leading-none">{String(u.value).padStart(2, "0")}</div>
-          <div className="text-[9px] sm:text-xs md:text-sm uppercase tracking-wider text-muted-foreground mt-1">{u.label}</div>
+        <div key={u.label} className="glass-card rounded-lg px-3 py-3 sm:px-4 sm:py-4 md:px-5 md:py-5 text-center min-h-[60px] sm:min-h-[70px] md:min-h-[80px] flex flex-col justify-center">
+          <div className="text-xl sm:text-3xl md:text-4xl font-bold font-heading text-primary leading-none">{String(u.value).padStart(2, "0")}</div>
+          <div className="text-[10px] sm:text-xs md:text-sm uppercase tracking-wider text-muted-foreground mt-2 sm:mt-2.5">{u.label}</div>
         </div>
       ))}
     </div>
@@ -112,11 +112,11 @@ function HeroSection() {
       aspectRatio: currentSlideData.type === 'content' ? '1920 / 780' : '1920 / 620',
       height: 'auto',
       minHeight: currentSlideData.type === 'content' 
-        ? 'clamp(400px, 50vh, 780px)' 
-        : 'clamp(300px, 40vh, 620px)',
+        ? 'clamp(480px, 60vh, 900px)' 
+        : 'clamp(360px, 50vh, 700px)',
       maxHeight: currentSlideData.type === 'content' 
-        ? '780px' 
-        : '620px',
+        ? '900px' 
+        : '700px',
     }}>
       {/* Carrossel de imagens - HeroViewport */}
       <div className="absolute inset-0 w-full h-full overflow-hidden" style={{
