@@ -109,18 +109,19 @@ function HeroSection() {
 
   return (
     <section className="relative w-full flex items-center overflow-hidden" style={{
-      height: currentSlideData.type === 'content' 
-        ? 'clamp(500px, 70vh, 780px)' 
-        : 'clamp(420px, 60vh, 620px)',
+      aspectRatio: currentSlideData.type === 'content' ? '1920 / 780' : '1920 / 620',
+      height: 'auto',
       minHeight: currentSlideData.type === 'content' 
-        ? 'clamp(500px, 70vh, 780px)' 
-        : 'clamp(420px, 60vh, 620px)',
+        ? 'clamp(400px, 50vh, 780px)' 
+        : 'clamp(300px, 40vh, 620px)',
       maxHeight: currentSlideData.type === 'content' 
-        ? 'clamp(500px, 70vh, 780px)' 
-        : 'clamp(420px, 60vh, 620px)',
+        ? '780px' 
+        : '620px',
     }}>
       {/* Carrossel de imagens - HeroViewport */}
-      <div className="absolute inset-0 w-full h-full overflow-hidden">
+      <div className="absolute inset-0 w-full h-full overflow-hidden" style={{
+        aspectRatio: currentSlideData.type === 'content' ? '1920 / 780' : '1920 / 620',
+      }}>
         {slides.map((slide, idx) => (
           <div
             key={idx}
