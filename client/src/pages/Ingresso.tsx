@@ -1,17 +1,19 @@
 import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { Loader2, ArrowLeft, Download, Share2 } from "lucide-react";
+import { Loader2, ArrowLeft, Download, Share2, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { toast } from "sonner";
 
 export default function Ingresso() {
   const params = useParams();
   const [, navigate] = useLocation();
   const shortId = params.shortId as string;
   const pdfRef = useRef<HTMLDivElement>(null);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   // Fetch order by shortId
   const { data: order, isLoading, error } = trpc.admin.orders.getByShortId.useQuery(
@@ -22,7 +24,11 @@ export default function Ingresso() {
   const handleDownloadPDF = async () => {
     if (!pdfRef.current) return;
 
+    setIsGeneratingPDF(true);
     try {
+      // Show loading toast
+      const loadingToastId = toast.loading("Gerando PDF do ingresso...");
+
       const canvas = await html2canvas(pdfRef.current, {
         scale: 2,
         backgroundColor: "#ffffff",
@@ -40,8 +46,21 @@ export default function Ingresso() {
 
       pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
       pdf.save(`ingresso-${shortId}.pdf`);
+
+      // Dismiss loading toast and show success
+      toast.dismiss(loadingToastId);
+      toast.success("PDF baixado com sucesso!", {
+        description: `Ingresso ${shortId} foi salvo em seus downloads`,
+        duration: 3000,
+      });
     } catch (err) {
       console.error("Error generating PDF:", err);
+      toast.error("Erro ao gerar PDF", {
+        description: "Não foi possível gerar o PDF do ingresso. Tente novamente.",
+        duration: 4000,
+      });
+    } finally {
+      setIsGeneratingPDF(false);
     }
   };
 
@@ -155,10 +174,20 @@ export default function Ingresso() {
               variant="outline"
               size="sm"
               onClick={handleDownloadPDF}
+              disabled={isGeneratingPDF}
               className="gap-2"
             >
-              <Download className="w-4 h-4" />
-              PDF
+              {isGeneratingPDF ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Gerando...
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
+                  PDF
+                </>
+              )}
             </Button>
             <Button
               variant="outline"
