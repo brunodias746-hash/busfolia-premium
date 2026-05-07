@@ -88,8 +88,40 @@ export default function Ingresso() {
   }
 
   // Format dates for display
+  // CRITICAL FIX: Handle dates without year (default to 2026)
   const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
+    // If date string doesn't contain a year, append 2026
+    let dateToFormat = dateStr;
+    if (dateStr && !dateStr.includes('2026') && !dateStr.includes('202') && !/\d{4}/.test(dateStr)) {
+      dateToFormat = `${dateStr} 2026`;
+    }
+    
+    const date = new Date(dateToFormat);
+    
+    // Fallback: if date is still invalid, parse manually
+    if (isNaN(date.getTime())) {
+      // Try to parse "05 Junho 2026" format
+      const monthNames: { [key: string]: number } = {
+        'janeiro': 0, 'fevereiro': 1, 'março': 2, 'abril': 3,
+        'maio': 4, 'junho': 5, 'julho': 6, 'agosto': 7,
+        'setembro': 8, 'outubro': 9, 'novembro': 10, 'dezembro': 11
+      };
+      const parts = dateToFormat.toLowerCase().split(' ');
+      if (parts.length >= 2) {
+        const day = parseInt(parts[0]);
+        const month = monthNames[parts[1]];
+        const year = parts[2] ? parseInt(parts[2]) : 2026;
+        if (!isNaN(day) && month !== undefined && !isNaN(year)) {
+          return new Date(year, month, day).toLocaleDateString("pt-BR", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+          });
+        }
+      }
+      return dateStr; // Return original if all parsing fails
+    }
+    
     return date.toLocaleDateString("pt-BR", {
       day: "2-digit",
       month: "long",

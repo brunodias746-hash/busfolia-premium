@@ -55,6 +55,7 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
 }
 
 // Format dates in Portuguese (e.g., "05, 06, 12 e 13 de Junho de 2026")
+// CRITICAL: Always use 2026 as default year if missing, never use current year
 function formatDatesInPortuguese(dates: string[]): string {
   if (dates.length === 0) return "";
   
@@ -91,12 +92,15 @@ function formatDatesInPortuguese(dates: string[]): string {
         return null;
       }
     } else if (d.includes(' ')) {
-      // Already formatted: "05 Junho 2026" or similar
-      const parts = d.split(' ');
+      // Already formatted: "05 Junho 2026" or "05 de Junho de 2026" or similar
+      // Remove "de" prepositions for easier parsing
+      const cleaned = d.replace(/ de /g, ' ');
+      const parts = cleaned.split(' ').filter(p => p.length > 0);
       if (parts.length >= 2) {
         day = parseInt(parts[0]);
         month = parts[1]; // Assume already in Portuguese
-        year = parts[2] || new Date().getFullYear().toString();
+        // CRITICAL FIX: Default to 2026 (event year), NOT current year
+        year = parts[2] || '2026';
       } else {
         return null;
       }
