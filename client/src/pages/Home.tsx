@@ -69,9 +69,14 @@ function HeroSection() {
     title: "O transporte oficial para o Pedro Leopoldo Rodeio Show 2026",
   };
   
-  const slides = bannerSlides.length > 0 ? [...bannerSlides, contentSlide] : [contentSlide];
+  const slides = bannerSlides.length > 0 ? [contentSlide, ...bannerSlides] : [contentSlide];
 
   // Preload all hero images for smooth transitions
+  // Force initial slide to 0 (content slide with countdown timer)
+  useEffect(() => {
+    setCurrentSlide(0);
+  }, []);
+
   useEffect(() => {
     slides.forEach(slide => {
       const img = new Image();
@@ -119,18 +124,17 @@ function HeroSection() {
         : '700px',
     }}>
       {/* Carrossel de imagens - HeroViewport */}
-      <div className="absolute inset-0 w-full h-full overflow-hidden" style={{
+      <div className="absolute inset-0 w-full h-full overflow-hidden z-0" style={{
         aspectRatio: currentSlideData.type === 'content' ? '1920 / 780' : '1920 / 620',
       }}>
         {slides.map((slide, idx) => (
           <div
             key={idx}
-            className={`absolute inset-0 will-change-opacity transition-opacity duration-1000 ${
+            className={`absolute inset-0 z-0 will-change-opacity transition-opacity duration-1000 ${
               idx === currentSlide ? "opacity-100" : "opacity-0"
             }`}
             style={{
               backfaceVisibility: 'hidden',
-              transform: 'translateZ(0)',
               WebkitFontSmoothing: 'antialiased',
             }}
           >
@@ -162,7 +166,7 @@ function HeroSection() {
       </div>
 
       {/* Conteúdo do Hero - HeroContent (apenas para Hero 1 - content slide) */}
-      <div className={`container relative z-10 py-4 sm:py-6 md:py-10 will-change-opacity transition-opacity duration-1000 flex flex-col justify-center h-full overflow-hidden ${
+      <div className={`container relative z-20 py-4 sm:py-6 md:py-10 will-change-opacity transition-opacity duration-1000 flex flex-col justify-center h-full ${
         currentSlideData.type === "content" ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
       }`}
       style={{
@@ -200,8 +204,8 @@ function HeroSection() {
                 </a>
               </div>
 
-              <div className="mb-0 sm:mb-2 hidden sm:block">
-                <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider mb-1">Próximo evento começa em:</p>
+              <div className="mb-3 sm:mb-6">
+                <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider mb-2 sm:mb-3">Próximo evento começa em:</p>
                 <CountdownTimer />
               </div>
             </>
