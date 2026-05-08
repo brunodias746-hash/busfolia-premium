@@ -282,7 +282,7 @@ function PixOrderForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const { data: boardingPoints } = trpc.events.boardingPoints.useQuery(
+  const { data: boardingPoints, isLoading: isBoardingPointsLoading, error: boardingPointsError } = trpc.events.boardingPoints.useQuery(
     { eventId: eventId ?? 0 },
     { enabled: !!eventId }
   );
@@ -414,25 +414,47 @@ function PixOrderForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
 
           <div>
             <label className="block text-sm font-medium mb-1">Ponto de Embarque *</label>
-            <select
-              value={boardingPointId ?? ""}
-              onChange={(e) => setBoardingPointId(Number(e.target.value))}
-              className="w-full bg-black/40 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
-              style={{
-                backgroundImage: `url(\"data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e\")`,
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'right 0.5rem center',
-                backgroundSize: '1.5em 1.5em',
-                paddingRight: '2.5rem',
-              }}
-              required
-              disabled={!eventId}
-            >
-              <option value="" className="bg-slate-900 text-white">Selecione um ponto</option>
-              {boardingPoints?.map((bp) => (
-                <option key={bp.id} value={bp.id} className="bg-slate-900 text-white">{bp.city} - {bp.locationName}</option>
-              ))}
-            </select>
+            {!eventId && (
+              <div className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-muted-foreground text-sm">
+                Selecione um evento primeiro
+              </div>
+            )}
+            {eventId && isBoardingPointsLoading && (
+              <div className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-muted-foreground text-sm flex items-center">
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                Carregando pontos de embarque...
+              </div>
+            )}
+            {eventId && boardingPointsError && (
+              <div className="w-full bg-red-500/20 border border-red-500/50 rounded-lg px-3 py-2 text-red-200 text-sm">
+                Erro ao carregar pontos de embarque
+              </div>
+            )}
+            {eventId && !isBoardingPointsLoading && boardingPoints && boardingPoints.length === 0 && (
+              <div className="w-full bg-yellow-500/20 border border-yellow-500/50 rounded-lg px-3 py-2 text-yellow-200 text-sm">
+                Nenhum ponto de embarque disponível para este evento
+              </div>
+            )}
+            {eventId && !isBoardingPointsLoading && boardingPoints && boardingPoints.length > 0 && (
+              <select
+                value={boardingPointId ?? ""}
+                onChange={(e) => setBoardingPointId(Number(e.target.value))}
+                className="w-full bg-black/40 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 0.5rem center',
+                  backgroundSize: '1.5em 1.5em',
+                  paddingRight: '2.5rem',
+                }}
+                required
+              >
+                <option value="" className="bg-slate-900 text-white">Selecione um ponto</option>
+                {boardingPoints.map((bp) => (
+                  <option key={bp.id} value={bp.id} className="bg-slate-900 text-white">{bp.city} - {bp.locationName}</option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div>

@@ -1,0 +1,52 @@
+{
+  "query": "SELECT id, eventId, city, locationName, isActive FROM boarding_points LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2dcXFJ5zHsK7P8Z.root --database ci3rs2m5P7Zem9o9Dnh5ee --execute SELECT id, eventId, city, locationName, isActive FROM boarding_points LIMIT 10;",
+  "rows": [
+    {
+      "id": "30001",
+      "eventId": "1",
+      "city": "BETIM",
+      "locationName": "PARTAGE SHOPPING BETIM",
+      "isActive": "1"
+    },
+    {
+      "id": "30002",
+      "eventId": "1",
+      "city": "CONTAGEM",
+      "locationName": "PRAÇA DA CEMIG",
+      "isActive": "1"
+    },
+    {
+      "id": "30003",
+      "eventId": "1",
+      "city": "BELO HORIZONTE",
+      "locationName": "PRAÇA DA ESTAÇÃO",
+      "isActive": "1"
+    },
+    {
+      "id": "30004",
+      "eventId": "1",
+      "city": "BELO HORIZONTE",
+      "locationName": "MINAS SHOPPING",
+      "isActive": "1"
+    },
+    {
+      "id": "30005",
+      "eventId": "1",
+      "city": "BELO HORIZONTE",
+      "locationName": "SHOPPING ESTAÇÃO",
+      "isActive": "1"
+    },
+    {
+      "id": "30006",
+      "eventId": "1",
+      "city": "SANTA LUZIA",
+      "locationName": "SORVETERIA 4 ESTAÇÃO",
+      "isActive": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\teventId\tcity\tlocationName\tisActive\n30001\t1\tBETIM\tPARTAGE SHOPPING BETIM\t1\n30002\t1\tCONTAGEM\tPRAÇA DA CEMIG\t1\n30003\t1\tBELO HORIZONTE\tPRAÇA DA ESTAÇÃO\t1\n30004\t1\tBELO HORIZONTE\tMINAS SHOPPING\t1\n30005\t1\tBELO HORIZONTE\tSHOPPING ESTAÇÃO\t1\n30006\t1\tSANTA LUZIA\tSORVETERIA 4 ESTAÇÃO\t1\n",
+  "stderr": "",
+  "execution_time_ms": 274
+}
