@@ -334,10 +334,11 @@ export const appRouter = router({
               // Increment sold count
               await incrementEventSoldCount(order.eventId, order.quantity);
               
-              // Send confirmation email
+              // Send confirmation email with PDF attachment
               const orderDetails = await getOrderWithDetails(order.id);
               if (orderDetails && orderDetails.boardingPoint) {
                 const { sendEmail, generateOrderConfirmationEmail } = await import("./_core/email");
+                const { generateTicketPDF, generatePDFFilename } = await import("./_core/pdf-generator");
                 const boardingPointLabel = `${orderDetails.boardingPoint.city} - ${orderDetails.boardingPoint.locationName}`;
                 const transportDates = JSON.parse(orderDetails.transportDates || "[]") as string[];
                 
@@ -353,10 +354,35 @@ export const appRouter = router({
                   purchaseType: orderDetails.purchaseType as 'single' | 'multiple' | 'all_days',
                 });
                 
+                // Generate PDF ticket
+                let pdfBuffer: Buffer | undefined;
+                try {
+                  const now = new Date();
+                  const generatedAt = `${now.toLocaleDateString('pt-BR')} ${now.toLocaleTimeString('pt-BR')}`;
+                  pdfBuffer = await generateTicketPDF({
+                    orderNumber: orderDetails.shortId,
+                    customerName: orderDetails.customerName,
+                    customerEmail: orderDetails.customerEmail,
+                    boardingPoint: boardingPointLabel,
+                    transportDates,
+                    quantity: orderDetails.quantity,
+                    totalAmountCents: orderDetails.totalAmountCents,
+                    generatedAt,
+                  });
+                  console.log(`[PDF] Generated PDF for order ${orderDetails.shortId}`);
+                } catch (pdfError: any) {
+                  console.error(`[PDF] Failed to generate PDF for order ${orderDetails.shortId}:`, pdfError.message);
+                }
+                
                 await sendEmail({
                   to: orderDetails.customerEmail,
                   subject: `Confirmação de Pedido - BusFolia ${orderDetails.shortId}`,
                   html: emailHtml,
+                  attachments: pdfBuffer ? [{
+                    filename: generatePDFFilename(orderDetails.shortId),
+                    content: pdfBuffer,
+                    contentType: "application/pdf",
+                  }] : undefined,
                 });
               }
               

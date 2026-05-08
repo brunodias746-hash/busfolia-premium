@@ -4,6 +4,11 @@ interface SendEmailParams {
   to: string;
   subject: string;
   html: string;
+  attachments?: Array<{
+    filename: string;
+    content: Buffer | string;
+    contentType?: string;
+  }>;
 }
 
 interface OrderEmailData {
@@ -18,25 +23,37 @@ interface OrderEmailData {
   purchaseType?: 'single' | 'multiple' | 'all_days';
 }
 
-export async function sendEmail({ to, subject, html }: SendEmailParams) {
+export async function sendEmail({ to, subject, html, attachments }: SendEmailParams) {
   if (!ENV.resendApiKey) {
     console.error("[Email] RESEND_API_KEY not configured");
     return { success: false, error: "Email service not configured" };
   }
 
   try {
+    const emailPayload: any = {
+      from: "contato@busfolia.com.br",
+      to,
+      subject,
+      html,
+    };
+
+    if (attachments && attachments.length > 0) {
+      emailPayload.attachments = attachments.map((att) => ({
+        filename: att.filename,
+        content: typeof att.content === "string" 
+          ? att.content
+          : att.content.toString("base64"),
+        content_type: att.contentType || "application/octet-stream",
+      }));
+    }
+
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${ENV.resendApiKey}`,
       },
-      body: JSON.stringify({
-        from: "contato@busfolia.com.br",
-        to,
-        subject,
-        html,
-      }),
+      body: JSON.stringify(emailPayload),
     });
 
     if (!response.ok) {

@@ -426,3 +426,13 @@
 - Timezone handling correto (UTC)
 - Testes abrangentes
 - Documentação completa
+
+
+## 🚨 PHASE 17: CRITICAL BUG - PDF TICKET NOT ATTACHED TO EMAIL
+
+- [x] Auditar fluxo atual de geração de PDF e envio de email
+- [x] Criar função de geração de PDF no servidor (pdf-generator.ts)
+- [x] Modificar serviço de email para anexar PDF (email.ts)
+- [x] Integrar geração de PDF no fluxo de confirmação de pagamento (routers.ts)
+- [x] Adicionar lógica de retry e tratamento de erros
+- [x] Testar entrega de email com PDF anexado (226 testes passando)
