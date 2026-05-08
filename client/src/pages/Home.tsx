@@ -109,15 +109,18 @@ function HeroSection() {
 
   return (
     <section className="relative w-full flex items-center overflow-hidden" style={{
-      height: '600px',
-      width: '100%',
-      display: 'flex',
-      alignItems: 'center',
+      aspectRatio: currentSlideData.type === 'content' ? '1920 / 780' : '1920 / 620',
+      height: 'auto',
+      minHeight: currentSlideData.type === 'content' 
+        ? 'clamp(480px, 60vh, 900px)' 
+        : 'clamp(360px, 50vh, 700px)',
+      maxHeight: currentSlideData.type === 'content' 
+        ? '900px' 
+        : '700px',
     }}>
       {/* Carrossel de imagens - HeroViewport */}
       <div className="absolute inset-0 w-full h-full overflow-hidden" style={{
-        height: '100%',
-        width: '100%',
+        aspectRatio: currentSlideData.type === 'content' ? '1920 / 780' : '1920 / 620',
       }}>
         {slides.map((slide, idx) => (
           <div
@@ -135,14 +138,16 @@ function HeroSection() {
             <img
               src={slide.image || ""}
               alt={slide.title}
-              className="w-full h-full transition-opacity duration-1000 block"
+              className={`w-full h-full transition-transform duration-1000 block ${
+                idx === currentSlide ? 'scale-100' : 'scale-105'
+              } ${
+                slide.type === 'content' ? 'object-cover' : 'object-cover'
+              }`}
               style={{
-                objectFit: 'cover',
-                objectPosition: 'center',
+                objectPosition: slide.type === 'content' ? 'center top' : 'center center',
                 width: '100%',
                 height: '100%',
                 display: 'block',
-                opacity: idx === currentSlide ? 1 : 0,
               }}
               loading={idx === currentSlide ? 'eager' : 'lazy'}
             />
