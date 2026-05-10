@@ -21,6 +21,12 @@ export default function Ingresso() {
     { enabled: !!shortId }
   );
 
+  const handlePrint = () => {
+    window.print();
+  };
+
+
+
   const handleDownloadPDF = async () => {
     if (!pdfRef.current) return;
 
@@ -169,13 +175,13 @@ export default function Ingresso() {
             <ArrowLeft className="w-4 h-4" />
             Voltar
           </Button>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button
-              variant="outline"
+              variant="default"
               size="sm"
               onClick={handleDownloadPDF}
               disabled={isGeneratingPDF}
-              className="gap-2"
+              className="gap-2 bg-primary hover:bg-primary/90"
             >
               {isGeneratingPDF ? (
                 <>
@@ -185,9 +191,17 @@ export default function Ingresso() {
               ) : (
                 <>
                   <Download className="w-4 h-4" />
-                  PDF
+                  Salvar PDF
                 </>
               )}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePrint}
+              className="gap-2"
+            >
+              🖨️ Imprimir
             </Button>
             <Button
               variant="outline"

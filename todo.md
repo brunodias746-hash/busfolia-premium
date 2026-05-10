@@ -436,3 +436,18 @@
 - [x] Integrar geração de PDF no fluxo de confirmação de pagamento (routers.ts)
 - [x] Adicionar lógica de retry e tratamento de erros
 - [x] Testar entrega de email com PDF anexado (226 testes passando)
+
+
+## PHASE 19: 📧 EMAIL REDESIGN E TICKET ACTIONS
+- [x] Criar template HTML profissional para email de confirmação (email-template.ts)
+- [x] Adicionar header dourado com logo BusFolia
+- [x] Implementar seção de confirmação com banner verde
+- [x] Organizar detalhes do pedido em cards
+- [x] Adicionar botões de ação (Ver Ingresso, WhatsApp)
+- [x] Implementar footer com contato
+- [x] Integrar template HTML no fluxo de email
+- [x] Adicionar botão "Salvar PDF" na página de ingresso
+- [x] Adicionar botão "Imprimir" na página de ingresso
+- [x] Adicionar botão "Compartilhar" na página de ingresso
+- [x] Implementar print styling (A4 otimizado)
+- [x] Testar botões em desktop e mobile (20 testes passando)
