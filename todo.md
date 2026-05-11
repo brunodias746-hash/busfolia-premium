@@ -451,3 +451,22 @@
 - [x] Adicionar botão "Compartilhar" na página de ingresso
 - [x] Implementar print styling (A4 otimizado)
 - [x] Testar botões em desktop e mobile (20 testes passando)
+
+
+## 🚨 PHASE 20: REWRITE EXPORTS TO MATCH REFERENCE MODEL
+- [x] Analisar arquivo modelo célula por célula
+- [x] Reescrever professional-export.ts completamente
+- [x] Corrigir bug de dados vazios (usar getPassengersForExport/getOrdersForExport)
+- [x] Corrigir valores financeiros (usar getFinancialData com centavos reais)
+- [x] Remover "N/A" e "Invalid Date" (parseTransportDate robusto)
+- [x] Implementar color-coded status (Green=Pago, Yellow=Pendente, Red=Cancelado)
+- [x] Implementar zebra striping
+- [x] Implementar branding BusFolia (cores exatas: Gold=#D4AF37, Black=#1A1A1A, etc.)
+- [x] Implementar frozen headers (ySplit: 3 na aba Passageiros)
+- [x] Implementar AutoFilter (A3:I3)
+- [x] Implementar 3 abas: Dashboard, Passageiros, Financeiro
+- [x] Dashboard: métricas, taxa de conversão, tabela de pontos de embarque
+- [x] Passageiros: 9 colunas com dados enriquecidos
+- [x] Financeiro: resumo por evento com totais
+- [x] 41 testes unitários passando (287 total)
+- [x] Remover arquivo stale export.ts não utilizado
