@@ -1,7 +1,6 @@
 import AdminLayout from "@/components/AdminLayout";
 import { trpc } from "@/lib/trpc";
 import { formatCurrency } from "@/lib/constants";
-import { downloadXLSX, formatCurrencyForXLSX, formatDateForXLSX } from "@/lib/xlsxExport";
 import { ShoppingCart, Loader2, Eye, Download, Trash2, Mail, Ticket, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -42,6 +41,37 @@ export default function Pedidos() {
   const resendEmailMutation = trpc.admin.orders.resendEmail.useMutation();
   const utils = trpc.useUtils();
 
+  const exportPedidosMutation = trpc.admin.exports.generatePedidos.useMutation();
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportXLSX = async () => {
+    try {
+      setIsExporting(true);
+      const result = await exportPedidosMutation.mutateAsync({});
+      
+      // Decode base64 and download
+      const binaryString = atob(result.data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      
+      const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = result.filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Erro ao exportar:', error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const handleDelete = async (orderId: number) => {
     try {
       await deleteOrderMutation.mutateAsync({ id: orderId });
@@ -62,66 +92,7 @@ export default function Pedidos() {
     }
   };
 
-  function exportXLSX() {
-    if (!exportData || exportData.length === 0) return;
-    
-    const headers = [
-      "Pedido",
-      "Nome Completo",
-      "CPF",
-      "Telefone",
-      "Email",
-      "Ponto de Embarque",
-      "Datas de Transporte",
-      "Quantidade de Passageiros",
-      "Valor Total (R$)",
-      "Status",
-      "Data da Compra"
-    ];
-    
-    const rows = exportData.map((o: any) => [
-      o.pedido || '',
-      o.nomeCompleto || '',
-      o.cpf || '',
-      o.telefone || '',
-      o.email || '',
-      o.pontoEmbarque || '',
-      o.datasTransporte || '',
-      o.quantidadePassageiros || '',
-      o.valorTotal ? formatCurrencyForXLSX(parseInt(o.valorTotal.replace(/[^0-9]/g, '')) || 0) : 'R$ 0,00',
-      o.status || '',
-      o.dataCompra ? formatDateForXLSX(o.dataCompra) : '',
-    ]);
-    
-    // Calculate total
-    const totalValue = exportData.reduce((sum: number, o: any) => {
-      const val = parseInt(o.valorTotal?.replace(/[^0-9]/g, '') || '0');
-      return sum + val;
-    }, 0);
-    
-    const totals = [
-      'TOTAL',
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      exportData.length,
-      formatCurrencyForXLSX(totalValue),
-      '',
-      ''
-    ];
-    
-    downloadXLSX({
-      title: 'Relatório de Pedidos',
-      filename: `pedidos-${new Date().toISOString().split('T')[0]}.xlsx`,
-      headers,
-      rows,
-      totals,
-      columnWidths: [12, 20, 15, 15, 25, 25, 20, 18, 18, 15, 15]
-    });
-  }
+
 
   return (
     <AdminLayout>
@@ -134,8 +105,9 @@ export default function Pedidos() {
           <Button onClick={() => setShowPixForm(true)} className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto">
             <Plus className="w-4 h-4 mr-2" /> Nova Compra via PIX
           </Button>
-          <Button onClick={exportXLSX} variant="outline" className="border-white/10 w-full sm:w-auto" disabled={!exportData?.length}>
-            <Download className="w-4 h-4 mr-2" /> Exportar Excel
+          <Button onClick={handleExportXLSX} variant="outline" className="border-white/10 w-full sm:w-auto" disabled={isExporting || !orders?.length}>
+            {isExporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
+            {isExporting ? 'Exportando...' : 'Exportar Excel'}
           </Button>
         </div>
       </div>

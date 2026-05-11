@@ -3,7 +3,6 @@ import { trpc } from "@/lib/trpc";
 import { Users, Loader2, Download, CheckCircle2, Clock, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { downloadXLSX, formatDateForXLSX } from "@/lib/xlsxExport";
 import {
   Select,
   SelectContent,
@@ -16,15 +15,42 @@ import { useState, useMemo } from "react";
 export default function Passageiros() {
   const [selectedEvent, setSelectedEvent] = useState<string>("all");
   const [search, setSearch] = useState("");
+  const [isExporting, setIsExporting] = useState(false);
   const eventId = selectedEvent === "all" ? undefined : parseInt(selectedEvent);
 
   const { data: events } = trpc.admin.events.list.useQuery();
   const { data: passengers, isLoading } = trpc.admin.passengers.list.useQuery(
     eventId ? { eventId } : undefined
   );
-  const { data: exportData } = trpc.admin.passengers.exportCsv.useQuery(
-    eventId ? { eventId } : undefined
-  );
+  const exportPassageirosMutation = trpc.admin.exports.generatePassageiros.useMutation();
+
+  const handleExportXLSX = async () => {
+    try {
+      setIsExporting(true);
+      const result = await exportPassageirosMutation.mutateAsync({ eventId, paidOnly: true });
+      
+      // Decode base64 and download
+      const binaryString = atob(result.data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      
+      const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = result.filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Erro ao exportar:', error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const filtered = useMemo(() => {
     if (!passengers) return [];
@@ -37,51 +63,7 @@ export default function Passageiros() {
     );
   }, [passengers, search]);
 
-  function exportXLSX() {
-    if (!exportData || exportData.length === 0) return;
-    
-    const headers = [
-      "Nome Completo",
-      "CPF",
-      "Evento",
-      "Número do Pedido",
-      "Status do Pedido",
-      "Ponto de Embarque",
-      "Data de Transporte",
-      "Check-in"
-    ];
-    
-    const rows = exportData.map((p) => [
-      p.name || '',
-      p.cpf || '',
-      p.eventName || '',
-      p.orderShortId || '',
-      p.orderStatus || '',
-      p.boardingPoint || '',
-      p.transportDate ? formatDateForXLSX(p.transportDate) : '',
-      p.checkInStatus === "checked_in" ? "Sim" : "Não",
-    ]);
-    
-    const totals = [
-      'TOTAL',
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      exportData.filter(p => p.checkInStatus === 'checked_in').length
-    ];
-    
-    downloadXLSX({
-      title: 'Relatório de Passageiros',
-      filename: `passageiros-${new Date().toISOString().split('T')[0]}.xlsx`,
-      headers,
-      rows,
-      totals,
-      columnWidths: [25, 18, 20, 18, 18, 25, 18, 15]
-    });
-  }
+
 
   const checkedIn = filtered.filter((p) => p.checkInStatus === "checked_in").length;
   const total = filtered.length;
@@ -98,12 +80,13 @@ export default function Passageiros() {
             </p>
           </div>
           <Button
-            onClick={exportXLSX}
+            onClick={handleExportXLSX}
             variant="outline"
             className="border-white/10"
-            disabled={!exportData || exportData.length === 0}
+            disabled={isExporting || !passengers?.length}
           >
-            <Download className="w-4 h-4 mr-2" /> Exportar Excel
+            {isExporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
+            {isExporting ? 'Exportando...' : 'Exportar Excel'}
           </Button>
         </div>
 

@@ -1,6 +1,7 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
+import { exportsRouter } from "./routers/exports";
 import { publicProcedure, protectedProcedure, adminProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import {
@@ -1009,6 +1010,9 @@ export const appRouter = router({
           return getFinancialData(input?.eventId);
         }),
     }),
+
+    // Professional Exports
+    exports: exportsRouter,
   }),
 });
 
