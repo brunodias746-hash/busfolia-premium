@@ -512,3 +512,41 @@
 - [x] Fallback: default para Cartão quando PIX indisponível
 - [x] Endpoint availablePaymentMethods para checar status da conta Asaas
 - [x] Métodos indisponíveis ficam desabilitados (opacity + cursor-not-allowed)
+
+
+## 🚀 PHASE 22: ASAAS PRODUCTION MIGRATION
+
+### Pre-Deployment Review
+- [ ] Revisar todos os fluxos de pagamento (Cartão, PIX, Boleto)
+- [ ] Verificar tratamento de erros em cada método
+- [ ] Validar webhook handler (assinatura, eventos, status updates)
+- [ ] Confirmar emails de confirmação com PDF anexado
+- [ ] Verificar banco de dados (colunas Asaas, status updates)
+
+### Stripe Removal
+- [ ] Remover importações Stripe de routers.ts
+- [ ] Remover procedure createStripeCheckout
+- [ ] Remover webhook handler Stripe
+- [ ] Remover componentes Stripe do frontend
+- [ ] Remover variáveis de ambiente Stripe (STRIPE_SECRET_KEY, VITE_STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET)
+- [ ] Remover referências a Stripe em toda a codebase
+
+### Production Environment Setup
+- [ ] Mudar ASAAS_ENVIRONMENT de "sandbox" para "production"
+- [ ] Verificar credenciais de produção (API keys, webhook secrets)
+- [ ] Testar acesso à API de produção
+- [ ] Validar URLs de webhook apontam para produção
+
+### Testing
+- [ ] Teste 1: Pagamento com Cartão (R$ 1.00)
+- [ ] Teste 2: Geração de PIX (QR Code + cópia)
+- [ ] Teste 3: Geração de Boleto (download + código de barras)
+- [ ] Teste 4: Recepção de Webhooks
+- [ ] Teste 5: Tratamento de Erros (cartão inválido)
+- [ ] Todos os 302 testes unitários passando
+
+### Deployment
+- [ ] Criar checkpoint final
+- [ ] Publicar para produção
+- [ ] Monitorar logs por 1 hora
+- [ ] Confirmar sistema está operacional
