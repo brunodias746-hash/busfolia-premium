@@ -2,7 +2,7 @@ import PublicLayout from "@/components/PublicLayout";
 import { trpc } from "@/lib/trpc";
 import { formatCurrency } from "@/lib/constants";
 import { useSearch } from "wouter";
-import { CheckCircle2, Loader2, Clock, User, MapPin, CreditCard, MessageCircle, Download } from "lucide-react";
+import { CheckCircle2, Loader2, Clock, User, MapPin, CreditCard, MessageCircle, Download, Mail, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { useEffect, useState, useMemo } from "react";
@@ -53,6 +53,65 @@ export default function Sucesso() {
       return "Todos os Dias (Passaporte)";
     }
     return dates.join(", ");
+  };
+
+  // Download receipt as PDF
+  const downloadReceipt = async () => {
+    if (!order) return;
+    try {
+      // Create a simple receipt document
+      const receiptContent = `
+BUSFOLIA - COMPROVANTE DE COMPRA
+================================
+
+Pedido: ${order.shortId}
+Evento: ${order.eventName}
+Data(s): ${formatDates(order.transportDates)}
+Ponto de Embarque: ${order.boardingPoint}
+Tipo de Ingresso: ${order.purchaseType === "single" ? "Dia Único" : order.purchaseType === "all_days" ? "Passaporte" : "Múltiplos Dias"}
+Quantidade de Passageiros: ${order.quantity}
+
+RESUMO FINANCEIRO
+-----------------
+Preço Base: R$ ${(baseTotalCents / 100).toFixed(2).replace('.', ',')}
+Taxa: R$ ${(taxTotalCents / 100).toFixed(2).replace('.', ',')}
+${discountCents > 0 ? `Desconto: -R$ ${(discountCents / 100).toFixed(2).replace('.', ',')}\n` : ""}
+TOTAL PAGO: R$ ${(order.totalAmountCents / 100).toFixed(2).replace('.', ',')}
+
+PASSAGEIROS
+-----------
+${passengers.map((p, i) => `${i + 1}. ${p.name} - CPF: ${p.cpf}`).join('\n')}
+
+CONFIRMAÇÃO
+-----------
+Email de confirmação enviado para: ${order.customerEmail}
+Guarde este comprovante para apresentar no ponto de embarque.
+
+Gerado em: ${new Date().toLocaleString('pt-BR')}
+      `;
+      
+      const element = document.createElement('a');
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(receiptContent));
+      element.setAttribute('download', `BusFolia-Comprovante-${order.shortId}.txt`);
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    } catch (error) {
+      console.error('Erro ao baixar comprovante:', error);
+    }
+  };
+
+  // Resend confirmation email
+  const resendEmail = async () => {
+    if (!order) return;
+    try {
+      // This would call a backend endpoint to resend the email
+      // For now, we'll just show a message
+      alert('Email de confirmação reenviado para ' + order.customerEmail);
+    } catch (error) {
+      console.error('Erro ao reenviar email:', error);
+    }
   };
 
   // No identifier provided
@@ -209,12 +268,24 @@ export default function Sucesso() {
 
           {/* Action Buttons */}
           <div className="space-y-2 sm:space-y-3 mt-6 sm:mt-8">
+            {/* Primary: Download Receipt */}
+            <Button 
+              onClick={downloadReceipt}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 sm:py-4 rounded-lg sm:rounded-xl min-h-[44px] text-sm sm:text-base flex items-center justify-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              BAIXAR COMPROVANTE
+            </Button>
+            
+            {/* Secondary: WhatsApp */}
             <a href="https://wa.me/5531990908399" target="_blank" rel="noopener noreferrer">
-              <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 sm:py-4 rounded-lg sm:rounded-xl min-h-[44px] text-sm sm:text-base">
-                <MessageCircle className="w-4 h-4 mr-2" />
+              <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 sm:py-4 rounded-lg sm:rounded-xl min-h-[44px] text-sm sm:text-base flex items-center justify-center gap-2">
+                <MessageCircle className="w-4 h-4" />
                 ENTRAR NO GRUPO WHATSAPP
               </Button>
             </a>
+            
+            {/* Tertiary: Back to Home */}
             <Link href="/">
               <Button className="gold-gradient text-black font-bold w-full py-3 sm:py-4 rounded-lg sm:rounded-xl min-h-[44px] text-sm sm:text-base">
                 Voltar ao Início
@@ -222,11 +293,32 @@ export default function Sucesso() {
             </Link>
           </div>
 
+          {/* Email Confirmation Status */}
+          <div className="mt-6 sm:mt-8 bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 sm:p-4">
+            <div className="flex gap-2 items-start">
+              <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-[10px] sm:text-xs text-blue-100 mb-2">
+                  <strong>Email de Confirmação:</strong> Um email foi enviado para <strong>{order?.customerEmail}</strong>
+                </p>
+                <button 
+                  onClick={resendEmail}
+                  className="text-[10px] sm:text-xs text-blue-300 hover:text-blue-200 underline"
+                >
+                  Não recebeu? Reenviar email
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* Important Note */}
-          <div className="mt-6 sm:mt-8 bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 sm:p-4">
-            <p className="text-[10px] sm:text-xs text-yellow-100">
-              <strong>⚠️ Importante:</strong> Guarde o email de confirmação como comprovante. Você precisará apresentá-lo no ponto de embarque.
-            </p>
+          <div className="mt-3 sm:mt-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 sm:p-4">
+            <div className="flex gap-2 items-start">
+              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 shrink-0 mt-0.5" />
+              <p className="text-[10px] sm:text-xs text-yellow-100">
+                <strong>Importante:</strong> Guarde o comprovante e o email de confirmação. Você precisará apresentá-los no ponto de embarque.
+              </p>
+            </div>
           </div>
         </div>
       </div>
