@@ -197,7 +197,12 @@ export default function Comprar() {
     const daysPart = parts[0];
     const month = parts[1];
     const year = parts[2];
-    const days = daysPart.replace(" e ", ", ").split(",").map((d: string) => d.trim());
+    // Parse days: "05, 06, 12 e 13" → ["05", "06", "12", "13"]
+    const days = daysPart
+      .replace(/ e /g, ", ") // Replace " e " with ", "
+      .split(",")
+      .map((d: string) => d.trim())
+      .filter((d: string) => d.length > 0);
     return days.map((d: string) => `${d} de ${month} de ${year}`);
   }, [event]);
 
@@ -618,11 +623,22 @@ export default function Comprar() {
                     className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                   >
                     <option value={0}>Selecione o ponto de embarque</option>
-                    {boardingPoints?.map((bp) => (
-                      <option key={bp.id} value={bp.id}>
-                        {bp.city} - {bp.locationName}
-                      </option>
-                    ))}
+                    {boardingPoints?.map((bp) => {
+                      // Format: "Betim - Partage Shopping" (Title Case)
+                      const cityFormatted = bp.city
+                        .split(" ")
+                        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                        .join(" ");
+                      const locationFormatted = bp.locationName
+                        .split(" ")
+                        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                        .join(" ");
+                      return (
+                        <option key={bp.id} value={bp.id}>
+                          {cityFormatted} - {locationFormatted}
+                        </option>
+                      );
+                    })}
                   </select>
                   {errors.boardingPointId && <p className="text-xs text-red-400 mt-1">{errors.boardingPointId}</p>}
                 </div>

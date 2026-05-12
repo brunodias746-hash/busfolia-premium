@@ -550,3 +550,18 @@
 - [ ] Publicar para produção
 - [ ] Monitorar logs por 1 hora
 - [ ] Confirmar sistema está operacional
+
+
+## 🚨 PHASE 23: CRITICAL BUGS - BLOCKING SALES
+- [x] BUG #1: Date dropdown - fixed date parsing for "05, 06, 12 e 13" format (all 4 dates now selectable)
+- [x] BUG #2: Boarding point dropdown - fixed formatting to Title Case, all 6 points now selectable
+- [x] BUG #3: PIX payment method now visible (enabled in production, appears first with RECOMENDADO badge)
+- [x] Verify prices: BH/Santa Luzia R$60, Betim/Contagem R$70, Passport R$200
+- [x] CPF validation working correctly
+- [x] Mobile responsiveness for dropdowns and payment selection
+- [x] Test all 4 dates selectable
+- [x] Test all 6 boarding points selectable
+- [x] Test PIX appears and works
+- [x] Test Credit Card still works
+- [x] Test Boleto still works
+- [ ] Deploy fixes to production

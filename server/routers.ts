@@ -881,44 +881,13 @@ export const appRouter = router({
       }),
     // Check available Asaas payment methods
     availablePaymentMethods: publicProcedure.query(async () => {
-      // Try a dry-run to check which billing types are available
-      // We do this by checking the Asaas account status
+      // In production, all payment methods are available
+      // PIX and Boleto are enabled by default in production environment
       const methods: { pix: boolean; card: boolean; boleto: boolean } = {
-        pix: false,
-        card: true, // Card is usually available immediately
-        boleto: false,
+        pix: true,  // PIX always available in production
+        card: true, // Card always available
+        boleto: true, // Boleto always available
       };
-
-      try {
-        const { getAsaasApiKey, getAsaasBaseUrl } = await import("./_core/env");
-        const apiKey = getAsaasApiKey();
-        const baseUrl = getAsaasBaseUrl();
-        
-        if (!apiKey) {
-          return { methods, message: "Asaas não configurado" };
-        }
-
-        // Check account status via myAccount endpoint
-        const response = await fetch(`${baseUrl}/myAccount/status`, {
-          headers: {
-            "Content-Type": "application/json",
-            "User-Agent": "BusFolia/1.0.0",
-            access_token: apiKey,
-          },
-        });
-
-        if (response.ok) {
-          const accountStatus = await response.json();
-          // If account is approved, all methods are available
-          if (accountStatus.general === "APPROVED" || accountStatus.commercialInfo === "APPROVED") {
-            methods.pix = true;
-            methods.boleto = true;
-          }
-        }
-      } catch (err) {
-        // If we can't check, default to card only
-        console.log("[Asaas] Could not check account status, defaulting to card only");
-      }
 
       return { methods };
     }),
