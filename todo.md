@@ -470,3 +470,38 @@
 - [x] Financeiro: resumo por evento com totais
 - [x] 41 testes unitários passando (287 total)
 - [x] Remover arquivo stale export.ts não utilizado
+
+
+## 🚨 PHASE 21: ASAAS PAYMENT GATEWAY INTEGRATION (URGENTE - 24H)
+
+### Backend - Asaas Service
+- [x] Configurar variáveis de ambiente (API keys sandbox + production, webhook secrets)
+- [x] Criar server/lib/asaas.ts (API client: findOrCreateCustomer, createPayment, getPixQrCode, getBoletoUrl)
+- [x] Migração DB: adicionar colunas asaas_customer_id, asaas_payment_id, payment_method, payment_gateway
+
+### Backend - Webhook Handler
+- [x] Criar /api/webhooks/asaas endpoint (Express raw body)
+- [x] Verificar assinatura do webhook (HMAC)
+- [x] Tratar PAYMENT_RECEIVED → atualizar pedido + enviar email + gerar ingresso
+- [x] Tratar PAYMENT_CONFIRMED, PAYMENT_OVERDUE, PAYMENT_DELETED, PAYMENT_REFUNDED
+
+### Backend - Checkout Flow
+- [x] Criar tRPC procedure para checkout Asaas (cartão, PIX, boleto)
+- [x] CPF obrigatório para todos os métodos
+- [x] Retornar QR Code PIX (base64 + copia-e-cola)
+- [x] Retornar URL do boleto
+- [x] Retornar confirmação de cartão
+
+### Frontend - UI de Pagamento
+- [x] Seletor de método de pagamento (3 botões: Cartão, PIX, Boleto)
+- [x] Tela PIX: QR Code + botão copiar código + timer
+- [x] Tela Boleto: botão download + código de barras
+- [x] Tela Cartão: formulário padrão (número, validade, CVV, nome, CEP)
+- [x] CPF obrigatório em todos os métodos
+- [x] Feedback visual de processamento
+
+### Testes
+- [x] Testes unitários do serviço Asaas (15 testes)
+- [x] Testes do webhook handler
+- [x] Testes do fluxo de checkout
+- [ ] Teste sandbox com cartão de teste: 5162306219378829 (requer teste manual)

@@ -21,6 +21,8 @@ import {
   getOrderByShortId,
   updateOrderStatus,
   updateOrderStripeSession,
+  updateOrderAsaasInfo,
+  getOrderByAsaasPaymentId,
   deleteOrder,
   getAllOrders,
   createPassengers,
@@ -35,6 +37,13 @@ import {
   getOrderWithDetails,
 } from "./db";
 import { getStripe } from "./lib/stripe";
+import {
+  findOrCreateCustomer,
+  createPaymentAsaas,
+  getPixQrCode as getAsaasPixQrCode,
+  getBoletoIdentificationField,
+  getPaymentById as getAsaasPaymentById,
+} from "./lib/asaas";
 
 // ─── Validation helpers ───
 function validateCPF(cpf: string): boolean {
@@ -615,6 +624,243 @@ export const appRouter = router({
         }
 
         return { success: true, message: "Pagamento confirmado com sucesso" };
+      }),
+    // ─── Asaas Checkout (PIX, Cartão, Boleto) ───
+    createAsaasCheckout: publicProcedure
+      .input(checkoutSchema.extend({
+        paymentMethod: z.enum(["pix", "card", "boleto"]),
+        // Credit card fields (only required for card)
+        creditCard: z.object({
+          holderName: z.string(),
+          number: z.string(),
+          expiryMonth: z.string(),
+          expiryYear: z.string(),
+          ccv: z.string(),
+        }).optional(),
+        creditCardHolderInfo: z.object({
+          name: z.string(),
+          email: z.string(),
+          cpfCnpj: z.string(),
+          postalCode: z.string(),
+          addressNumber: z.string(),
+          phone: z.string(),
+        }).optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        // 1. Validate event
+        const event = await getEventById(input.eventId);
+        if (!event) throw new Error("Evento não encontrado");
+        if (event.status !== "active") throw new Error("Evento não está disponível para compra");
+
+        // 2. Check capacity
+        const qty = input.passengers.length;
+        if (event.soldCount + qty > event.capacity) {
+          throw new Error(`Apenas ${event.capacity - event.soldCount} vagas restantes`);
+        }
+
+        // 3. Get boarding point for dynamic pricing
+        const boardingPoint = await (async () => {
+          const bps = await getBoardingPointsByEvent(input.eventId);
+          return bps.find(bp => bp.id === input.boardingPointId);
+        })();
+
+        let basePriceCents = 6000;
+        if (boardingPoint) {
+          if (boardingPoint.city === 'BETIM' || boardingPoint.city === 'CONTAGEM') {
+            basePriceCents = 7000;
+          }
+        }
+
+        // 4. Calculate total
+        let unitPriceCents = basePriceCents;
+        let feeCents = event.feeCents;
+        let daysCount = 1;
+
+        if (input.purchaseType === "multiple") {
+          daysCount = input.transportDatesCount || 1;
+          unitPriceCents = basePriceCents * daysCount;
+          feeCents = event.feeCents * daysCount;
+        } else if (input.purchaseType === "all_days") {
+          unitPriceCents = 20000;
+          feeCents = 610;
+        }
+
+        const totalAmountCents = (unitPriceCents + feeCents) * qty;
+        const totalAmountBRL = totalAmountCents / 100;
+
+        // 5. Create order in DB
+        const { id: orderId, shortId } = await createOrder({
+          eventId: input.eventId,
+          customerName: input.customerName,
+          customerCpf: input.customerCpf.replace(/\D/g, ""),
+          customerEmail: input.customerEmail,
+          customerPhone: input.customerPhone.replace(/\D/g, ""),
+          boardingPointId: input.boardingPointId,
+          transportDates: input.purchaseType === "all_days" ? JSON.stringify(["Todos os Dias"]) : JSON.stringify([input.transportDate]),
+          purchaseType: input.purchaseType,
+          quantity: qty,
+          unitPriceCents,
+          feeCents,
+          totalAmountCents,
+          status: input.paymentMethod === "card" ? "pending_checkout" : "pending",
+        });
+
+        // 6. Create passengers
+        await createPassengers(
+          input.passengers.map((p) => ({
+            orderId,
+            name: p.name,
+            cpf: p.cpf.replace(/\D/g, ""),
+            boardingPointId: p.boardingPointId,
+          }))
+        );
+
+        // 7. Find or create Asaas customer
+        const asaasCustomer = await findOrCreateCustomer({
+          name: input.customerName,
+          cpfCnpj: input.customerCpf.replace(/\D/g, ""),
+          email: input.customerEmail,
+          phone: input.customerPhone.replace(/\D/g, ""),
+        });
+
+        // 8. Due date: today for PIX/card, +3 days for boleto
+        const dueDate = new Date();
+        if (input.paymentMethod === "boleto") {
+          dueDate.setDate(dueDate.getDate() + 3);
+        }
+        const dueDateStr = dueDate.toISOString().split("T")[0];
+
+        // 9. Create Asaas payment
+        const billingTypeMap = {
+          pix: "PIX" as const,
+          card: "CREDIT_CARD" as const,
+          boleto: "BOLETO" as const,
+        };
+
+        const asaasPayment = await createPaymentAsaas({
+          customerId: asaasCustomer.id,
+          billingType: billingTypeMap[input.paymentMethod],
+          value: totalAmountBRL,
+          dueDate: dueDateStr,
+          description: `BusFolia - ${event.name} - Pedido ${shortId}`,
+          externalReference: orderId.toString(),
+          creditCard: input.paymentMethod === "card" ? input.creditCard : undefined,
+          creditCardHolderInfo: input.paymentMethod === "card" ? input.creditCardHolderInfo : undefined,
+          remoteIp: ctx.req.ip || ctx.req.headers["x-forwarded-for"] as string || "127.0.0.1",
+        });
+
+        // 10. Update order with Asaas info
+        await updateOrderAsaasInfo(orderId, {
+          asaasPaymentId: asaasPayment.id,
+          asaasCustomerId: asaasCustomer.id,
+          paymentGateway: "asaas",
+          paymentMethod: input.paymentMethod,
+        });
+
+        // 11. Build response based on payment method
+        const response: any = {
+          orderId,
+          shortId,
+          totalAmountCents,
+          paymentMethod: input.paymentMethod,
+          asaasPaymentId: asaasPayment.id,
+          asaasStatus: asaasPayment.status,
+        };
+
+        if (input.paymentMethod === "pix") {
+          // Get PIX QR Code
+          const pixData = await getAsaasPixQrCode(asaasPayment.id);
+          response.pixQrCodeBase64 = pixData.encodedImage;
+          response.pixCopyPaste = pixData.payload;
+          response.pixExpirationDate = pixData.expirationDate;
+        } else if (input.paymentMethod === "boleto") {
+          // Get Boleto info
+          const boletoData = await getBoletoIdentificationField(asaasPayment.id);
+          response.boletoIdentificationField = boletoData.identificationField;
+          response.boletoBarCode = boletoData.barCode;
+          response.boletoUrl = asaasPayment.bankSlipUrl;
+          response.invoiceUrl = asaasPayment.invoiceUrl;
+        } else if (input.paymentMethod === "card") {
+          // Credit card: payment is processed immediately
+          if (asaasPayment.status === "CONFIRMED" || asaasPayment.status === "RECEIVED") {
+            // Card payment was approved immediately
+            await updateOrderStatus(orderId, "paid");
+            await createPayment({
+              orderId,
+              asaasPaymentId: asaasPayment.id,
+              gateway: "asaas",
+              method: "credit_card",
+              amountReceivedCents: totalAmountCents,
+              status: "succeeded",
+              processedAt: new Date(),
+            });
+            await incrementEventSoldCount(event.id, qty);
+            response.cardApproved = true;
+          } else {
+            response.cardApproved = false;
+          }
+        }
+
+        return response;
+      }),
+
+    // Check Asaas payment status (for PIX and Boleto polling)
+    checkAsaasStatus: publicProcedure
+      .input(z.object({ orderId: z.number().int().positive() }))
+      .query(async ({ input }) => {
+        const order = await getOrderById(input.orderId);
+        if (!order) return { status: "not_found" as const, order: null };
+
+        // Already paid
+        if (order.status === "paid") {
+          const passengers = await getPassengersByOrder(order.id);
+          const event = await getEventById(order.eventId);
+          const orderDetails = await getOrderWithDetails(order.id);
+          const transportDates = order.transportDates ? JSON.parse(order.transportDates) as string[] : [];
+          const boardingPointLabel = orderDetails?.boardingPoint
+            ? `${orderDetails.boardingPoint.city} - ${orderDetails.boardingPoint.locationName}`
+            : "";
+
+          return {
+            status: "paid" as const,
+            order: {
+              shortId: order.shortId,
+              customerName: order.customerName,
+              customerEmail: order.customerEmail,
+              quantity: order.quantity,
+              unitPriceCents: order.unitPriceCents,
+              feeCents: order.feeCents,
+              totalAmountCents: order.totalAmountCents,
+              transportDate: transportDates[0] ?? "",
+              transportDates,
+              eventName: event?.name ?? "",
+              boardingPoint: boardingPointLabel,
+              purchaseType: order.purchaseType,
+            },
+            passengers: passengers.map((p) => ({ name: p.name, cpf: p.cpf })),
+          };
+        }
+
+        // Check if canceled
+        if (order.status === "canceled" || order.status === "failed") {
+          return { status: "canceled" as const, order: null };
+        }
+
+        // Still pending - check with Asaas if we have a payment ID
+        if (order.asaasPaymentId) {
+          try {
+            const asaasPayment = await getAsaasPaymentById(order.asaasPaymentId);
+            if (asaasPayment.status === "RECEIVED" || asaasPayment.status === "CONFIRMED") {
+              // Payment confirmed by Asaas but webhook hasn't arrived yet
+              // Don't update here - let the webhook handle it to avoid race conditions
+              return { status: "processing" as const, order: null };
+            }
+          } catch (err) {
+            // Asaas API error - just return pending
+          }
+        }
+
+        return { status: "pending" as const, order: null };
       }),
   }),
 

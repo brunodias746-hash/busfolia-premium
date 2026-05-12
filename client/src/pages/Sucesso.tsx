@@ -5,16 +5,17 @@ import { useSearch } from "wouter";
 import { CheckCircle2, Loader2, Clock, User, MapPin, CreditCard, MessageCircle, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { trackPurchase } from "@/utils/meta-pixel";
 
 export default function Sucesso() {
-  // All hooks must be called at the top level, before any conditional returns
   const searchString = useSearch();
-  const params = new URLSearchParams(searchString);
+  const params = useMemo(() => new URLSearchParams(searchString), [searchString]);
   const sessionId = params.get("session_id") ?? "";
+  const orderId = params.get("order_id") ? parseInt(params.get("order_id")!, 10) : 0;
 
-  const { data, isLoading, refetch } = trpc.checkout.status.useQuery(
+  // Stripe flow: use session_id
+  const { data: stripeData, isLoading: stripeLoading } = trpc.checkout.status.useQuery(
     { sessionId },
     { enabled: !!sessionId, refetchInterval: (query) => {
       const status = query.state.data?.status;
@@ -22,6 +23,21 @@ export default function Sucesso() {
       return 2000;
     }}
   );
+
+  // Asaas flow: use order_id
+  const { data: asaasData, isLoading: asaasLoading } = trpc.checkout.checkAsaasStatus.useQuery(
+    { orderId },
+    { enabled: orderId > 0, refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      if (status === "paid" || status === "not_found" || status === "canceled") return false;
+      return 3000;
+    }}
+  );
+
+  // Determine which data source to use
+  const isStripeFlow = !!sessionId;
+  const data = isStripeFlow ? stripeData : asaasData;
+  const isLoading = isStripeFlow ? stripeLoading : asaasLoading;
 
   // Track Purchase event when order is confirmed and paid
   useEffect(() => {
@@ -39,8 +55,8 @@ export default function Sucesso() {
     return dates.join(", ");
   };
 
-  // Now we can have conditional returns
-  if (!sessionId) {
+  // No identifier provided
+  if (!sessionId && !orderId) {
     return (
       <PublicLayout>
         <div className="container max-w-lg py-16 sm:py-32 px-4 sm:px-6 text-center">
@@ -53,7 +69,7 @@ export default function Sucesso() {
     );
   }
 
-  if (isLoading || data?.status === "pending_checkout") {
+  if (isLoading || data?.status === "pending_checkout" || data?.status === "pending" || data?.status === "processing") {
     return (
       <PublicLayout>
         <div className="container max-w-lg py-16 sm:py-32 px-4 sm:px-6 text-center">
@@ -63,7 +79,7 @@ export default function Sucesso() {
             <p className="text-xs sm:text-base text-muted-foreground">Aguarde enquanto processamos seu pagamento. Isso pode levar alguns segundos.</p>
             <div className="flex items-center justify-center gap-2 mt-3 sm:mt-4 text-[10px] sm:text-xs text-muted-foreground">
               <Clock className="w-3 h-3 shrink-0" />
-              <span>Verificando com o Stripe...</span>
+              <span>{isStripeFlow ? "Verificando com o Stripe..." : "Verificando pagamento..."}</span>
             </div>
           </div>
         </div>
@@ -71,12 +87,14 @@ export default function Sucesso() {
     );
   }
 
-  if (data?.status === "not_found") {
+  if (data?.status === "not_found" || data?.status === "canceled") {
     return (
       <PublicLayout>
         <div className="container max-w-lg py-16 sm:py-32 px-4 sm:px-6 text-center">
           <div className="glass-card rounded-2xl p-4 sm:p-8">
-            <p className="text-xs sm:text-base text-muted-foreground mb-4">Pedido não encontrado.</p>
+            <p className="text-xs sm:text-base text-muted-foreground mb-4">
+              {data?.status === "canceled" ? "Pedido cancelado." : "Pedido não encontrado."}
+            </p>
             <Link href="/">
               <Button variant="outline" className="min-h-[44px] text-sm sm:text-base">Voltar ao Início</Button>
             </Link>

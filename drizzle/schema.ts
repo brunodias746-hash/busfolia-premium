@@ -71,6 +71,11 @@ export const orders = mysqlTable("orders", {
   totalAmountCents: int("totalAmountCents").notNull(),
   status: mysqlEnum("status", ["pending", "pending_checkout", "paid", "failed", "canceled"]).default("pending_checkout").notNull(),
   stripeSessionId: varchar("stripeSessionId", { length: 255 }),
+  // Asaas fields
+  paymentGateway: mysqlEnum("paymentGateway", ["stripe", "asaas", "manual"]).default("stripe"),
+  paymentMethod: mysqlEnum("paymentMethod", ["card", "pix", "boleto"]).default("card"),
+  asaasPaymentId: varchar("asaasPaymentId", { length: 255 }),
+  asaasCustomerId: varchar("asaasCustomerId", { length: 255 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -99,9 +104,12 @@ export const payments = mysqlTable("payments", {
   orderId: int("orderId").notNull(),
   stripePaymentIntentId: varchar("stripePaymentIntentId", { length: 255 }),
   stripeSessionId: varchar("stripeSessionId", { length: 255 }),
+  asaasPaymentId: varchar("asaasPaymentId", { length: 255 }),
+  gateway: varchar("gateway", { length: 20 }), // "stripe" | "asaas" | "manual"
   method: varchar("method", { length: 50 }),
   amountReceivedCents: int("amountReceivedCents"),
   feeStripeCents: int("feeStripeCents"),
+  feeAsaasCents: int("feeAsaasCents"),
   status: varchar("status", { length: 50 }).notNull().default("pending"),
   processedAt: timestamp("processedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

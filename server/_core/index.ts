@@ -172,8 +172,14 @@ async function startServer() {
     }
   });
   
+  // CRITICAL: Asaas webhook MUST also be registered BEFORE express.json()
+  app.post("/api/webhooks/asaas", express.json({ limit: "1mb" }), async (req, res) => {
+    const { handleAsaasWebhook } = await import("../webhooks/asaas");
+    return handleAsaasWebhook(req, res);
+  });
+
   // Configure body parser with larger size limit for file uploads
-  // This MUST come after the webhook registration
+  // This MUST come after the webhook registrations
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   
