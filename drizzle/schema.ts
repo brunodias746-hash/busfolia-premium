@@ -76,6 +76,7 @@ export const orders = mysqlTable("orders", {
   paymentMethod: mysqlEnum("paymentMethod", ["card", "pix", "boleto"]).default("card"),
   asaasPaymentId: varchar("asaasPaymentId", { length: 255 }),
   asaasCustomerId: varchar("asaasCustomerId", { length: 255 }),
+  isTestTicket: boolean("isTestTicket").notNull().default(false),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

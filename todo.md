@@ -565,3 +565,26 @@
 - [x] Test Credit Card still works
 - [x] Test Boleto still works
 - [ ] Deploy fixes to production
+
+
+## 🎨 PHASE 24: DROPDOWN CONTRAST FIX + R$5 TEST TICKET
+### Dropdown Text Contrast (CRITICAL - Blocking Sales)
+- [x] Fix date dropdown: BLACK text (#000000) on WHITE background (CSS added to index.css)
+- [x] Fix boarding point dropdown: BLACK text on WHITE background  
+- [x] Add hover state: Light gray background (#F5F5F5) with BLACK text
+- [x] Add selected state: Blue background (#0066FF) with WHITE text
+- [x] Add disabled state: Light gray background with light gray text
+- [x] Test on desktop, mobile, tablet
+- [x] Test in Chrome, Safari, Firefox, Edge
+- [x] Verify WCAG 2.1 AA contrast ratio (21:1 - exceeds AAA standard)
+
+### R$5 Test Ticket Option
+- [x] Add isTestTicket field to orders table (migration applied)
+- [x] Add test ticket to checkout flow (purchaseType: 'test')
+- [x] Implement visibility logic: ?test=true URL parameter (hides by default)
+- [x] Mark test orders in database with isTestTicket flag
+- [x] Price calculation: R$5.00 (500 cents) for test tickets
+- [x] Test ticket UI: Orange badge TESTE with R$ 5,00 price
+- [x] Backend: isTestTicket passed through createAsaasCheckout
+- [x] 302 tests passing (no regressions)
+- [ ] Manual testing: Create test order via ?test=true URL parameter

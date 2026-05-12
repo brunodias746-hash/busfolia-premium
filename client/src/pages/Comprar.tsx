@@ -41,8 +41,9 @@ interface FormData {
   boardingPointId: number;
   transportDate: string;
   transportDates: string[];
-  purchaseType: 'single' | 'multiple' | 'all_days';
+  purchaseType: 'single' | 'multiple' | 'all_days' | 'test';
   passengers: PassengerData[];
+  isTestTicket?: boolean;
 }
 
 const INITIAL_FORM: FormData = {
@@ -55,6 +56,7 @@ const INITIAL_FORM: FormData = {
   transportDates: [],
   purchaseType: 'single',
   passengers: [{ name: "", cpf: "", boardingPointId: 0 }],
+  isTestTicket: false,
 };
 
 function StepIndicator({ current, steps }: { current: number; steps: string[] }) {
@@ -288,6 +290,7 @@ export default function Comprar() {
       passengers: passengersWithBP,
       origin: window.location.origin,
       paymentMethod,
+      isTestTicket: form.isTestTicket || false,
       ...(cardData || {}),
     });
   }
@@ -323,6 +326,9 @@ export default function Comprar() {
 
   const calculateTotal = (): number => {
     if (!event) return 0;
+    if (form.purchaseType === 'test') {
+      return 500; // R$ 5.00 test ticket
+    }
     const dynamicBasePrice = getDynamicBasePrice();
     let baseCents = 0;
     if (form.purchaseType === 'single') {
@@ -337,6 +343,9 @@ export default function Comprar() {
   
   const calculateBasePrice = (): number => {
     if (!event) return 0;
+    if (form.purchaseType === 'test') {
+      return 500; // R$ 5.00 test ticket
+    }
     const dynamicBasePrice = getDynamicBasePrice();
     let baseCents = 0;
     if (form.purchaseType === 'single') {
@@ -351,6 +360,9 @@ export default function Comprar() {
   
   const calculateStep0Total = (): number => {
     if (!event) return 0;
+    if (form.purchaseType === 'test') {
+      return 500; // R$ 5.00 test ticket
+    }
     const dynamicBasePrice = getDynamicBasePrice();
     let baseCents = 0;
     if (form.purchaseType === 'single') {
@@ -501,6 +513,27 @@ export default function Comprar() {
                     <p className="text-lg font-bold text-primary">R$ 200,00</p>
                   </div>
                 </div>
+
+                {/* Test Ticket (Development Only) */}
+                {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('test') === 'true' && (
+                  <div 
+                    onClick={() => setForm(f => ({ ...f, purchaseType: 'test', transportDates: [], isTestTicket: true }))}
+                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all relative overflow-hidden ${
+                      form.purchaseType === 'test' 
+                        ? 'border-orange-500 bg-orange-500/10' 
+                        : 'border-white/10 hover:border-white/20'
+                    }`}
+                  >
+                    <div className="absolute top-0 right-0 bg-orange-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-bl-lg">TESTE</div>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="font-bold">Teste - Desenvolvimento</p>
+                        <p className="text-xs text-muted-foreground">Apenas para testes do sistema</p>
+                      </div>
+                      <p className="text-lg font-bold text-orange-500">R$ 5,00</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Date Selection for Single */}

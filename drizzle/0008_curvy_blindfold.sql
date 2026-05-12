@@ -1,0 +1,1 @@
+ALTER TABLE `orders` ADD `isTestTicket` boolean DEFAULT false NOT NULL;

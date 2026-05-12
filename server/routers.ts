@@ -629,6 +629,7 @@ export const appRouter = router({
     createAsaasCheckout: publicProcedure
       .input(checkoutSchema.extend({
         paymentMethod: z.enum(["pix", "card", "boleto"]),
+        isTestTicket: z.boolean().optional().default(false),
         // Credit card fields (only required for card)
         creditCard: z.object({
           holderName: z.string(),
@@ -703,6 +704,7 @@ export const appRouter = router({
           feeCents,
           totalAmountCents,
           status: input.paymentMethod === "card" ? "pending_checkout" : "pending",
+          isTestTicket: input.isTestTicket || false,
         });
 
         // 6. Create passengers

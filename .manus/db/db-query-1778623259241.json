@@ -1,0 +1,31 @@
+{
+  "query": "SHOW TABLES;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2dcXFJ5zHsK7P8Z.root --database ci3rs2m5P7Zem9o9Dnh5ee --execute SHOW TABLES;",
+  "rows": [
+    {
+      "Tables_in_ci3rs2m5P7Zem9o9Dnh5ee": "__drizzle_migrations"
+    },
+    {
+      "Tables_in_ci3rs2m5P7Zem9o9Dnh5ee": "boarding_points"
+    },
+    {
+      "Tables_in_ci3rs2m5P7Zem9o9Dnh5ee": "events"
+    },
+    {
+      "Tables_in_ci3rs2m5P7Zem9o9Dnh5ee": "orders"
+    },
+    {
+      "Tables_in_ci3rs2m5P7Zem9o9Dnh5ee": "passengers"
+    },
+    {
+      "Tables_in_ci3rs2m5P7Zem9o9Dnh5ee": "payments"
+    },
+    {
+      "Tables_in_ci3rs2m5P7Zem9o9Dnh5ee": "users"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_ci3rs2m5P7Zem9o9Dnh5ee\n__drizzle_migrations\nboarding_points\nevents\norders\npassengers\npayments\nusers\n",
+  "stderr": "",
+  "execution_time_ms": 258
+}
