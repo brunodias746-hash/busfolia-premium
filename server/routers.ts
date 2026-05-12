@@ -756,11 +756,11 @@ export const appRouter = router({
           
           // Parse user-friendly error messages from Asaas
           const errorMsg = asaasError?.message || "";
-          if (errorMsg.includes("invalid_billingType") || errorMsg.includes("n\u00e3o est\u00e1 dispon\u00edvel")) {
+          if (errorMsg.includes("invalid_billingType") || errorMsg.includes("não está disponível")) {
             if (input.paymentMethod === "pix") {
-              throw new Error("PIX n\u00e3o est\u00e1 dispon\u00edvel no momento. A conta Asaas precisa ser aprovada primeiro. Por favor, use Cart\u00e3o de Cr\u00e9dito ou Boleto.");
+              throw new Error("PIX não está disponível no momento. A conta Asaas precisa ser aprovada primeiro. Por favor, use Cartão de Crédito ou Boleto.");
             } else if (input.paymentMethod === "boleto") {
-              throw new Error("Boleto n\u00e3o est\u00e1 dispon\u00edvel no momento. A conta Asaas precisa ser aprovada primeiro. Por favor, use Cart\u00e3o de Cr\u00e9dito.");
+              throw new Error("Boleto não está disponível no momento. A conta Asaas precisa ser aprovada primeiro. Por favor, use Cartão de Crédito.");
             }
           }
           throw new Error(`Erro ao processar pagamento: ${asaasError?.message || "Tente novamente"}`);
@@ -895,7 +895,7 @@ export const appRouter = router({
         const baseUrl = getAsaasBaseUrl();
         
         if (!apiKey) {
-          return { methods, message: "Asaas n\u00e3o configurado" };
+          return { methods, message: "Asaas não configurado" };
         }
 
         // Check account status via myAccount endpoint

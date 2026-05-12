@@ -793,7 +793,7 @@ export default function Comprar() {
                     <div className="flex-1">
                       <p className="font-semibold">PIX</p>
                       <p className="text-xs text-muted-foreground">
-                        {pixAvailable ? 'Pagamento instant\u00e2neo \u2014 Sem taxa adicional' : 'Indispon\u00edvel no momento'}
+                        {pixAvailable ? 'Pagamento instantâneo — Sem taxa adicional' : 'Indisponível no momento'}
                       </p>
                     </div>
                     {pixAvailable ? (
@@ -823,8 +823,8 @@ export default function Comprar() {
                     </div>
                     <CreditCard className="w-5 h-5 text-primary" />
                     <div>
-                      <p className="font-semibold">Cart\u00e3o de Cr\u00e9dito</p>
-                      <p className="text-xs text-muted-foreground">Aprova\u00e7\u00e3o imediata</p>
+                      <p className="font-semibold">Cartão de Crédito</p>
+                      <p className="text-xs text-muted-foreground">Aprovação imediata</p>
                     </div>
                     {!pixAvailable && cardAvailable && (
                       <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full font-bold ml-auto">RECOMENDADO</span>
@@ -851,9 +851,9 @@ export default function Comprar() {
                     </div>
                     <FileText className="w-5 h-5 text-orange-400" />
                     <div>
-                      <p className="font-semibold">Boleto Banc\u00e1rio</p>
+                      <p className="font-semibold">Boleto Bancário</p>
                       <p className="text-xs text-muted-foreground">
-                        {boletoAvailable ? 'Vencimento em 3 dias \u2014 Confirma\u00e7\u00e3o em at\u00e9 3 dias \u00fateis' : 'Indispon\u00edvel no momento'}
+                        {boletoAvailable ? 'Vencimento em 3 dias — Confirmação em até 3 dias úteis' : 'Indisponível no momento'}
                       </p>
                     </div>
                     {!boletoAvailable && (
