@@ -505,3 +505,10 @@
 - [x] Testes do webhook handler
 - [x] Testes do fluxo de checkout
 - [ ] Teste sandbox com cartão de teste: 5162306219378829 (requer teste manual)
+
+## 🐛 BUG FIX: Asaas PIX não disponível (conta sandbox não aprovada)
+- [x] Tratar erro "O Pix não está disponível" graciosamente no backend (try/catch + cleanup)
+- [x] Mostrar mensagem clara no frontend quando PIX não disponível ("EM BREVE" badge)
+- [x] Fallback: default para Cartão quando PIX indisponível
+- [x] Endpoint availablePaymentMethods para checar status da conta Asaas
+- [x] Métodos indisponíveis ficam desabilitados (opacity + cursor-not-allowed)

@@ -108,9 +108,28 @@ export default function Comprar() {
   const [couponMessage, setCouponMessage] = useState<{ type: 'success' | 'error' | null; text: string }>({ type: null, text: "" });
   const [appliedCoupon, setAppliedCoupon] = useState<{ couponId: string; discountPercentage: number; discountAmountCents: number } | null>(null);
   const [couponValidating, setCouponValidating] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('pix');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
   const [asaasCheckoutData, setAsaasCheckoutData] = useState<AsaasCheckoutResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Query available payment methods from Asaas
+  const { data: availableMethods } = trpc.checkout.availablePaymentMethods.useQuery(undefined, {
+    staleTime: 60000, // Cache for 1 minute
+  });
+  const pixAvailable = availableMethods?.methods?.pix ?? false;
+  const boletoAvailable = availableMethods?.methods?.boleto ?? false;
+  const cardAvailable = availableMethods?.methods?.card ?? true;
+
+  // Set default payment method based on availability
+  useEffect(() => {
+    if (pixAvailable) {
+      setPaymentMethod('pix');
+    } else if (cardAvailable) {
+      setPaymentMethod('card');
+    } else if (boletoAvailable) {
+      setPaymentMethod('boleto');
+    }
+  }, [pixAvailable, cardAvailable, boletoAvailable]);
 
   // Load saved form from localStorage
   useEffect(() => {
@@ -755,11 +774,13 @@ export default function Comprar() {
                 
                 {/* PIX */}
                 <div 
-                  onClick={() => setPaymentMethod('pix')}
-                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    paymentMethod === 'pix' 
-                      ? 'border-green-500 bg-green-500/10' 
-                      : 'border-white/10 hover:border-white/20'
+                  onClick={() => pixAvailable && setPaymentMethod('pix')}
+                  className={`p-4 rounded-lg border-2 transition-all ${
+                    !pixAvailable 
+                      ? 'border-white/5 opacity-40 cursor-not-allowed' 
+                      : paymentMethod === 'pix' 
+                        ? 'border-green-500 bg-green-500/10 cursor-pointer' 
+                        : 'border-white/10 hover:border-white/20 cursor-pointer'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -771,19 +792,27 @@ export default function Comprar() {
                     <QrCode className="w-5 h-5 text-green-400" />
                     <div className="flex-1">
                       <p className="font-semibold">PIX</p>
-                      <p className="text-xs text-muted-foreground">Pagamento instantâneo — Sem taxa adicional</p>
+                      <p className="text-xs text-muted-foreground">
+                        {pixAvailable ? 'Pagamento instant\u00e2neo \u2014 Sem taxa adicional' : 'Indispon\u00edvel no momento'}
+                      </p>
                     </div>
-                    <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full font-bold">RECOMENDADO</span>
+                    {pixAvailable ? (
+                      <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full font-bold">RECOMENDADO</span>
+                    ) : (
+                      <span className="text-xs bg-white/5 text-muted-foreground px-2 py-1 rounded-full">EM BREVE</span>
+                    )}
                   </div>
                 </div>
 
                 {/* Credit Card */}
                 <div 
-                  onClick={() => setPaymentMethod('card')}
-                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    paymentMethod === 'card' 
-                      ? 'border-primary bg-primary/10' 
-                      : 'border-white/10 hover:border-white/20'
+                  onClick={() => cardAvailable && setPaymentMethod('card')}
+                  className={`p-4 rounded-lg border-2 transition-all ${
+                    !cardAvailable 
+                      ? 'border-white/5 opacity-40 cursor-not-allowed' 
+                      : paymentMethod === 'card' 
+                        ? 'border-primary bg-primary/10 cursor-pointer' 
+                        : 'border-white/10 hover:border-white/20 cursor-pointer'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -794,19 +823,24 @@ export default function Comprar() {
                     </div>
                     <CreditCard className="w-5 h-5 text-primary" />
                     <div>
-                      <p className="font-semibold">Cartão de Crédito</p>
-                      <p className="text-xs text-muted-foreground">Aprovação imediata</p>
+                      <p className="font-semibold">Cart\u00e3o de Cr\u00e9dito</p>
+                      <p className="text-xs text-muted-foreground">Aprova\u00e7\u00e3o imediata</p>
                     </div>
+                    {!pixAvailable && cardAvailable && (
+                      <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full font-bold ml-auto">RECOMENDADO</span>
+                    )}
                   </div>
                 </div>
 
                 {/* Boleto */}
                 <div 
-                  onClick={() => setPaymentMethod('boleto')}
-                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    paymentMethod === 'boleto' 
-                      ? 'border-orange-500 bg-orange-500/10' 
-                      : 'border-white/10 hover:border-white/20'
+                  onClick={() => boletoAvailable && setPaymentMethod('boleto')}
+                  className={`p-4 rounded-lg border-2 transition-all ${
+                    !boletoAvailable 
+                      ? 'border-white/5 opacity-40 cursor-not-allowed' 
+                      : paymentMethod === 'boleto' 
+                        ? 'border-orange-500 bg-orange-500/10 cursor-pointer' 
+                        : 'border-white/10 hover:border-white/20 cursor-pointer'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -817,9 +851,14 @@ export default function Comprar() {
                     </div>
                     <FileText className="w-5 h-5 text-orange-400" />
                     <div>
-                      <p className="font-semibold">Boleto Bancário</p>
-                      <p className="text-xs text-muted-foreground">Vencimento em 3 dias — Confirmação em até 3 dias úteis</p>
+                      <p className="font-semibold">Boleto Banc\u00e1rio</p>
+                      <p className="text-xs text-muted-foreground">
+                        {boletoAvailable ? 'Vencimento em 3 dias \u2014 Confirma\u00e7\u00e3o em at\u00e9 3 dias \u00fateis' : 'Indispon\u00edvel no momento'}
+                      </p>
                     </div>
+                    {!boletoAvailable && (
+                      <span className="text-xs bg-white/5 text-muted-foreground px-2 py-1 rounded-full ml-auto">EM BREVE</span>
+                    )}
                   </div>
                 </div>
               </div>

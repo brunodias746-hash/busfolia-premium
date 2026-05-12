@@ -737,17 +737,34 @@ export const appRouter = router({
           boleto: "BOLETO" as const,
         };
 
-        const asaasPayment = await createPaymentAsaas({
-          customerId: asaasCustomer.id,
-          billingType: billingTypeMap[input.paymentMethod],
-          value: totalAmountBRL,
-          dueDate: dueDateStr,
-          description: `BusFolia - ${event.name} - Pedido ${shortId}`,
-          externalReference: orderId.toString(),
-          creditCard: input.paymentMethod === "card" ? input.creditCard : undefined,
-          creditCardHolderInfo: input.paymentMethod === "card" ? input.creditCardHolderInfo : undefined,
-          remoteIp: ctx.req.ip || ctx.req.headers["x-forwarded-for"] as string || "127.0.0.1",
-        });
+        let asaasPayment;
+        try {
+          asaasPayment = await createPaymentAsaas({
+            customerId: asaasCustomer.id,
+            billingType: billingTypeMap[input.paymentMethod],
+            value: totalAmountBRL,
+            dueDate: dueDateStr,
+            description: `BusFolia - ${event.name} - Pedido ${shortId}`,
+            externalReference: orderId.toString(),
+            creditCard: input.paymentMethod === "card" ? input.creditCard : undefined,
+            creditCardHolderInfo: input.paymentMethod === "card" ? input.creditCardHolderInfo : undefined,
+            remoteIp: ctx.req.ip || ctx.req.headers["x-forwarded-for"] as string || "127.0.0.1",
+          });
+        } catch (asaasError: any) {
+          // Clean up the order we just created since payment failed
+          await deleteOrder(orderId);
+          
+          // Parse user-friendly error messages from Asaas
+          const errorMsg = asaasError?.message || "";
+          if (errorMsg.includes("invalid_billingType") || errorMsg.includes("n\u00e3o est\u00e1 dispon\u00edvel")) {
+            if (input.paymentMethod === "pix") {
+              throw new Error("PIX n\u00e3o est\u00e1 dispon\u00edvel no momento. A conta Asaas precisa ser aprovada primeiro. Por favor, use Cart\u00e3o de Cr\u00e9dito ou Boleto.");
+            } else if (input.paymentMethod === "boleto") {
+              throw new Error("Boleto n\u00e3o est\u00e1 dispon\u00edvel no momento. A conta Asaas precisa ser aprovada primeiro. Por favor, use Cart\u00e3o de Cr\u00e9dito.");
+            }
+          }
+          throw new Error(`Erro ao processar pagamento: ${asaasError?.message || "Tente novamente"}`);
+        }
 
         // 10. Update order with Asaas info
         await updateOrderAsaasInfo(orderId, {
@@ -862,6 +879,49 @@ export const appRouter = router({
 
         return { status: "pending" as const, order: null };
       }),
+    // Check available Asaas payment methods
+    availablePaymentMethods: publicProcedure.query(async () => {
+      // Try a dry-run to check which billing types are available
+      // We do this by checking the Asaas account status
+      const methods: { pix: boolean; card: boolean; boleto: boolean } = {
+        pix: false,
+        card: true, // Card is usually available immediately
+        boleto: false,
+      };
+
+      try {
+        const { getAsaasApiKey, getAsaasBaseUrl } = await import("./_core/env");
+        const apiKey = getAsaasApiKey();
+        const baseUrl = getAsaasBaseUrl();
+        
+        if (!apiKey) {
+          return { methods, message: "Asaas n\u00e3o configurado" };
+        }
+
+        // Check account status via myAccount endpoint
+        const response = await fetch(`${baseUrl}/myAccount/status`, {
+          headers: {
+            "Content-Type": "application/json",
+            "User-Agent": "BusFolia/1.0.0",
+            access_token: apiKey,
+          },
+        });
+
+        if (response.ok) {
+          const accountStatus = await response.json();
+          // If account is approved, all methods are available
+          if (accountStatus.general === "APPROVED" || accountStatus.commercialInfo === "APPROVED") {
+            methods.pix = true;
+            methods.boleto = true;
+          }
+        }
+      } catch (err) {
+        // If we can't check, default to card only
+        console.log("[Asaas] Could not check account status, defaulting to card only");
+      }
+
+      return { methods };
+    }),
   }),
 
   // ─── Admin: Dashboard ───
