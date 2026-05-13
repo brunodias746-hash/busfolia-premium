@@ -787,11 +787,33 @@ export const appRouter = router({
         };
 
         if (input.paymentMethod === "pix") {
-          // Get PIX QR Code
-          const pixData = await getAsaasPixQrCode(asaasPayment.id);
-          response.pixQrCodeBase64 = pixData.encodedImage;
-          response.pixCopyPaste = pixData.payload;
-          response.pixExpirationDate = pixData.expirationDate;
+          // Get PIX QR Code with fallback
+          try {
+            const pixData = await getAsaasPixQrCode(asaasPayment.id);
+            response.pixQrCodeBase64 = pixData.encodedImage;
+            response.pixCopyPaste = pixData.payload;
+            response.pixExpirationDate = pixData.expirationDate;
+          } catch (pixError) {
+            console.error("[PIX] Error generating Asaas QR code:", pixError);
+            // Fallback: use local PIX generator
+            try {
+              const { generatePixQrCode } = await import("./lib/pix");
+              const { qrCodeDataUrl, pixCopyPaste } = await generatePixQrCode(
+                orderId,
+                shortId,
+                totalAmountCents
+              );
+              // Extract base64 from data URL
+              const base64Match = qrCodeDataUrl.match(/base64,(.+)$/);
+              response.pixQrCodeBase64 = base64Match ? base64Match[1] : "";
+              response.pixCopyPaste = pixCopyPaste;
+              response.pixExpirationDate = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+              console.log("[PIX] Using local fallback generator");
+            } catch (fallbackError) {
+              console.error("[PIX] Fallback generator also failed:", fallbackError);
+              throw new Error("Failed to generate PIX QR code: " + String(pixError));
+            }
+          }
         } else if (input.paymentMethod === "boleto") {
           // Get Boleto info
           const boletoData = await getBoletoIdentificationField(asaasPayment.id);

@@ -588,3 +588,13 @@
 - [x] Backend: isTestTicket passed through createAsaasCheckout
 - [x] 302 tests passing (no regressions)
 - [ ] Manual testing: Create test order via ?test=true URL parameter
+
+
+## 🐛 PHASE 26: CRITICAL BUG - PIX QR Code Generation Fails
+- [ ] Investigar erro ao gerar código PIX (chega até pagamento, falha ao gerar QR)
+- [ ] Verificar resposta da API Asaas para getPixQrCode
+- [ ] Corrigir tratamento de erro
+- [ ] Testar PIX novamente
+- [ ] Testar Cartão de Crédito
+- [ ] Testar Boleto
+- [ ] Confirmar webhook recebe eventos
