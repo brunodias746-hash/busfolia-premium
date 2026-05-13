@@ -4,7 +4,7 @@
  */
 import type { Request, Response } from "express";
 import crypto from "crypto";
-import { getAsaasWebhookSecret } from "../_core/env";
+import { ENV } from "../_core/env";
 import {
   updateOrderStatus,
   createPayment,
@@ -40,7 +40,7 @@ export function verifyAsaasWebhookSignature(
   rawBody: Buffer | string,
   receivedToken: string | undefined
 ): boolean {
-  const webhookSecret = getAsaasWebhookSecret();
+  const webhookSecret = ENV.asaasWebhookSecret;
   
   if (!webhookSecret) {
     console.error("[Asaas Webhook] No webhook secret configured");

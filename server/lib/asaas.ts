@@ -2,7 +2,7 @@
  * Asaas Payment Gateway Service
  * Handles PIX, Credit Card, and Boleto payments via Asaas API v3
  */
-import { getAsaasApiKey, getAsaasBaseUrl } from "../_core/env";
+import { ENV, ASAAS_BASE_URL } from "../_core/env";
 
 // ─── Types ───
 
@@ -88,8 +88,8 @@ async function asaasRequest<T>(
   path: string,
   body?: any
 ): Promise<T> {
-  const baseUrl = getAsaasBaseUrl();
-  const apiKey = getAsaasApiKey();
+  const baseUrl = ASAAS_BASE_URL;
+  const apiKey = ENV.asaasApiKey;
 
   if (!apiKey) {
     // Production-safe diagnostic log
