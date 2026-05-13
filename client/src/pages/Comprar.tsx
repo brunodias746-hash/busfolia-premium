@@ -139,6 +139,17 @@ export default function Comprar() {
     if (savedForm) {
       try {
         const parsedForm = JSON.parse(savedForm);
+        // Ensure boardingPointId is never null
+        if (parsedForm.boardingPointId === null || parsedForm.boardingPointId === undefined) {
+          parsedForm.boardingPointId = 0;
+        }
+        // Ensure passengers have valid boardingPointId
+        if (parsedForm.passengers && Array.isArray(parsedForm.passengers)) {
+          parsedForm.passengers = parsedForm.passengers.map((p: any) => ({
+            ...p,
+            boardingPointId: p.boardingPointId === null || p.boardingPointId === undefined ? 0 : p.boardingPointId,
+          }));
+        }
         setForm(parsedForm);
       } catch (e) {
         console.error('Erro ao carregar dados salvos:', e);
@@ -155,6 +166,23 @@ export default function Comprar() {
   useEffect(() => {
     trackInitiateCheckout();
   }, []);
+
+  // Polling fallback for boarding point changes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const selects = document.querySelectorAll('select');
+      if (selects.length > 0) {
+        const selectElement = selects[selects.length - 1] as HTMLSelectElement;
+        const value = parseInt(selectElement.value, 10);
+        if (value !== 0 && form.boardingPointId === 0) {
+          console.log("[DEBUG] Polling detected select value:", { value });
+          setForm(prev => ({ ...prev, boardingPointId: value }));
+        }
+      }
+    }, 300);
+
+    return () => clearInterval(interval);
+  }, [form.boardingPointId]);
 
   const { data: events } = trpc.events.active.useQuery();
   const event = events?.[0];
@@ -226,7 +254,6 @@ export default function Comprar() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.customerEmail)) e.customerEmail = "E-mail inválido";
     const phoneClean = form.customerPhone.replace(/\D/g, "");
     if (phoneClean.length < 10) e.customerPhone = "Telefone inválido";
-    if (form.boardingPointId === 0) e.boardingPointId = "Selecione um ponto de embarque";
     form.passengers.forEach((p, i) => {
       const passengerNameParts = p.name.trim().split(/\s+/).filter(part => part.length > 0);
       if (passengerNameParts.length < 2) e[`passenger_${i}_name`] = "Nome completo obrigatório (nome + sobrenome)";
@@ -240,7 +267,9 @@ export default function Comprar() {
 
   const handleTransportDateChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
+    console.log("[DEBUG] Transport date change:", { rawValue: value, currentForm: form.transportDate });
     setForm(prev => ({ ...prev, transportDate: value }));
+    console.log("[DEBUG] Form updated with transportDate:", value);
     if (value && errors.transportDate) {
       setErrors(prev => {
         const updated = { ...prev };
@@ -250,9 +279,14 @@ export default function Comprar() {
     }
   }, [errors.transportDate]);
 
-  const handleBoardingPointChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleBoardingPointChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = parseInt(e.target.value, 10);
-    setForm(prev => ({ ...prev, boardingPointId: value }));
+    console.log("[DEBUG] Boarding point change (React):", { rawValue: e.target.value, parsedValue: value });
+    setForm(prev => {
+      const updated = { ...prev, boardingPointId: value };
+      console.log("[DEBUG] Form state after update:", { boardingPointId: updated.boardingPointId });
+      return updated;
+    });
     if (value !== 0 && errors.boardingPointId) {
       setErrors(prev => {
         const updated = { ...prev };
@@ -260,7 +294,7 @@ export default function Comprar() {
         return updated;
       });
     }
-  }, [errors.boardingPointId]);
+  };
 
   function handleNext() {
     if (step === 0 && validateStep0()) setStep(1);
@@ -272,10 +306,14 @@ export default function Comprar() {
     if (!event) return;
     setIsSubmitting(true);
     
+    console.log("[DEBUG] handleAsaasSubmit called with form:", { boardingPointId: form.boardingPointId, passengers: form.passengers });
+    
     const passengersWithBP = form.passengers.map((p) => ({
       ...p,
       boardingPointId: p.boardingPointId || form.boardingPointId,
     }));
+
+    console.log("[DEBUG] Submitting checkout with:", { boardingPointId: form.boardingPointId, passengersWithBP });
 
     createAsaasCheckout.mutate({
       eventId: event.id,
@@ -651,11 +689,12 @@ export default function Comprar() {
 
                 <div>
                   <select
-                    value={form.boardingPointId}
+                    value={(form.boardingPointId ?? 0).toString()}
                     onChange={handleBoardingPointChange}
+                    onChangeCapture={handleBoardingPointChange}
                     className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                   >
-                    <option value={0}>Selecione o ponto de embarque</option>
+                    <option value="0">Selecione o ponto de embarque</option>
                     {boardingPoints?.map((bp) => {
                       // Format: "Betim - Partage Shopping" (Title Case)
                       const cityFormatted = bp.city
@@ -667,7 +706,7 @@ export default function Comprar() {
                         .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
                         .join(" ");
                       return (
-                        <option key={bp.id} value={bp.id}>
+                        <option key={bp.id} value={bp.id.toString()}>
                           {cityFormatted} - {locationFormatted}
                         </option>
                       );
