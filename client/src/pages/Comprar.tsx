@@ -196,6 +196,7 @@ export default function Comprar() {
   // Asaas checkout mutation
   const createAsaasCheckout = trpc.checkout.createAsaasCheckout.useMutation({
     onSuccess: (data) => {
+      console.log("[DEBUG] Mutation onSuccess called with data:", data);
       setAsaasCheckoutData(data as AsaasCheckoutResponse);
       setIsSubmitting(false);
       
@@ -310,7 +311,7 @@ export default function Comprar() {
     
     const passengersWithBP = form.passengers.map((p) => ({
       ...p,
-      boardingPointId: p.boardingPointId || form.boardingPointId,
+      boardingPointId: p.boardingPointId > 0 ? p.boardingPointId : form.boardingPointId,
     }));
 
     console.log("[DEBUG] Submitting checkout with:", { boardingPointId: form.boardingPointId, passengersWithBP });
