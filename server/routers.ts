@@ -2,6 +2,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { exportsRouter } from "./routers/exports";
+import { debugRouter } from "./debug";
 import { publicProcedure, protectedProcedure, adminProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import {
@@ -84,6 +85,7 @@ const checkoutSchema = z.object({
 });
 
 export const appRouter = router({
+  debug: debugRouter,
   system: systemRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
