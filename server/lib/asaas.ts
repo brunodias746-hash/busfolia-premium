@@ -92,6 +92,13 @@ async function asaasRequest<T>(
   const apiKey = getAsaasApiKey();
 
   if (!apiKey) {
+    // Production-safe diagnostic log
+    console.error({
+      error: "Asaas API key is not configured",
+      hasAsaasKey: Boolean(apiKey),
+      asaasKeyPrefix: apiKey?.slice(0, 11),
+      asaasBaseUrl: baseUrl,
+    });
     throw new Error("Asaas API key is not configured");
   }
 
