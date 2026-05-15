@@ -1,22 +1,14 @@
-import QRCode from 'qrcode';
-
 /**
- * PIX Payment Configuration
- * Using exact format from working examples
+ * PIX Manual - QR Code Fixo
+ * Sempre gera QR Code apontando para busfolia@hotmail.com
  */
-export const PIX_CONFIG = {
-  KEY: 'busfolia@hotmail.com',
-  MERCHANT_NAME: 'Bruno Henrique do Carmo D', // Exactly 25 chars as in working examples
-  CITY: 'SAO PAULO', // City from working examples
-  COUNTRY_CODE: 'BR',
-  MERCHANT_CATEGORY: '0400', // From working examples
-  CURRENCY: '986', // BRL
-  EXPIRATION_MINUTES: 5,
-};
+import QRCode from "qrcode";
+
+// Código PIX fixo
+const PIX_CODE_FIXO = "00020126420014BR.GOV.BCB.PIX0120busfolia@hotmail.com5204000053039865802BR5925Bruno Henrique do Carmo D6009SAO PAULO62140510ZG3eezByLq6304F518";
 
 /**
- * Generate PIX QR Code for a specific order
- * Uses exact format from working examples provided by user
+ * Gera QR Code do PIX fixo
  */
 export async function generatePixQrCode(
   orderId: number,
@@ -24,162 +16,29 @@ export async function generatePixQrCode(
   amountCents: number
 ): Promise<{ qrCodeDataUrl: string; pixCopyPaste: string }> {
   try {
-    // Amount in BRL (convert from cents)
-    const amountBRL = (amountCents / 100).toFixed(2);
-
-    // Generate PIX copy-paste code (EMV BR Code standard)
-    const pixCopyPaste = generateBrCode(
-      PIX_CONFIG.KEY,
-      PIX_CONFIG.MERCHANT_NAME,
-      PIX_CONFIG.CITY,
-      amountBRL,
-      generateUniqueId() // Generate unique 10-char ID for field 62
-    );
-
-    // Generate QR Code from the BR Code
-    const qrCodeDataUrl = await QRCode.toDataURL(pixCopyPaste, {
-      errorCorrectionLevel: 'H',
-      type: 'image/png',
+    console.log(`[PIX FIXO] Gerando QR Code para pedido ${shortId} - Valor: R$ ${(amountCents / 100).toFixed(2)}`);
+    
+    const qrCodeDataUrl = await QRCode.toDataURL(PIX_CODE_FIXO, {
       width: 300,
       margin: 2,
       color: {
-        dark: '#000000',
-        light: '#FFFFFF',
+        dark: "#000000",
+        light: "#FFFFFF",
       },
     });
 
+    console.log(`[PIX FIXO] QR Code gerado com sucesso`);
+
     return {
       qrCodeDataUrl,
-      pixCopyPaste,
+      pixCopyPaste: PIX_CODE_FIXO,
     };
   } catch (error) {
-    console.error('[PIX] Error generating QR code:', error);
-    throw new Error('Erro ao gerar código PIX');
+    console.error("[PIX FIXO] Erro ao gerar QR Code:", error);
+    throw new Error("Erro ao gerar QR Code PIX");
   }
 }
 
-/**
- * Generate a unique 10-character ID for the PIX transaction
- * Based on the format seen in working examples
- */
-function generateUniqueId(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  for (let i = 0; i < 10; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-}
-
-/**
- * Generate BR Code (PIX EMV code) using exact format from working examples
- * Reference examples provided by user (all tested and working)
- */
-function generateBrCode(
-  pixKey: string,
-  merchantName: string,
-  city: string,
-  amount: string,
-  uniqueId: string
-): string {
-  // Helper function to create TLV (Tag-Length-Value) format
-  const tlv = (tag: string, value: string): string => {
-    const length = value.length.toString().padStart(2, '0');
-    return `${tag}${length}${value}`;
-  };
-
-  // Helper to create nested TLV
-  const nestedTlv = (tag: string, fields: string): string => {
-    const length = fields.length.toString().padStart(2, '0');
-    return `${tag}${length}${fields}`;
-  };
-
-  let brCode = '';
-
-  // 00 - Payload Format Indicator (mandatory, always "01")
-  brCode += tlv('00', '01');
-
-  // 01 - Point of Initiation Method (12 = Static QR Code)
-  brCode += tlv('01', '12');
-
-  // 26 - Merchant Account Information (PIX Key)
-  let merchantInfo = '';
-  merchantInfo += tlv('00', '0br.gov.bcb.brcode'); // GUI
-  merchantInfo += tlv('01', '01'); // Version
-  merchantInfo += tlv('02', pixKey); // PIX Key
-  brCode += nestedTlv('26', merchantInfo);
-
-  // 52 - Merchant Category Code (0400 as in working examples)
-  brCode += tlv('52', PIX_CONFIG.MERCHANT_CATEGORY);
-
-  // 53 - Transaction Currency (986 = BRL)
-  brCode += tlv('53', PIX_CONFIG.CURRENCY);
-
-  // 54 - Transaction Amount (fixed amount)
-  if (amount && amount !== '0.00') {
-    brCode += tlv('54', amount);
-  }
-
-  // 58 - Country Code (BR)
-  brCode += tlv('58', PIX_CONFIG.COUNTRY_CODE);
-
-  // 59 - Merchant Name (max 25 chars, exactly as in working examples)
-  brCode += tlv('59', merchantName.substring(0, 25));
-
-  // 60 - Merchant City (max 15 chars)
-  brCode += tlv('60', city.substring(0, 15));
-
-  // 62 - Additional Data Field Template
-  let additionalData = '';
-  // 05 - Reference Label (unique 10-char ID as in working examples)
-  additionalData += tlv('05', uniqueId.substring(0, 10));
-  brCode += nestedTlv('62', additionalData);
-
-  // 63 - CRC16 checksum (mandatory)
-  const crc = calculateCrc16CCITT(brCode + '6304');
-  brCode += `6304${crc}`;
-
-  return brCode;
-}
-
-/**
- * Calculate CRC16-CCITT checksum for BR Code
- * Using polynomial 0x1021 with initial value 0xFFFF
- */
-function calculateCrc16CCITT(data: string): string {
-  let crc = 0xffff;
-  const poly = 0x1021;
-
-  for (let i = 0; i < data.length; i++) {
-    const byte = data.charCodeAt(i);
-    crc ^= (byte << 8);
-
-    for (let j = 0; j < 8; j++) {
-      crc = crc << 1;
-      if (crc & 0x10000) {
-        crc = (crc ^ poly) & 0xffff;
-      }
-    }
-  }
-
-  return crc.toString(16).toUpperCase().padStart(4, '0');
-}
-
-/**
- * Generate PIX expiration time (5 minutes from now)
- */
-export function getPixExpirationTime(): Date {
-  const expirationTime = new Date();
-  expirationTime.setMinutes(expirationTime.getMinutes() + PIX_CONFIG.EXPIRATION_MINUTES);
-  return expirationTime;
-}
-
-/**
- * Check if PIX payment has expired
- */
-export function isPixExpired(createdAt: Date): boolean {
-  const now = new Date();
-  const expirationTime = new Date(createdAt);
-  expirationTime.setMinutes(expirationTime.getMinutes() + PIX_CONFIG.EXPIRATION_MINUTES);
-  return now > expirationTime;
+export function isValidPixCode(pixCode: string): boolean {
+  return pixCode.startsWith("00020126") && pixCode.length > 50;
 }

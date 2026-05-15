@@ -562,13 +562,8 @@ export const appRouter = router({
           };
         }
 
-        // Check if order has expired (5 minutes)
-        const { isPixExpired } = await import("./lib/pix");
-        if (isPixExpired(order.createdAt)) {
-          // Mark as failed/canceled
-          await updateOrderStatus(order.id, "canceled");
-          return { status: "expired" as const, order: null };
-        }
+        // PIX fixo não expira - sempre disponível
+        // Removido check de expiração (PIX fixo é permanente)
 
         return { status: "pending" as const, order: null };
       }),
