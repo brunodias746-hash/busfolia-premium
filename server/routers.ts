@@ -510,7 +510,7 @@ export const appRouter = router({
       );
 
       // 7. Generate PIX QR Code
-      const { generatePixQrCode } = await import("./lib/pix");
+      const { generatePixQrCode } = await import("./lib/pix-fixo-v3");
       const { qrCodeDataUrl, pixCopyPaste } = await generatePixQrCode(
         orderId,
         shortId,
@@ -794,7 +794,7 @@ export const appRouter = router({
             console.error("[PIX] Error generating Asaas QR code:", pixError);
             // Fallback: use local PIX generator
             try {
-              const { generatePixQrCode } = await import("./lib/pix");
+              const { generatePixQrCode } = await import("./lib/pix-fixo-v3");
               const { qrCodeDataUrl, pixCopyPaste } = await generatePixQrCode(
                 orderId,
                 shortId,

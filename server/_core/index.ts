@@ -42,6 +42,16 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
   
+  // FORCE REBUILD: 2026-05-18-PIX-FIXO-v3
+  // Anti-cache middleware to bypass production cache
+  app.use((req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.setHeader('Surrogate-Control', 'no-store');
+    next();
+  });
+  
   // CRITICAL: Stripe webhook MUST be registered BEFORE express.json()
   // because express.json() consumes the request body, and we need the raw Buffer
   // for Stripe signature verification

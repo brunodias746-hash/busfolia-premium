@@ -1,3 +1,6 @@
+// FORCE REBUILD: 2026-05-18-PIX-FIXO-v3
+// Asaas integration cache invalidation deployment
+
 /**
  * PIX Manual - QR Code Fixo
  * Sempre gera QR Code apontando para busfolia@hotmail.com

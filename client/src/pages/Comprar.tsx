@@ -809,13 +809,11 @@ export default function Comprar() {
                 </div>
 
                 <div className="border-t border-white/10 pt-4 space-y-3">
+                  {/* FORCE REBUILD: 2026-05-18-PIX-FIXO-v3 */}
+                  {/* PIX Fixo não tem taxa */}
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Preço base:</span>
                     <span className="font-semibold">{formatCurrency(basePriceCents)}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Taxa:</span>
-                    <span className="font-semibold">{formatCurrency(taxCents)}</span>
                   </div>
                   {appliedCoupon && discountCents > 0 && (
                     <div className="flex justify-between items-center text-green-400">
@@ -858,96 +856,20 @@ export default function Comprar() {
               </div>
 
               {/* Payment Method Selection */}
+              {/* FORCE REBUILD: 2026-05-18-PIX-FIXO-v3 */}
+              {/* PIX Fixo - Único método de pagamento */}
               <div className="space-y-3 mb-6">
-                <p className="text-sm font-semibold mb-3">Escolha o método de pagamento:</p>
+                <p className="text-sm font-semibold mb-3">Método de pagamento:</p>
                 
-                {/* PIX */}
-                <div 
-                  onClick={() => pixAvailable && setPaymentMethod('pix')}
-                  className={`p-4 rounded-lg border-2 transition-all ${
-                    !pixAvailable 
-                      ? 'border-white/5 opacity-40 cursor-not-allowed' 
-                      : paymentMethod === 'pix' 
-                        ? 'border-green-500 bg-green-500/10 cursor-pointer' 
-                        : 'border-white/10 hover:border-white/20 cursor-pointer'
-                  }`}
-                >
+                {/* PIX ONLY */}
+                <div className="p-4 rounded-lg border-2 border-green-500 bg-green-500/10">
                   <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      paymentMethod === 'pix' ? 'border-green-500' : 'border-white/30'
-                    }`}>
-                      {paymentMethod === 'pix' && <div className="w-2 h-2 bg-green-500 rounded-full" />}
-                    </div>
                     <QrCode className="w-5 h-5 text-green-400" />
                     <div className="flex-1">
                       <p className="font-semibold">PIX</p>
-                      <p className="text-xs text-muted-foreground">
-                        {pixAvailable ? 'Pagamento instantâneo — Sem taxa adicional' : 'Indisponível no momento'}
-                      </p>
+                      <p className="text-xs text-muted-foreground">Pagamento instantâneo — Sem taxa adicional</p>
                     </div>
-                    {pixAvailable ? (
-                      <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full font-bold">RECOMENDADO</span>
-                    ) : (
-                      <span className="text-xs bg-white/5 text-muted-foreground px-2 py-1 rounded-full">EM BREVE</span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Credit Card */}
-                <div 
-                  onClick={() => cardAvailable && setPaymentMethod('card')}
-                  className={`p-4 rounded-lg border-2 transition-all ${
-                    !cardAvailable 
-                      ? 'border-white/5 opacity-40 cursor-not-allowed' 
-                      : paymentMethod === 'card' 
-                        ? 'border-primary bg-primary/10 cursor-pointer' 
-                        : 'border-white/10 hover:border-white/20 cursor-pointer'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      paymentMethod === 'card' ? 'border-primary' : 'border-white/30'
-                    }`}>
-                      {paymentMethod === 'card' && <div className="w-2 h-2 bg-primary rounded-full" />}
-                    </div>
-                    <CreditCard className="w-5 h-5 text-primary" />
-                    <div>
-                      <p className="font-semibold">Cartão de Crédito</p>
-                      <p className="text-xs text-muted-foreground">Aprovação imediata</p>
-                    </div>
-                    {!pixAvailable && cardAvailable && (
-                      <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full font-bold ml-auto">RECOMENDADO</span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Boleto */}
-                <div 
-                  onClick={() => boletoAvailable && setPaymentMethod('boleto')}
-                  className={`p-4 rounded-lg border-2 transition-all ${
-                    !boletoAvailable 
-                      ? 'border-white/5 opacity-40 cursor-not-allowed' 
-                      : paymentMethod === 'boleto' 
-                        ? 'border-orange-500 bg-orange-500/10 cursor-pointer' 
-                        : 'border-white/10 hover:border-white/20 cursor-pointer'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      paymentMethod === 'boleto' ? 'border-orange-500' : 'border-white/30'
-                    }`}>
-                      {paymentMethod === 'boleto' && <div className="w-2 h-2 bg-orange-500 rounded-full" />}
-                    </div>
-                    <FileText className="w-5 h-5 text-orange-400" />
-                    <div>
-                      <p className="font-semibold">Boleto Bancário</p>
-                      <p className="text-xs text-muted-foreground">
-                        {boletoAvailable ? 'Vencimento em 3 dias — Confirmação em até 3 dias úteis' : 'Indisponível no momento'}
-                      </p>
-                    </div>
-                    {!boletoAvailable && (
-                      <span className="text-xs bg-white/5 text-muted-foreground px-2 py-1 rounded-full ml-auto">EM BREVE</span>
-                    )}
+                    <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full font-bold">RECOMENDADO</span>
                   </div>
                 </div>
               </div>
