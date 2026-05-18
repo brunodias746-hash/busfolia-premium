@@ -10,10 +10,4 @@ export const ENV = {
   stripeSecretKey: process.env.STRIPE_SECRET_KEY ?? "",
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
   resendApiKey: process.env.RESEND_API_KEY ?? "",
-  // Asaas Payment Gateway (SIMPLIFIED - production only, like Stripe)
-  asaasApiKey: process.env.ASAAS_API_KEY ?? "",
-  asaasWebhookSecret: process.env.ASAAS_WEBHOOK_SECRET ?? "",
 };
-
-// Asaas Base URL (always production)
-export const ASAAS_BASE_URL = "https://api.asaas.com/v3";

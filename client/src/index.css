@@ -241,34 +241,3 @@
 .transition-opacity {
   transition: opacity 1200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
-
-
-/* Dropdown styling - Fix white-on-white text invisibility */
-select option {
-  background-color: #FFFFFF;
-  color: #000000;
-  padding: 12px 16px;
-  font-size: 16px;
-  font-weight: 400;
-}
-
-select option:hover {
-  background-color: #F5F5F5;
-  color: #000000;
-}
-
-select option:checked {
-  background-color: #0066FF;
-  color: #FFFFFF;
-}
-
-select option:disabled {
-  background-color: #F5F5F5;
-  color: #CCCCCC;
-  cursor: not-allowed;
-}
-
-/* Ensure select element itself is readable */
-select {
-  color-scheme: light;
-}

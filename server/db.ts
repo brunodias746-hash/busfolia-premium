@@ -239,24 +239,6 @@ export async function updateOrderStripeSession(id: number, stripeSessionId: stri
   await db.update(orders).set({ stripeSessionId }).where(eq(orders.id, id));
 }
 
-export async function updateOrderAsaasInfo(id: number, data: {
-  asaasPaymentId: string;
-  asaasCustomerId: string;
-  paymentGateway: "asaas";
-  paymentMethod: "card" | "pix" | "boleto";
-}) {
-  const db = await getDb();
-  if (!db) throw new Error("DB not available");
-  await db.update(orders).set(data).where(eq(orders.id, id));
-}
-
-export async function getOrderByAsaasPaymentId(asaasPaymentId: string) {
-  const db = await getDb();
-  if (!db) return undefined;
-  const result = await db.select().from(orders).where(eq(orders.asaasPaymentId, asaasPaymentId)).limit(1);
-  return result[0];
-}
-
 export async function deleteOrder(id: number) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");

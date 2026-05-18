@@ -4,11 +4,6 @@ interface SendEmailParams {
   to: string;
   subject: string;
   html: string;
-  attachments?: Array<{
-    filename: string;
-    content: Buffer | string;
-    contentType?: string;
-  }>;
 }
 
 interface OrderEmailData {
@@ -23,37 +18,25 @@ interface OrderEmailData {
   purchaseType?: 'single' | 'multiple' | 'all_days';
 }
 
-export async function sendEmail({ to, subject, html, attachments }: SendEmailParams) {
+export async function sendEmail({ to, subject, html }: SendEmailParams) {
   if (!ENV.resendApiKey) {
     console.error("[Email] RESEND_API_KEY not configured");
     return { success: false, error: "Email service not configured" };
   }
 
   try {
-    const emailPayload: any = {
-      from: "contato@busfolia.com.br",
-      to,
-      subject,
-      html,
-    };
-
-    if (attachments && attachments.length > 0) {
-      emailPayload.attachments = attachments.map((att) => ({
-        filename: att.filename,
-        content: typeof att.content === "string" 
-          ? att.content
-          : att.content.toString("base64"),
-        content_type: att.contentType || "application/octet-stream",
-      }));
-    }
-
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${ENV.resendApiKey}`,
       },
-      body: JSON.stringify(emailPayload),
+      body: JSON.stringify({
+        from: "contato@busfolia.com.br",
+        to,
+        subject,
+        html,
+      }),
     });
 
     if (!response.ok) {
@@ -72,7 +55,6 @@ export async function sendEmail({ to, subject, html, attachments }: SendEmailPar
 }
 
 // Format dates in Portuguese (e.g., "05, 06, 12 e 13 de Junho de 2026")
-// CRITICAL: Always use 2026 as default year if missing, never use current year
 function formatDatesInPortuguese(dates: string[]): string {
   if (dates.length === 0) return "";
   
@@ -109,15 +91,12 @@ function formatDatesInPortuguese(dates: string[]): string {
         return null;
       }
     } else if (d.includes(' ')) {
-      // Already formatted: "05 Junho 2026" or "05 de Junho de 2026" or similar
-      // Remove "de" prepositions for easier parsing
-      const cleaned = d.replace(/ de /g, ' ');
-      const parts = cleaned.split(' ').filter(p => p.length > 0);
+      // Already formatted: "05 Junho 2026" or similar
+      const parts = d.split(' ');
       if (parts.length >= 2) {
         day = parseInt(parts[0]);
         month = parts[1]; // Assume already in Portuguese
-        // CRITICAL FIX: Default to 2026 (event year), NOT current year
-        year = parts[2] || '2026';
+        year = parts[2] || new Date().getFullYear().toString();
       } else {
         return null;
       }

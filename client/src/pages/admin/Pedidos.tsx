@@ -1,6 +1,7 @@
 import AdminLayout from "@/components/AdminLayout";
 import { trpc } from "@/lib/trpc";
 import { formatCurrency } from "@/lib/constants";
+import { downloadXLSX, formatCurrencyForXLSX, formatDateForXLSX } from "@/lib/xlsxExport";
 import { ShoppingCart, Loader2, Eye, Download, Trash2, Mail, Ticket, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -41,37 +42,6 @@ export default function Pedidos() {
   const resendEmailMutation = trpc.admin.orders.resendEmail.useMutation();
   const utils = trpc.useUtils();
 
-  const exportPedidosMutation = trpc.admin.exports.generatePedidos.useMutation();
-  const [isExporting, setIsExporting] = useState(false);
-
-  const handleExportXLSX = async () => {
-    try {
-      setIsExporting(true);
-      const result = await exportPedidosMutation.mutateAsync({});
-      
-      // Decode base64 and download
-      const binaryString = atob(result.data);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-      
-      const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = result.filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Erro ao exportar:', error);
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
   const handleDelete = async (orderId: number) => {
     try {
       await deleteOrderMutation.mutateAsync({ id: orderId });
@@ -92,7 +62,66 @@ export default function Pedidos() {
     }
   };
 
-
+  function exportXLSX() {
+    if (!exportData || exportData.length === 0) return;
+    
+    const headers = [
+      "Pedido",
+      "Nome Completo",
+      "CPF",
+      "Telefone",
+      "Email",
+      "Ponto de Embarque",
+      "Datas de Transporte",
+      "Quantidade de Passageiros",
+      "Valor Total (R$)",
+      "Status",
+      "Data da Compra"
+    ];
+    
+    const rows = exportData.map((o: any) => [
+      o.pedido || '',
+      o.nomeCompleto || '',
+      o.cpf || '',
+      o.telefone || '',
+      o.email || '',
+      o.pontoEmbarque || '',
+      o.datasTransporte || '',
+      o.quantidadePassageiros || '',
+      o.valorTotal ? formatCurrencyForXLSX(parseInt(o.valorTotal.replace(/[^0-9]/g, '')) || 0) : 'R$ 0,00',
+      o.status || '',
+      o.dataCompra ? formatDateForXLSX(o.dataCompra) : '',
+    ]);
+    
+    // Calculate total
+    const totalValue = exportData.reduce((sum: number, o: any) => {
+      const val = parseInt(o.valorTotal?.replace(/[^0-9]/g, '') || '0');
+      return sum + val;
+    }, 0);
+    
+    const totals = [
+      'TOTAL',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      exportData.length,
+      formatCurrencyForXLSX(totalValue),
+      '',
+      ''
+    ];
+    
+    downloadXLSX({
+      title: 'Relatório de Pedidos',
+      filename: `pedidos-${new Date().toISOString().split('T')[0]}.xlsx`,
+      headers,
+      rows,
+      totals,
+      columnWidths: [12, 20, 15, 15, 25, 25, 20, 18, 18, 15, 15]
+    });
+  }
 
   return (
     <AdminLayout>
@@ -105,9 +134,8 @@ export default function Pedidos() {
           <Button onClick={() => setShowPixForm(true)} className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto">
             <Plus className="w-4 h-4 mr-2" /> Nova Compra via PIX
           </Button>
-          <Button onClick={handleExportXLSX} variant="outline" className="border-white/10 w-full sm:w-auto" disabled={isExporting || !orders?.length}>
-            {isExporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
-            {isExporting ? 'Exportando...' : 'Exportar Excel'}
+          <Button onClick={exportXLSX} variant="outline" className="border-white/10 w-full sm:w-auto" disabled={!exportData?.length}>
+            <Download className="w-4 h-4 mr-2" /> Exportar Excel
           </Button>
         </div>
       </div>
@@ -254,7 +282,7 @@ function PixOrderForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const { data: boardingPoints, isLoading: isBoardingPointsLoading, error: boardingPointsError } = trpc.events.boardingPoints.useQuery(
+  const { data: boardingPoints } = trpc.events.boardingPoints.useQuery(
     { eventId: eventId ?? 0 },
     { enabled: !!eventId }
   );
@@ -386,47 +414,25 @@ function PixOrderForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
 
           <div>
             <label className="block text-sm font-medium mb-1">Ponto de Embarque *</label>
-            {!eventId && (
-              <div className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-muted-foreground text-sm">
-                Selecione um evento primeiro
-              </div>
-            )}
-            {eventId && isBoardingPointsLoading && (
-              <div className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-muted-foreground text-sm flex items-center">
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                Carregando pontos de embarque...
-              </div>
-            )}
-            {eventId && boardingPointsError && (
-              <div className="w-full bg-red-500/20 border border-red-500/50 rounded-lg px-3 py-2 text-red-200 text-sm">
-                Erro ao carregar pontos de embarque
-              </div>
-            )}
-            {eventId && !isBoardingPointsLoading && boardingPoints && boardingPoints.length === 0 && (
-              <div className="w-full bg-yellow-500/20 border border-yellow-500/50 rounded-lg px-3 py-2 text-yellow-200 text-sm">
-                Nenhum ponto de embarque disponível para este evento
-              </div>
-            )}
-            {eventId && !isBoardingPointsLoading && boardingPoints && boardingPoints.length > 0 && (
-              <select
-                value={boardingPointId ?? ""}
-                onChange={(e) => setBoardingPointId(Number(e.target.value))}
-                className="w-full bg-black/40 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'right 0.5rem center',
-                  backgroundSize: '1.5em 1.5em',
-                  paddingRight: '2.5rem',
-                }}
-                required
-              >
-                <option value="" className="bg-slate-900 text-white">Selecione um ponto</option>
-                {boardingPoints.map((bp) => (
-                  <option key={bp.id} value={bp.id} className="bg-slate-900 text-white">{bp.city} - {bp.locationName}</option>
-                ))}
-              </select>
-            )}
+            <select
+              value={boardingPointId ?? ""}
+              onChange={(e) => setBoardingPointId(Number(e.target.value))}
+              className="w-full bg-black/40 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
+              style={{
+                backgroundImage: `url(\"data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e\")`,
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right 0.5rem center',
+                backgroundSize: '1.5em 1.5em',
+                paddingRight: '2.5rem',
+              }}
+              required
+              disabled={!eventId}
+            >
+              <option value="" className="bg-slate-900 text-white">Selecione um ponto</option>
+              {boardingPoints?.map((bp) => (
+                <option key={bp.id} value={bp.id} className="bg-slate-900 text-white">{bp.city} - {bp.locationName}</option>
+              ))}
+            </select>
           </div>
 
           <div>

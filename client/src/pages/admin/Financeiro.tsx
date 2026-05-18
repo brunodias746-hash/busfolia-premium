@@ -23,7 +23,6 @@ import { useState } from "react";
 
 export default function Financeiro() {
   const [selectedEvent, setSelectedEvent] = useState<string>("all");
-  const [isExporting, setIsExporting] = useState(false);
   const eventId = selectedEvent === "all" ? undefined : parseInt(selectedEvent);
 
   const { data: events } = trpc.admin.events.list.useQuery();
@@ -31,37 +30,51 @@ export default function Financeiro() {
     eventId ? { eventId } : undefined
   );
 
-  const exportFinanceiroMutation = trpc.admin.exports.generateFinanceiro.useMutation();
-
-  const handleExportXLSX = async () => {
-    try {
-      setIsExporting(true);
-      const result = await exportFinanceiroMutation.mutateAsync({ eventId });
-      
-      // Decode base64 and download
-      const binaryString = atob(result.data);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-      
-      const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = result.filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Erro ao exportar:', error);
-    } finally {
-      setIsExporting(false);
-    }
+  const handleExportXLSX = () => {
+    if (!data) return;
+    
+    const headers = [
+      "Evento",
+      "Receita Bruta (R$)",
+      "Taxas (R$)",
+      "Receita Líquida (R$)",
+      "Quantidade de Pedidos",
+      "Quantidade de Passageiros"
+    ];
+    
+    const rows = data.byEvent.map((e) => [
+      e.eventName || '',
+      formatCurrencyForXLSX(e.totalRevenue),
+      formatCurrencyForXLSX(e.totalFees),
+      formatCurrencyForXLSX(e.totalRevenue - e.totalFees),
+      e.orderCount.toString(),
+      e.passengerCount.toString(),
+    ]);
+    
+    // Calculate totals
+    const totalRevenue = data.byEvent.reduce((sum, e) => sum + e.totalRevenue, 0);
+    const totalFees = data.byEvent.reduce((sum, e) => sum + e.totalFees, 0);
+    const totalOrders = data.byEvent.reduce((sum, e) => sum + e.orderCount, 0);
+    const totalPassengers = data.byEvent.reduce((sum, e) => sum + e.passengerCount, 0);
+    
+    const totals = [
+      'TOTAL',
+      formatCurrencyForXLSX(totalRevenue),
+      formatCurrencyForXLSX(totalFees),
+      formatCurrencyForXLSX(totalRevenue - totalFees),
+      totalOrders.toString(),
+      totalPassengers.toString(),
+    ];
+    
+    downloadXLSX({
+      title: 'Relatório Financeiro',
+      filename: `financeiro-${new Date().toISOString().split('T')[0]}.xlsx`,
+      headers,
+      rows,
+      totals,
+      columnWidths: [25, 20, 20, 20, 20, 20]
+    });
   };
-
-
 
   if (isLoading) {
     return (
@@ -98,11 +111,10 @@ export default function Financeiro() {
             variant="outline"
             size="sm"
             onClick={handleExportXLSX}
-            disabled={isExporting || !data || data.byEvent.length === 0}
+            disabled={!data || data.byEvent.length === 0}
             className="border-white/10"
           >
-            {isExporting ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Download className="w-4 h-4 mr-1" />}
-            {isExporting ? 'Exportando...' : 'Excel'}
+            <Download className="w-4 h-4 mr-1" /> Excel
           </Button>
         </div>
       </div>

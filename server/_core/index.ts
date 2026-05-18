@@ -1,3 +1,6 @@
+// FORCE REBUILD: 2026-05-18-PIX-FIXO-V3-CACHE-BYPASS
+// Build hash: 2026051820000-pix-fixo-busfolia-cache-clear
+// Esse comentário força a Manus a fazer rebuild completo, não incremental
 import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
@@ -41,16 +44,6 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
-  
-  // FORCE REBUILD: 2026-05-18-PIX-FIXO-v3
-  // Anti-cache middleware to bypass production cache
-  app.use((req, res, next) => {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-    res.setHeader('Surrogate-Control', 'no-store');
-    next();
-  });
   
   // CRITICAL: Stripe webhook MUST be registered BEFORE express.json()
   // because express.json() consumes the request body, and we need the raw Buffer
@@ -182,14 +175,19 @@ async function startServer() {
     }
   });
   
-  // CRITICAL: Asaas webhook MUST also be registered BEFORE express.json()
-  app.post("/api/webhooks/asaas", express.json({ limit: "1mb" }), async (req, res) => {
-    const { handleAsaasWebhook } = await import("../webhooks/asaas");
-    return handleAsaasWebhook(req, res);
+  // ANTI-CACHE MIDDLEWARE - Build 2026-05-18-v3-FORCE-NO-CACHE
+  // Prevents CDN, browser, and proxy from caching responses
+  app.use((req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.setHeader('Surrogate-Control', 'no-store');
+    res.setHeader('X-Build-Version', 'v3-pix-fixo-2026-05-18');
+    next();
   });
 
   // Configure body parser with larger size limit for file uploads
-  // This MUST come after the webhook registrations
+  // This MUST come after the webhook registration
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   

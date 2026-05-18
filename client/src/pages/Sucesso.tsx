@@ -2,20 +2,19 @@ import PublicLayout from "@/components/PublicLayout";
 import { trpc } from "@/lib/trpc";
 import { formatCurrency } from "@/lib/constants";
 import { useSearch } from "wouter";
-import { CheckCircle2, Loader2, Clock, User, MapPin, CreditCard, MessageCircle, Download, Mail, AlertCircle } from "lucide-react";
+import { CheckCircle2, Loader2, Clock, User, MapPin, CreditCard, MessageCircle, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { trackPurchase } from "@/utils/meta-pixel";
 
 export default function Sucesso() {
+  // All hooks must be called at the top level, before any conditional returns
   const searchString = useSearch();
-  const params = useMemo(() => new URLSearchParams(searchString), [searchString]);
+  const params = new URLSearchParams(searchString);
   const sessionId = params.get("session_id") ?? "";
-  const orderId = params.get("order_id") ? parseInt(params.get("order_id")!, 10) : 0;
 
-  // Stripe flow: use session_id
-  const { data: stripeData, isLoading: stripeLoading } = trpc.checkout.status.useQuery(
+  const { data, isLoading, refetch } = trpc.checkout.status.useQuery(
     { sessionId },
     { enabled: !!sessionId, refetchInterval: (query) => {
       const status = query.state.data?.status;
@@ -23,21 +22,6 @@ export default function Sucesso() {
       return 2000;
     }}
   );
-
-  // Asaas flow: use order_id
-  const { data: asaasData, isLoading: asaasLoading } = trpc.checkout.checkAsaasStatus.useQuery(
-    { orderId },
-    { enabled: orderId > 0, refetchInterval: (query) => {
-      const status = query.state.data?.status;
-      if (status === "paid" || status === "not_found" || status === "canceled") return false;
-      return 3000;
-    }}
-  );
-
-  // Determine which data source to use
-  const isStripeFlow = !!sessionId;
-  const data = isStripeFlow ? stripeData : asaasData;
-  const isLoading = isStripeFlow ? stripeLoading : asaasLoading;
 
   // Track Purchase event when order is confirmed and paid
   useEffect(() => {
@@ -55,67 +39,8 @@ export default function Sucesso() {
     return dates.join(", ");
   };
 
-  // Download receipt as PDF
-  const downloadReceipt = async () => {
-    if (!order) return;
-    try {
-      // Create a simple receipt document
-      const receiptContent = `
-BUSFOLIA - COMPROVANTE DE COMPRA
-================================
-
-Pedido: ${order.shortId}
-Evento: ${order.eventName}
-Data(s): ${formatDates(order.transportDates)}
-Ponto de Embarque: ${order.boardingPoint}
-Tipo de Ingresso: ${order.purchaseType === "single" ? "Dia Único" : order.purchaseType === "all_days" ? "Passaporte" : "Múltiplos Dias"}
-Quantidade de Passageiros: ${order.quantity}
-
-RESUMO FINANCEIRO
------------------
-Preço Base: R$ ${(baseTotalCents / 100).toFixed(2).replace('.', ',')}
-Taxa: R$ ${(taxTotalCents / 100).toFixed(2).replace('.', ',')}
-${discountCents > 0 ? `Desconto: -R$ ${(discountCents / 100).toFixed(2).replace('.', ',')}\n` : ""}
-TOTAL PAGO: R$ ${(order.totalAmountCents / 100).toFixed(2).replace('.', ',')}
-
-PASSAGEIROS
------------
-${passengers.map((p, i) => `${i + 1}. ${p.name} - CPF: ${p.cpf}`).join('\n')}
-
-CONFIRMAÇÃO
------------
-Email de confirmação enviado para: ${order.customerEmail}
-Guarde este comprovante para apresentar no ponto de embarque.
-
-Gerado em: ${new Date().toLocaleString('pt-BR')}
-      `;
-      
-      const element = document.createElement('a');
-      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(receiptContent));
-      element.setAttribute('download', `BusFolia-Comprovante-${order.shortId}.txt`);
-      element.style.display = 'none';
-      document.body.appendChild(element);
-      element.click();
-      document.body.removeChild(element);
-    } catch (error) {
-      console.error('Erro ao baixar comprovante:', error);
-    }
-  };
-
-  // Resend confirmation email
-  const resendEmail = async () => {
-    if (!order) return;
-    try {
-      // This would call a backend endpoint to resend the email
-      // For now, we'll just show a message
-      alert('Email de confirmação reenviado para ' + order.customerEmail);
-    } catch (error) {
-      console.error('Erro ao reenviar email:', error);
-    }
-  };
-
-  // No identifier provided
-  if (!sessionId && !orderId) {
+  // Now we can have conditional returns
+  if (!sessionId) {
     return (
       <PublicLayout>
         <div className="container max-w-lg py-16 sm:py-32 px-4 sm:px-6 text-center">
@@ -128,7 +53,7 @@ Gerado em: ${new Date().toLocaleString('pt-BR')}
     );
   }
 
-  if (isLoading || data?.status === "pending_checkout" || data?.status === "pending" || data?.status === "processing") {
+  if (isLoading || data?.status === "pending_checkout") {
     return (
       <PublicLayout>
         <div className="container max-w-lg py-16 sm:py-32 px-4 sm:px-6 text-center">
@@ -138,7 +63,7 @@ Gerado em: ${new Date().toLocaleString('pt-BR')}
             <p className="text-xs sm:text-base text-muted-foreground">Aguarde enquanto processamos seu pagamento. Isso pode levar alguns segundos.</p>
             <div className="flex items-center justify-center gap-2 mt-3 sm:mt-4 text-[10px] sm:text-xs text-muted-foreground">
               <Clock className="w-3 h-3 shrink-0" />
-              <span>{isStripeFlow ? "Verificando com o Stripe..." : "Verificando pagamento..."}</span>
+              <span>Verificando com o Stripe...</span>
             </div>
           </div>
         </div>
@@ -146,14 +71,12 @@ Gerado em: ${new Date().toLocaleString('pt-BR')}
     );
   }
 
-  if (data?.status === "not_found" || data?.status === "canceled") {
+  if (data?.status === "not_found") {
     return (
       <PublicLayout>
         <div className="container max-w-lg py-16 sm:py-32 px-4 sm:px-6 text-center">
           <div className="glass-card rounded-2xl p-4 sm:p-8">
-            <p className="text-xs sm:text-base text-muted-foreground mb-4">
-              {data?.status === "canceled" ? "Pedido cancelado." : "Pedido não encontrado."}
-            </p>
+            <p className="text-xs sm:text-base text-muted-foreground mb-4">Pedido não encontrado.</p>
             <Link href="/">
               <Button variant="outline" className="min-h-[44px] text-sm sm:text-base">Voltar ao Início</Button>
             </Link>
@@ -268,24 +191,12 @@ Gerado em: ${new Date().toLocaleString('pt-BR')}
 
           {/* Action Buttons */}
           <div className="space-y-2 sm:space-y-3 mt-6 sm:mt-8">
-            {/* Primary: Download Receipt */}
-            <Button 
-              onClick={downloadReceipt}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 sm:py-4 rounded-lg sm:rounded-xl min-h-[44px] text-sm sm:text-base flex items-center justify-center gap-2"
-            >
-              <Download className="w-4 h-4" />
-              BAIXAR COMPROVANTE
-            </Button>
-            
-            {/* Secondary: WhatsApp */}
             <a href="https://wa.me/5531990908399" target="_blank" rel="noopener noreferrer">
-              <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 sm:py-4 rounded-lg sm:rounded-xl min-h-[44px] text-sm sm:text-base flex items-center justify-center gap-2">
-                <MessageCircle className="w-4 h-4" />
+              <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 sm:py-4 rounded-lg sm:rounded-xl min-h-[44px] text-sm sm:text-base">
+                <MessageCircle className="w-4 h-4 mr-2" />
                 ENTRAR NO GRUPO WHATSAPP
               </Button>
             </a>
-            
-            {/* Tertiary: Back to Home */}
             <Link href="/">
               <Button className="gold-gradient text-black font-bold w-full py-3 sm:py-4 rounded-lg sm:rounded-xl min-h-[44px] text-sm sm:text-base">
                 Voltar ao Início
@@ -293,32 +204,11 @@ Gerado em: ${new Date().toLocaleString('pt-BR')}
             </Link>
           </div>
 
-          {/* Email Confirmation Status */}
-          <div className="mt-6 sm:mt-8 bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 sm:p-4">
-            <div className="flex gap-2 items-start">
-              <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400 shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <p className="text-[10px] sm:text-xs text-blue-100 mb-2">
-                  <strong>Email de Confirmação:</strong> Um email foi enviado para <strong>{order?.customerEmail}</strong>
-                </p>
-                <button 
-                  onClick={resendEmail}
-                  className="text-[10px] sm:text-xs text-blue-300 hover:text-blue-200 underline"
-                >
-                  Não recebeu? Reenviar email
-                </button>
-              </div>
-            </div>
-          </div>
-
           {/* Important Note */}
-          <div className="mt-3 sm:mt-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 sm:p-4">
-            <div className="flex gap-2 items-start">
-              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 shrink-0 mt-0.5" />
-              <p className="text-[10px] sm:text-xs text-yellow-100">
-                <strong>Importante:</strong> Guarde o comprovante e o email de confirmação. Você precisará apresentá-los no ponto de embarque.
-              </p>
-            </div>
+          <div className="mt-6 sm:mt-8 bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 sm:p-4">
+            <p className="text-[10px] sm:text-xs text-yellow-100">
+              <strong>⚠️ Importante:</strong> Guarde o email de confirmação como comprovante. Você precisará apresentá-lo no ponto de embarque.
+            </p>
           </div>
         </div>
       </div>

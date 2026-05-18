@@ -1,19 +1,17 @@
 import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { Loader2, ArrowLeft, Download, Share2, CheckCircle, AlertCircle } from "lucide-react";
+import { Loader2, ArrowLeft, Download, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import { toast } from "sonner";
 
 export default function Ingresso() {
   const params = useParams();
   const [, navigate] = useLocation();
   const shortId = params.shortId as string;
   const pdfRef = useRef<HTMLDivElement>(null);
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   // Fetch order by shortId
   const { data: order, isLoading, error } = trpc.admin.orders.getByShortId.useQuery(
@@ -21,20 +19,10 @@ export default function Ingresso() {
     { enabled: !!shortId }
   );
 
-  const handlePrint = () => {
-    window.print();
-  };
-
-
-
   const handleDownloadPDF = async () => {
     if (!pdfRef.current) return;
 
-    setIsGeneratingPDF(true);
     try {
-      // Show loading toast
-      const loadingToastId = toast.loading("Gerando PDF do ingresso...");
-
       const canvas = await html2canvas(pdfRef.current, {
         scale: 2,
         backgroundColor: "#ffffff",
@@ -52,21 +40,8 @@ export default function Ingresso() {
 
       pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
       pdf.save(`ingresso-${shortId}.pdf`);
-
-      // Dismiss loading toast and show success
-      toast.dismiss(loadingToastId);
-      toast.success("PDF baixado com sucesso!", {
-        description: `Ingresso ${shortId} foi salvo em seus downloads`,
-        duration: 3000,
-      });
     } catch (err) {
       console.error("Error generating PDF:", err);
-      toast.error("Erro ao gerar PDF", {
-        description: "Não foi possível gerar o PDF do ingresso. Tente novamente.",
-        duration: 4000,
-      });
-    } finally {
-      setIsGeneratingPDF(false);
     }
   };
 
@@ -113,40 +88,8 @@ export default function Ingresso() {
   }
 
   // Format dates for display
-  // CRITICAL FIX: Handle dates without year (default to 2026)
   const formatDate = (dateStr: string) => {
-    // If date string doesn't contain a year, append 2026
-    let dateToFormat = dateStr;
-    if (dateStr && !dateStr.includes('2026') && !dateStr.includes('202') && !/\d{4}/.test(dateStr)) {
-      dateToFormat = `${dateStr} 2026`;
-    }
-    
-    const date = new Date(dateToFormat);
-    
-    // Fallback: if date is still invalid, parse manually
-    if (isNaN(date.getTime())) {
-      // Try to parse "05 Junho 2026" format
-      const monthNames: { [key: string]: number } = {
-        'janeiro': 0, 'fevereiro': 1, 'março': 2, 'abril': 3,
-        'maio': 4, 'junho': 5, 'julho': 6, 'agosto': 7,
-        'setembro': 8, 'outubro': 9, 'novembro': 10, 'dezembro': 11
-      };
-      const parts = dateToFormat.toLowerCase().split(' ');
-      if (parts.length >= 2) {
-        const day = parseInt(parts[0]);
-        const month = monthNames[parts[1]];
-        const year = parts[2] ? parseInt(parts[2]) : 2026;
-        if (!isNaN(day) && month !== undefined && !isNaN(year)) {
-          return new Date(year, month, day).toLocaleDateString("pt-BR", {
-            day: "2-digit",
-            month: "long",
-            year: "numeric",
-          });
-        }
-      }
-      return dateStr; // Return original if all parsing fails
-    }
-    
+    const date = new Date(dateStr);
     return date.toLocaleDateString("pt-BR", {
       day: "2-digit",
       month: "long",
@@ -175,33 +118,15 @@ export default function Ingresso() {
             <ArrowLeft className="w-4 h-4" />
             Voltar
           </Button>
-          <div className="flex gap-2 flex-wrap">
-            <Button
-              variant="default"
-              size="sm"
-              onClick={handleDownloadPDF}
-              disabled={isGeneratingPDF}
-              className="gap-2 bg-primary hover:bg-primary/90"
-            >
-              {isGeneratingPDF ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Gerando...
-                </>
-              ) : (
-                <>
-                  <Download className="w-4 h-4" />
-                  Salvar PDF
-                </>
-              )}
-            </Button>
+          <div className="flex gap-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={handlePrint}
+              onClick={handleDownloadPDF}
               className="gap-2"
             >
-              🖨️ Imprimir
+              <Download className="w-4 h-4" />
+              PDF
             </Button>
             <Button
               variant="outline"
