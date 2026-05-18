@@ -92,7 +92,7 @@ export default function Comprar() {
   const [couponMessage, setCouponMessage] = useState<{ type: 'success' | 'error' | null; text: string }>({ type: null, text: "" });
   const [appliedCoupon, setAppliedCoupon] = useState<{ couponId: string; discountPercentage: number; discountAmountCents: number } | null>(null);
   const [couponValidating, setCouponValidating] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'pix'>('stripe');
+  // PIX Manual é o único método de pagamento disponível
   const [pixData, setPixData] = useState<{ orderId: number; shortId: string; qrCodeDataUrl: string; pixCopyPaste: string; totalAmountCents: number } | null>(null);
   const [pixOrderId, setPixOrderId] = useState<number | null>(null);
 
@@ -128,16 +128,7 @@ export default function Comprar() {
     { enabled: eventId > 0 }
   );
 
-  const createSession = trpc.checkout.createSession.useMutation({
-    onSuccess: (data) => {
-      if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
-      }
-    },
-    onError: (err) => {
-      toast.error(err.message || "Erro ao criar sessão de pagamento");
-    },
-  });
+  // Stripe removido - apenas PIX Manual disponível
 
   const createPixOrder = trpc.checkout.createPixOrder.useMutation({
     onSuccess: (data) => {
@@ -251,28 +242,6 @@ export default function Comprar() {
   function handleNext() {
     if (step === 0 && validateStep0()) setStep(1);
     else if (step === 1 && validateStep1()) setStep(2);
-  }
-
-  function handleSubmit() {
-    if (!event) return;
-    const passengersWithBP = form.passengers.map((p) => ({
-      ...p,
-      boardingPointId: p.boardingPointId || form.boardingPointId,
-    }));
-    createSession.mutate({
-      eventId: event.id,
-      customerName: form.customerName,
-      customerCpf: form.customerCpf,
-      customerEmail: form.customerEmail,
-      customerPhone: form.customerPhone,
-      boardingPointId: form.boardingPointId,
-      transportDate: form.transportDate,
-      transportDatesCount: form.purchaseType === 'multiple' ? form.transportDates.length : undefined,
-      purchaseType: form.purchaseType,
-      passengers: passengersWithBP,
-      origin: window.location.origin,
-      couponCode: appliedCoupon ? couponCode : undefined,
-    });
   }
 
   function addPassenger() {
@@ -793,95 +762,33 @@ export default function Comprar() {
               </div>
 
               {/* Payment Method Selection */}
-              <div className="space-y-3 mb-6">
-                <p className="text-sm font-semibold mb-3">Escolha o metodo de pagamento:</p>
-                
-                <div 
-                  onClick={() => setPaymentMethod('stripe')}
-                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    paymentMethod === 'stripe' 
-                      ? 'border-primary bg-primary/10' 
-                      : 'border-white/10 hover:border-white/20'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      paymentMethod === 'stripe' ? 'border-primary' : 'border-white/30'
-                    }`}>
-                      {paymentMethod === 'stripe' && <div className="w-2 h-2 bg-primary rounded-full" />}
-                    </div>
-                    <div>
-                      <p className="font-semibold">Cartao de Credito (Stripe)</p>
-                      <p className="text-xs text-muted-foreground">Seguro e rapido</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div 
-                  onClick={() => setPaymentMethod('pix')}
-                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    paymentMethod === 'pix' 
-                      ? 'border-primary bg-primary/10' 
-                      : 'border-white/10 hover:border-white/20'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      paymentMethod === 'pix' ? 'border-primary' : 'border-white/30'
-                    }`}>
-                      {paymentMethod === 'pix' && <div className="w-2 h-2 bg-primary rounded-full" />}
-                    </div>
-                    <div>
-                      <p className="font-semibold">PIX Manual</p>
-                      <p className="text-xs text-muted-foreground">Sem taxa - Comprovante via WhatsApp</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 flex gap-3 mb-6">
                 <ShieldCheck className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-blue-100">
-                  {paymentMethod === 'stripe' ? 'Pagamento seguro via Stripe' : 'PIX sem taxa - Comprovante via WhatsApp'}
+                  Pagamento via PIX Manual - Sem taxa adicional
                 </p>
               </div>
+
+
 
               {/* Navigation */}
               <div className="flex gap-3">
                 <Button variant="outline" onClick={() => setStep(1)} className="flex-1 border-white/10 hover:bg-white/5">
                   <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
                 </Button>
-                {paymentMethod === 'stripe' ? (
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={createSession.isPending}
-                    className="flex-1 gold-gradient text-black font-bold"
-                  >
-                    {createSession.isPending ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processando...
-                      </>
-                    ) : (
-                      <>
-                        <CreditCard className="w-4 h-4 mr-2" /> Pagar com Stripe
-                      </>
-                    )}
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={() => setStep(3)}
-                    className="flex-1 gold-gradient text-black font-bold"
-                  >
-                    <MessageCircle className="w-4 h-4 mr-2" /> Pagar com PIX Manual
-                  </Button>
-                )}
+                <Button
+                  onClick={() => setStep(3)}
+                  className="flex-1 gold-gradient text-black font-bold"
+                >
+                  <MessageCircle className="w-4 h-4 mr-2" /> Gerar PIX
+                </Button>
               </div>
             </div>
           </div>
         )}
 
         {/* STEP 3: Manual PIX Payment */}
-        {step === 3 && paymentMethod === 'pix' && (
+        {step === 3 && (
           <div className="bg-gradient-to-b from-red-900/20 to-transparent rounded-2xl p-8">
             <SimpleManualPixPayment
               amount={(() => {
