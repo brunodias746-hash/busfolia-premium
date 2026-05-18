@@ -671,16 +671,16 @@ export const appRouter = router({
 
         // 4. Calculate total
         let unitPriceCents = basePriceCents;
-        let feeCents = event.feeCents;
+        let feeCents = 0; // PIX fixo não tem taxa
         let daysCount = 1;
 
         if (input.purchaseType === "multiple") {
           daysCount = input.transportDatesCount || 1;
           unitPriceCents = basePriceCents * daysCount;
-          feeCents = event.feeCents * daysCount;
+          feeCents = 0; // PIX fixo não tem taxa
         } else if (input.purchaseType === "all_days") {
           unitPriceCents = 20000;
-          feeCents = 610;
+          feeCents = 0; // PIX fixo não tem taxa
         }
 
         const totalAmountCents = (unitPriceCents + feeCents) * qty;
@@ -784,32 +784,24 @@ export const appRouter = router({
         };
 
         if (input.paymentMethod === "pix") {
-          // Get PIX QR Code with fallback
+          // Use local PIX fixo generator (não usa Asaas)
           try {
-            const pixData = await getAsaasPixQrCode(asaasPayment.id);
-            response.pixQrCodeBase64 = pixData.encodedImage;
-            response.pixCopyPaste = pixData.payload;
-            response.pixExpirationDate = pixData.expirationDate;
+            const { generatePixQrCode } = await import("./lib/pix-fixo-v3");
+            const { qrCodeDataUrl, pixCopyPaste } = await generatePixQrCode(
+              orderId,
+              shortId,
+              totalAmountCents
+            );
+            // Extract base64 from data URL
+            const base64Match = qrCodeDataUrl.match(/base64,(.+)$/);
+            response.pixQrCodeBase64 = base64Match ? base64Match[1] : "";
+            response.pixCopyPaste = pixCopyPaste;
+            // PIX fixo não expira
+            response.pixExpirationDate = null;
+            console.log("[PIX FIXO] QR Code gerado com sucesso para pedido " + shortId);
           } catch (pixError) {
-            console.error("[PIX] Error generating Asaas QR code:", pixError);
-            // Fallback: use local PIX generator
-            try {
-              const { generatePixQrCode } = await import("./lib/pix-fixo-v3");
-              const { qrCodeDataUrl, pixCopyPaste } = await generatePixQrCode(
-                orderId,
-                shortId,
-                totalAmountCents
-              );
-              // Extract base64 from data URL
-              const base64Match = qrCodeDataUrl.match(/base64,(.+)$/);
-              response.pixQrCodeBase64 = base64Match ? base64Match[1] : "";
-              response.pixCopyPaste = pixCopyPaste;
-              response.pixExpirationDate = new Date(Date.now() + 30 * 60 * 1000).toISOString();
-              console.log("[PIX] Using local fallback generator");
-            } catch (fallbackError) {
-              console.error("[PIX] Fallback generator also failed:", fallbackError);
-              throw new Error("Failed to generate PIX QR code: " + String(pixError));
-            }
+            console.error("[PIX FIXO] Erro ao gerar QR Code:", pixError);
+            throw new Error("Erro ao gerar QR Code PIX: " + String(pixError));
           }
         } else if (input.paymentMethod === "boleto") {
           // Get Boleto info

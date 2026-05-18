@@ -377,7 +377,8 @@ export default function Comprar() {
     } else if (form.purchaseType === 'all_days') {
       baseCents = 20000;
     }
-    return (baseCents + event.feeCents) * form.passengers.length;
+    // PIX fixo não tem taxa
+    return baseCents * form.passengers.length;
   };
   
   const calculateBasePrice = (): number => {
@@ -394,6 +395,7 @@ export default function Comprar() {
     } else if (form.purchaseType === 'all_days') {
       baseCents = 20000;
     }
+    // PIX fixo não tem taxa
     return baseCents;
   };
   
@@ -415,14 +417,8 @@ export default function Comprar() {
   };
   
   const calculateTax = (): number => {
-    if (!event) return 0;
-    let daysMultiplier = 1;
-    if (form.purchaseType === 'multiple') {
-      daysMultiplier = form.transportDates.length || 1;
-    } else if (form.purchaseType === 'all_days') {
-      daysMultiplier = 1;
-    }
-    return event.feeCents * daysMultiplier * form.passengers.length;
+    // PIX fixo não tem taxa
+    return 0;
   };
   
   const totalCents = calculateTotal();
