@@ -320,14 +320,8 @@ export default function Comprar() {
   };
   
   const calculateTax = (): number => {
-    if (!event) return 0;
-    let daysMultiplier = 1;
-    if (form.purchaseType === 'multiple') {
-      daysMultiplier = form.transportDates.length || 1;
-    } else if (form.purchaseType === 'all_days') {
-      daysMultiplier = 1; // all_days has fixed fee of 6.10
-    }
-    return event.feeCents * daysMultiplier * form.passengers.length;
+    // PIX Manual não tem taxa
+    return 0;
   };
   
   const totalCents = calculateTotal();
@@ -744,10 +738,7 @@ export default function Comprar() {
                     <span className="text-sm text-muted-foreground">Preço base:</span>
                     <span className="font-semibold">{formatCurrency(basePriceCents)}</span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Taxa:</span>
-                    <span className="font-semibold">{formatCurrency(taxCents)}</span>
-                  </div>
+
                   {appliedCoupon && discountCents > 0 && (
                     <div className="flex justify-between items-center text-green-400">
                       <span className="text-sm">Desconto ({appliedCoupon.discountPercentage > 0 ? appliedCoupon.discountPercentage + '%' : 'cupom'}):</span>

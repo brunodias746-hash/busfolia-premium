@@ -427,24 +427,22 @@ export const appRouter = router({
         }
       }
       
-      // 4. Calculate total
+      // 4. Calculate total (PIX Manual sem taxa)
       let unitPriceCents = basePriceCents;
-      let feeCents = event.feeCents;
+      let feeCents = 0; // PIX Manual nao tem taxa
       let daysCount = 1; // Default for single day
       
-      // For "multiple" (Múltiplos Dias), calculate price based on number of selected dates
+      // For "multiple" (Multiplos Dias), calculate price based on number of selected dates
       if (input.purchaseType === "multiple") {
         daysCount = input.transportDatesCount || 1;
         unitPriceCents = basePriceCents * daysCount;
-        feeCents = event.feeCents * daysCount;
       }
       // For "all_days" (Passaporte), use fixed price of R$ 200,00
       else if (input.purchaseType === "all_days") {
         unitPriceCents = 20000; // R$ 200,00 in cents
-        feeCents = 610; // R$ 6,10 fee for all_days (fixed, not multiplied)
       }
       
-      const totalAmountCents = (unitPriceCents + feeCents) * qty;
+      const totalAmountCents = unitPriceCents * qty; // Sem taxa
 
       // 5. Create order in DB with "pending" status (waiting for PIX payment)
       const { id: orderId, shortId } = await createOrder({
