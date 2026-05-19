@@ -277,6 +277,7 @@ export default function Comprar() {
   };
 
   const calculateTotal = (): number => {
+    // PIX Manual sem taxa - total = base price apenas
     if (!event) return 0;
     const dynamicBasePrice = getDynamicBasePrice();
     let baseCents = 0;
@@ -287,7 +288,7 @@ export default function Comprar() {
     } else if (form.purchaseType === 'all_days') {
       baseCents = 20000; // R$200 fixed price
     }
-    return (baseCents + event.feeCents) * form.passengers.length;
+    return baseCents * form.passengers.length; // Sem taxa
   };
   
   const calculateBasePrice = (): number => {
