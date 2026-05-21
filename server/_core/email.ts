@@ -1,4 +1,3 @@
-import { ENV } from "./env";
 
 interface SendEmailParams {
   to: string;
@@ -105,39 +104,40 @@ function formatDatesInPortuguese(dates: string[]): string {
       return null;
     }
     
-    if (isNaN(day) || !month || !year) return null;
     return { day, month, year };
-  }).filter(d => d !== null) as { day: number; month: string; year: string }[];
-  
+  }).filter(Boolean) as Array<{ day: number; month: string; year: string }>;
+
   if (parsedDates.length === 0) return "";
   
-  // Group by month
-  const grouped: { [key: string]: { day: number; month: string; year: string }[] } = {};
-  parsedDates.forEach(d => {
-    const key = `${d.month} de ${d.year}`;
+  // Group by month/year
+  const grouped: { [key: string]: number[] } = {};
+  parsedDates.forEach(({ day, month, year }) => {
+    const key = `${month} de ${year}`;
     if (!grouped[key]) grouped[key] = [];
-    grouped[key].push(d);
+    grouped[key].push(day);
   });
-  
-  // Format each group
-  const formatted = Object.entries(grouped).map(([monthYear, days]) => {
-    const dayNumbers = days.map(d => d.day).sort((a, b) => a - b);
-    return `${dayNumbers.join(', ')} de ${monthYear}`;
-  });
-  
-  // Join with "e" before last item
-  if (formatted.length === 1) return formatted[0];
-  return formatted.slice(0, -1).join(', ') + ' e ' + formatted[formatted.length - 1];
+
+  // Format output
+  return Object.entries(grouped)
+    .map(([monthYear, days]) => {
+      const dayStr = days.length === 1 
+        ? `${days[0]}` 
+        : days.slice(0, -1).join(', ') + ` e ${days[days.length - 1]}`;
+      return `${dayStr} de ${monthYear}`;
+    })
+    .join(', ');
 }
 
 function getPurchaseTypeName(type?: string): string {
   switch (type) {
     case 'single': return 'Dia Único';
     case 'multiple': return 'Múltiplos Dias';
-    case 'all_days': return 'Passaporte — Todos os Dias';
+    case 'all_days': return 'Passaporte 4 Dias';
     default: return 'Ingresso';
   }
 }
+
+import { ENV } from './env';
 
 export function generateOrderConfirmationEmail(data: OrderEmailData): string {
   const formattedDates = formatDatesInPortuguese(data.transportDates);
@@ -153,15 +153,18 @@ export function generateOrderConfirmationEmail(data: OrderEmailData): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Confirmação de Pedido - BusFolia</title>
+  <title>Confirmação de Pagamento - BusFolia</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
       line-height: 1.6;
       color: #333;
       background-color: #f5f5f5;
-      margin: 0;
-      padding: 0;
     }
     .container {
       max-width: 600px;
@@ -172,41 +175,57 @@ export function generateOrderConfirmationEmail(data: OrderEmailData): string {
       overflow: hidden;
     }
     .header {
-      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-      color: #ffd700;
+      background-color: #D4AF37;
       padding: 30px 20px;
       text-align: center;
     }
     .header h1 {
-      margin: 0;
-      font-size: 28px;
+      font-size: 32px;
       font-weight: 700;
+      color: #ffffff;
+      margin: 0 0 5px 0;
     }
     .header p {
-      margin: 5px 0 0 0;
-      font-size: 14px;
-      color: #e0e0e0;
+      font-size: 13px;
+      color: #e8e8e8;
+      margin: 0;
+    }
+    .status-badge {
+      display: inline-block;
+      background-color: #4caf50;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 15px;
     }
     .content {
       padding: 30px 20px;
     }
     .greeting {
       font-size: 16px;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       color: #333;
     }
-    .order-details {
-      background-color: #f9f9f9;
-      border-left: 4px solid #ffd700;
-      padding: 15px;
-      margin: 20px 0;
-      border-radius: 4px;
+    .greeting strong {
+      font-weight: 600;
+    }
+    .intro-text {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 25px;
+      line-height: 1.8;
+    }
+    .details-section {
+      margin-bottom: 25px;
     }
     .detail-row {
       display: flex;
       justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid #e0e0e0;
+      padding: 12px 0;
+      border-bottom: 1px solid #e8e8e8;
+      font-size: 14px;
     }
     .detail-row:last-child {
       border-bottom: none;
@@ -218,16 +237,46 @@ export function generateOrderConfirmationEmail(data: OrderEmailData): string {
     .detail-value {
       color: #333;
       text-align: right;
+      font-weight: 500;
     }
-    .total-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 12px 0;
-      margin-top: 10px;
-      border-top: 2px solid #ffd700;
-      font-size: 18px;
+    .passengers-section {
+      background-color: #fffef0;
+      border: 2px solid #D4AF37;
+      border-radius: 4px;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    .passengers-title {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    .passenger-item {
+      padding: 6px 0;
+      font-size: 13px;
+      color: #555;
+    }
+    .passenger-item strong {
+      font-weight: 600;
+    }
+    .total-section {
+      background-color: #f9f9f9;
+      border-top: 2px solid #D4AF37;
+      border-bottom: 2px solid #D4AF37;
+      padding: 20px 0;
+      margin: 25px 0;
+      text-align: center;
+    }
+    .total-label {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+    .total-value {
+      font-size: 32px;
       font-weight: 700;
-      color: #1a1a1a;
+      color: #D4AF37;
     }
     .whatsapp-section {
       background-color: #e8f5e9;
@@ -237,10 +286,20 @@ export function generateOrderConfirmationEmail(data: OrderEmailData): string {
       margin: 20px 0;
       text-align: center;
     }
-    .whatsapp-section p {
-      margin: 0 0 10px 0;
-      color: #2e7d32;
+    .whatsapp-icon {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+    .whatsapp-title {
       font-weight: 600;
+      color: #2e7d32;
+      margin: 0;
+      font-size: 14px;
+    }
+    .whatsapp-subtitle {
+      font-size: 12px;
+      color: #558b2f;
+      margin: 5px 0 10px 0;
     }
     .whatsapp-button {
       display: inline-block;
@@ -250,11 +309,19 @@ export function generateOrderConfirmationEmail(data: OrderEmailData): string {
       border-radius: 4px;
       text-decoration: none;
       font-weight: 600;
-      font-size: 14px;
-      transition: background-color 0.3s;
+      font-size: 13px;
     }
-    .whatsapp-button:hover {
-      background-color: #1da851;
+    .warning-box {
+      background-color: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 4px;
+      padding: 15px;
+      margin: 20px 0;
+      font-size: 13px;
+      color: #856404;
+    }
+    .warning-box strong {
+      font-weight: 600;
     }
     .footer {
       background-color: #f5f5f5;
@@ -262,97 +329,111 @@ export function generateOrderConfirmationEmail(data: OrderEmailData): string {
       text-align: center;
       font-size: 12px;
       color: #999;
-      border-top: 1px solid #e0e0e0;
+      border-top: 1px solid #e8e8e8;
     }
-    .footer a {
-      color: #ffd700;
-      text-decoration: none;
-    }
-    .success-badge {
-      display: inline-block;
-      background-color: #4caf50;
-      color: white;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      margin-bottom: 15px;
+    .footer p {
+      margin: 5px 0;
     }
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- Header -->
     <div class="header">
-      <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee/LGOOOOO_0bc4a8e8.png" alt="BusFolia Logo" style="max-width: 200px; height: auto; margin-bottom: 15px;">
       <h1>BusFolia</h1>
       <p>Transporte Premium para Eventos</p>
     </div>
 
+    <!-- Content -->
     <div class="content">
-      <div class="success-badge">✓ PAGAMENTO CONFIRMADO</div>
-      
-      <div class="greeting">
-        <p>Olá <strong>${data.customerName}</strong>,</p>
-        <p>Seu pagamento foi aprovado com sucesso! Sua passagem está confirmada. Abaixo estão os detalhes da sua compra:</p>
+      <!-- Status Badge -->
+      <div style="text-align: center; margin-bottom: 20px;">
+        <span class="status-badge">✓ PAGAMENTO CONFIRMADO</span>
       </div>
 
-      <div class="order-details">
+      <!-- Greeting -->
+      <div class="greeting">
+        Olá <strong>${data.customerName}</strong>,
+      </div>
+
+      <!-- Intro Text -->
+      <div class="intro-text">
+        Seu pagamento foi aprovado com sucesso! Sua passagem está confirmada. Abaixo estão os detalhes da sua compra:
+      </div>
+
+      <!-- Details Section -->
+      <div class="details-section">
         <div class="detail-row">
-          <span class="detail-label">Número do Pedido:</span>
+          <span class="detail-label">Número do Pedido</span>
           <span class="detail-value"><strong>${data.shortId}</strong></span>
         </div>
         <div class="detail-row">
-          <span class="detail-label">Tipo de Passagem:</span>
-          <span class="detail-value">${purchaseTypeName}</span>
+          <span class="detail-label">Nome</span>
+          <span class="detail-value">${data.customerName}</span>
         </div>
         <div class="detail-row">
-          <span class="detail-label">Ponto de Embarque:</span>
+          <span class="detail-label">Email</span>
+          <span class="detail-value">${data.customerEmail}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Ponto de Embarque</span>
           <span class="detail-value">${data.boardingPoint}</span>
         </div>
         <div class="detail-row">
-          <span class="detail-label">Data(s) da Viagem:</span>
-          <span class="detail-value">${formattedDates}</span>
+          <span class="detail-label">Data(s) da Viagem</span>
+          <span class="detail-value">• ${formattedDates}</span>
         </div>
         <div class="detail-row">
-          <span class="detail-label">Quantidade de Passageiros:</span>
+          <span class="detail-label">Quantidade de Passageiros</span>
           <span class="detail-value">${data.quantity}</span>
-        </div>
-        
-        ${data.passengerNames && data.passengerNames.length > 0 ? `
-        <div style="background-color: #f0f9ff; border: 2px solid #D4AF37; border-radius: 4px; padding: 12px; margin-top: 12px;">
-          <div style="font-weight: bold; color: #333; margin-bottom: 8px; font-size: 14px;">Passageiros:</div>
-          <div style="font-size: 13px; color: #555; line-height: 1.8;">
-            ${data.passengerNames.map((name, idx) => `<div style="padding: 3px 0;"><strong>${idx + 1}.</strong> ${name}</div>`).join('')}
-          </div>
-        </div>
-        ` : ''}
-        
-        <div class="total-row">
-          <span>Total Pago:</span>
-          <span>${totalBRL}</span>
         </div>
       </div>
 
+      <!-- Passengers Section -->
+      ${data.passengerNames && data.passengerNames.length > 0 ? `
+      <div class="passengers-section">
+        <div class="passengers-title">Passageiros:</div>
+        ${data.passengerNames.map((name, idx) => `
+          <div class="passenger-item"><strong>${idx + 1}.</strong> ${name}</div>
+        `).join('')}
+      </div>
+      ` : ''}
+
+      <!-- Total Section -->
+      <div class="total-section">
+        <div class="total-label">Valor Total</div>
+        <div class="total-value">${totalBRL}</div>
+      </div>
+
+      <!-- Valid Ticket Notice -->
+      <div style="background-color: #e8f5e9; border: 1px solid #4caf50; border-radius: 4px; padding: 12px; text-align: center; color: #2e7d32; font-size: 13px; margin-bottom: 20px;">
+        ✓ Ingresso Válido - Apresente este documento no embarque
+      </div>
+
+      <!-- WhatsApp Section -->
       <div class="whatsapp-section">
-        <p>📱 Junte-se ao nosso grupo no WhatsApp</p>
-        <p style="font-size: 13px; margin: 5px 0 10px 0; color: #1976d2;">Receba atualizações, confirmações de horário e suporte direto</p>
+        <div class="whatsapp-icon">📱</div>
+        <p class="whatsapp-title">Junte-se ao nosso grupo no WhatsApp</p>
+        <p class="whatsapp-subtitle">Receba atualizações, confirmações de horário e suporte direto</p>
         <a href="${data.whatsappLink}" class="whatsapp-button">Entrar no Grupo WhatsApp</a>
       </div>
 
-      <div style="background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 15px; margin: 20px 0;">
-        <p style="margin: 0; color: #856404; font-size: 14px;">
-          <strong>⚠️ Importante:</strong> Guarde este email como comprovante. Você precisará apresentar a confirmação no ponto de embarque.
-        </p>
+      <!-- Warning Box -->
+      <div class="warning-box">
+        <strong>⚠️ Importante:</strong> Guarde este email como comprovante. Você precisará apresentar a confirmação no ponto de embarque.
       </div>
 
-      <p style="color: #666; font-size: 14px; margin-top: 20px;">
+      <!-- Contact Info -->
+      <p style="color: #666; font-size: 13px; margin-top: 20px; text-align: center;">
         Qualquer dúvida, entre em contato conosco via WhatsApp ou envie um email para <strong>contato@busfolia.com.br</strong>
       </p>
     </div>
 
+    <!-- Footer -->
     <div class="footer">
-      <p style="margin: 0;">© 2026 BusFolia Premium - Transporte para Eventos</p>
-      <p style="margin: 5px 0 0 0;">Viaje com conforto, segurança e qualidade!</p>
+      <p>© 2026 BusFolia Premium - Transporte para Eventos</p>
+      <p>Viaje com conforto, segurança e qualidade!</p>
+      <p style="margin-top: 10px; color: #bbb;">Gerado em ${new Date().toLocaleString('pt-BR')}</p>
     </div>
   </div>
 </body>
