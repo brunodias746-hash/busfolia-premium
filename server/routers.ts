@@ -579,6 +579,7 @@ export const appRouter = router({
             totalAmountCents: orderDetails.totalAmountCents,
             whatsappLink: event?.groupLink || "https://chat.whatsapp.com/busfolia",
             purchaseType: orderDetails.purchaseType as 'single' | 'multiple' | 'all_days' | undefined,
+            passengerNames: orderDetails.passengerNames || [],
           });
           
           await sendEmail({
@@ -858,6 +859,7 @@ export const appRouter = router({
               totalAmountCents,
               whatsappLink: event.groupLink || "https://chat.whatsapp.com/KjaIneid0P9F6JScKsV7Po",
               purchaseType: input.purchaseType as 'single' | 'multiple' | 'all_days',
+              passengerNames: input.passengers?.map(p => p.name) || [],
             });
             
             // Send email to main customer
@@ -937,6 +939,7 @@ export const appRouter = router({
             totalAmountCents: order.totalAmountCents,
             whatsappLink,
             purchaseType: order.purchaseType as 'single' | 'multiple' | 'all_days' | undefined,
+            passengerNames: passengers.map(p => p.name),
           });
           
           // Send email to customer

@@ -212,6 +212,20 @@ export default function Ingresso() {
             <div>
               <p className="text-sm text-gray-600 mb-1">Quantidade de Passageiros</p>
               <p className="font-semibold text-gray-900">{order.quantity}</p>
+              
+              {/* Passenger Names */}
+              {order.passengerNames && order.passengerNames.length > 0 && (
+                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-gray-600 mb-2 font-semibold">Passageiros:</p>
+                  <ul className="space-y-1">
+                    {order.passengerNames.map((name: string, idx: number) => (
+                      <li key={idx} className="text-sm text-gray-900">
+                        <span className="font-semibold">{idx + 1}.</span> {name}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
 
             {/* Price */}

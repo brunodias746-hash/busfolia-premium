@@ -205,10 +205,13 @@ export async function getOrderByShortId(shortId: string) {
   
   const order = result[0];
   const boardingPoint = await db.select().from(boardingPoints).where(eq(boardingPoints.id, order.boardingPointId)).limit(1);
+  const orderPassengers = await db.select().from(passengers).where(eq(passengers.orderId, order.id));
+  const passengerNames = orderPassengers.map(p => p.name);
   
   return {
     ...order,
     boardingPointLabel: boardingPoint[0] ? `${boardingPoint[0].city} - ${boardingPoint[0].locationName}` : 'Ponto desconhecido',
+    passengerNames,
   };
 }
 
