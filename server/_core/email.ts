@@ -317,6 +317,16 @@ export function generateOrderConfirmationEmail(data: OrderEmailData): string {
           <span class="detail-label">Quantidade de Passageiros:</span>
           <span class="detail-value">${data.quantity}</span>
         </div>
+        
+        ${data.passengerNames && data.passengerNames.length > 0 ? `
+        <div style="background-color: #f0f9ff; border: 2px solid #D4AF37; border-radius: 4px; padding: 12px; margin-top: 12px;">
+          <div style="font-weight: bold; color: #333; margin-bottom: 8px; font-size: 14px;">Passageiros:</div>
+          <div style="font-size: 13px; color: #555; line-height: 1.8;">
+            ${data.passengerNames.map((name, idx) => `<div style="padding: 3px 0;"><strong>${idx + 1}.</strong> ${name}</div>`).join('')}
+          </div>
+        </div>
+        ` : ''}
+        
         <div class="total-row">
           <span>Total Pago:</span>
           <span>${totalBRL}</span>
