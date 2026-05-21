@@ -14,6 +14,7 @@ export interface EmailTemplateData {
   whatsappGroupUrl?: string;
   ticketUrl?: string;
   pdfAttached?: boolean;
+  passengerNames?: string[]; // Nomes dos passageiros
 }
 
 export function generateOrderConfirmationEmailHTML(data: EmailTemplateData): string {
@@ -28,6 +29,7 @@ export function generateOrderConfirmationEmailHTML(data: EmailTemplateData): str
     whatsappGroupUrl = "https://chat.whatsapp.com/",
     ticketUrl = "https://busfolia.com.br/ingresso/",
     pdfAttached = true,
+    passengerNames = [],
   } = data;
 
   const formattedValue = new Intl.NumberFormat("pt-BR", {
@@ -392,6 +394,18 @@ export function generateOrderConfirmationEmailHTML(data: EmailTemplateData): str
           </div>
         </div>
       </div>
+      
+      <!-- Passenger Names Section -->
+      ${passengerNames && passengerNames.length > 0 ? `
+      <div class="content-section">
+        <div class="section-title">Passageiros</div>
+        <div class="detail-card detail-card-full" style="background-color: #f0f9ff; border: 2px solid #D4AF37;">
+          <div style="text-align: left; font-size: 14px; color: #1a1a1a; line-height: 1.8;">
+            ${passengerNames.map((name, idx) => `<div style="padding: 6px 0;"><strong>${idx + 1}.</strong> ${name}</div>`).join('')}
+          </div>
+        </div>
+      </div>
+      ` : ''}
       
       <!-- PDF Attachment Notice -->
       ${

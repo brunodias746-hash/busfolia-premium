@@ -16,6 +16,7 @@ interface OrderEmailData {
   totalAmountCents: number;
   whatsappLink: string;
   purchaseType?: 'single' | 'multiple' | 'all_days';
+  passengerNames?: string[]; // Nomes dos passageiros
 }
 
 export async function sendEmail({ to, subject, html }: SendEmailParams) {

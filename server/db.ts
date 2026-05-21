@@ -220,10 +220,13 @@ export async function getOrderWithDetails(id: number) {
   if (!order.length) return undefined;
   
   const boardingPoint = await db.select().from(boardingPoints).where(eq(boardingPoints.id, order[0].boardingPointId)).limit(1);
+  const orderPassengers = await db.select().from(passengers).where(eq(passengers.orderId, id));
+  const passengerNames = orderPassengers.map(p => p.name);
   
   return {
     ...order[0],
     boardingPoint: boardingPoint[0],
+    passengerNames,
   };
 }
 

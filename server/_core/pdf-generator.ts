@@ -13,6 +13,7 @@ interface TicketPDFData {
   quantity: number;
   totalAmountCents: number;
   generatedAt: string;
+  passengerNames?: string[]; // Nomes dos passageiros
 }
 
 /**
@@ -102,6 +103,17 @@ export async function generateTicketPDF(data: TicketPDFData): Promise<Buffer> {
     yPosition -= 20;
     drawText(data.quantity.toString(), margin, yPosition, 12, rgb(0, 0, 0));
     yPosition -= 30;
+
+    // Passenger names
+    if (data.passengerNames && data.passengerNames.length > 0) {
+      drawText("Passageiros", margin, yPosition, 10, rgb(0.5, 0.5, 0.5));
+      yPosition -= 20;
+      data.passengerNames.forEach((name, index) => {
+        drawText(`${index + 1}. ${name}`, margin + 10, yPosition, 11, rgb(0, 0, 0));
+        yPosition -= 18;
+      });
+      yPosition -= 10;
+    }
 
     // Divider line
     drawLine(margin, yPosition, width - margin, yPosition, rgb(0.8, 0.8, 0.8));

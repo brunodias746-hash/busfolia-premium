@@ -353,6 +353,7 @@ export const appRouter = router({
                   totalAmountCents: orderDetails.totalAmountCents,
                   whatsappLink: "https://chat.whatsapp.com/KjaIneid0P9F6JScKsV7Po",
                   purchaseType: orderDetails.purchaseType as 'single' | 'multiple' | 'all_days',
+                  passengerNames: orderDetails.passengerNames || [],
                 });
                 
                 await sendEmail({
