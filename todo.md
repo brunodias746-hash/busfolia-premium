@@ -347,6 +347,9 @@
 - [x] Tab 2 Passageiros: #, Nome, CPF, Evento, Pedido, Status, Embarque, Data, Ingresso
 - [x] Tab 3 Financeiro: Resumo por evento, bruto, taxas, líquido
 - [x] Test export functionality
+- [x] Fix date parsing to show 2026 instead of 2001
+- [x] Fix data mapping between getOrdersForExport and excel export
+- [x] Add eventName to getOrdersForExport output
 
 ### Issue 3: New "Lista" Tab in Admin Menu
 - [x] Add new menu item "Lista" in admin panel

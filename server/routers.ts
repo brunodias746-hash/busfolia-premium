@@ -919,14 +919,14 @@ export const appRouter = router({
           
           const passengers = orders.map((order: any, index: number) => ({
             id: index + 1,
-            name: order.passengerName || "N/A",
+            name: order.nomeCompleto || "N/A",
             cpf: order.cpf || "",
             eventName: order.eventName || "N/A",
-            orderId: order.orderId,
-            status: (order.status === "paid" ? "Pago" : order.status === "pending" ? "Pendente" : "Cancelado") as any,
-            boardingPoint: order.boardingPoint || "N/A",
-            travelDate: order.travelDate || "N/A",
-            ticketStatus: order.ticketStatus || "Pendente",
+            orderId: order.pedido || "N/A",
+            status: (order.status === "Pago" ? "Pago" : order.status === "Pendente" ? "Pendente" : "Cancelado") as "Pago" | "Pendente" | "Cancelado",
+            boardingPoint: order.pontoEmbarque || "N/A",
+            travelDate: order.datasTransporte || "N/A",
+            ticketStatus: "Enviado" as "Enviado" | "Pendente",
           }));
           
           const financialMap = new Map<string, any>();
@@ -943,13 +943,13 @@ export const appRouter = router({
             }
             const data = financialMap.get(key);
             data.quantity += 1;
-            data.grossValue += (order.totalAmount || 0) / 100;
-            data.stripeFee += (order.stripeFee || 0) / 100;
+            data.grossValue += parseFloat(order.valorTotal || "0");
+            data.stripeFee += 0; // PIX doesn't have fees
             data.netValue = data.grossValue - data.stripeFee;
           });
           
           const financialData = Array.from(financialMap.values());
-          const buffer = await generatePassengerExcel(passengers, financialData);
+          const buffer = await generatePassengerExcel(passengers as any, financialData);
           return { buffer: buffer.toString("base64"), filename: "busfolia-passageiros.xlsx" };
         }),
       resendEmail: adminProcedure

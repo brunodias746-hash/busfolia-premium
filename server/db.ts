@@ -500,6 +500,33 @@ export async function getOrdersForExport(eventId?: number) {
     ? await db.select({ order: orders }).from(orders).where(and(eq(orders.status, "paid"), eq(orders.eventId, eventId))).orderBy(desc(orders.createdAt))
     : await db.select({ order: orders }).from(orders).where(eq(orders.status, "paid")).orderBy(desc(orders.createdAt));
 
+  // Helper function to parse and validate dates
+  const parseTransportDate = (dateStr: string): string => {
+    if (!dateStr) return "N/A";
+    try {
+      // Try parsing ISO format: "2026-06-05"
+      const date = new Date(dateStr);
+      if (!isNaN(date.getTime())) {
+        const year = date.getFullYear();
+        // Validate year is 2026 (not 2001 or other invalid years)
+        if (year >= 2020 && year <= 2030) {
+          return date.toLocaleDateString("pt-BR");
+        }
+      }
+    } catch (e) {
+      // Fall through to manual parsing
+    }
+    // Manual parsing for "DD/MM/YYYY" or "DD de Mês de YYYY" format
+    const parts = dateStr.split("/");
+    if (parts.length === 3) {
+      const year = parseInt(parts[2], 10);
+      if (year >= 2020 && year <= 2030) {
+        return dateStr;
+      }
+    }
+    return "N/A";
+  };
+
   // Enrich with passenger data
   const enriched = [];
   for (const row of allRows) {
@@ -508,14 +535,27 @@ export async function getOrdersForExport(eventId?: number) {
     const event = await getEventById(order.eventId);
     const bp = passengers[0]?.boardingPointId ? await getBoardingPointById(passengers[0].boardingPointId) : null;
     
+    // Parse transport dates and validate year
+    let transportDatesStr = "N/A";
+    if (order.transportDates) {
+      try {
+        const dates = JSON.parse(order.transportDates) as string[];
+        const parsedDates = dates.map(d => parseTransportDate(d)).filter(d => d !== "N/A");
+        transportDatesStr = parsedDates.length > 0 ? parsedDates.join(", ") : "N/A";
+      } catch (e) {
+        transportDatesStr = "N/A";
+      }
+    }
+    
     enriched.push({
       pedido: order.shortId,
       nomeCompleto: order.customerName,
       cpf: order.customerCpf,
       telefone: order.customerPhone,
       email: order.customerEmail,
+      eventName: event?.name || "N/A",
       pontoEmbarque: bp ? `${bp.city} - ${bp.locationName}` : "N/A",
-      datasTransporte: order.transportDates ? JSON.parse(order.transportDates).join(", ") : "N/A",
+      datasTransporte: transportDatesStr,
       quantidadePassageiros: order.quantity,
       valorTotal: (order.totalAmountCents / 100).toFixed(2),
       status: "Pago",
