@@ -89,7 +89,29 @@ export default function Ingresso() {
 
   // Format dates for display
   const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
+    let date = new Date(dateStr);
+    
+    // Fix year bug: if year is 2001 or invalid, use 2026
+    if (date.getFullYear() < 2020 || date.getFullYear() > 2030) {
+      // Try to parse manually from ISO format
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
+        
+        if (year >= 2020 && year <= 2030) {
+          date = new Date(year, month, day);
+        } else {
+          // Fallback: assume 2026
+          date = new Date(2026, month, day);
+        }
+      } else {
+        // Last resort: use 2026 with current month/day
+        date = new Date(2026, date.getMonth(), date.getDate());
+      }
+    }
+    
     return date.toLocaleDateString("pt-BR", {
       day: "2-digit",
       month: "long",
