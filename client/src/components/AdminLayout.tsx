@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Calendar, ShoppingCart, Users, QrCode, DollarSign, LogOut, Menu, X, Loader2 } from "lucide-react";
+import { LayoutDashboard, Calendar, ShoppingCart, Users, QrCode, DollarSign, LogOut, Menu, X, Loader2, List } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -10,6 +10,7 @@ const navItems = [
   { href: "/admin/eventos", label: "Eventos", icon: Calendar },
   { href: "/admin/pedidos", label: "Pedidos", icon: ShoppingCart },
   { href: "/admin/passageiros", label: "Passageiros", icon: Users },
+  { href: "/admin/lista", label: "Lista", icon: List },
   { href: "/admin/checkin", label: "Check-in", icon: QrCode },
   { href: "/admin/financeiro", label: "Financeiro", icon: DollarSign },
 ];

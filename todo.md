@@ -334,29 +334,29 @@
 - [x] Total: 44 testes de PDF/notificações, todos passand## PHASE 16: 🚨 CRITICAL ISSUES (May 27, 2026)
 
 ### Issue 1: Date Year Bug (2001 instead of 2026)
-- [ ] Fix date year in PDF ticket generation
-- [ ] Fix date year in email templates
-- [ ] Fix date year in order confirmation pages
-- [ ] Fix date year in admin panel order details
-- [ ] Verify all date formatting across system
+- [x] Fix date year in PDF ticket generation
+- [x] Fix date year in email templates
+- [x] Fix date year in order confirmation pages
+- [x] Fix date year in admin panel order details
+- [x] Verify all date formatting across system
 
 ### Issue 2: Admin Export - Restore Previous Format
-- [ ] Analyze busfolia-passageiros-2026-05-12.xlsx format
-- [ ] Restore 3-tab Excel export (Dashboard, Passageiros, Financeiro)
-- [ ] Tab 1 Dashboard: Total Passageiros, Taxa Conversão, Embarque, Datas
-- [ ] Tab 2 Passageiros: #, Nome, CPF, Evento, Pedido, Status, Embarque, Data, Ingresso
-- [ ] Tab 3 Financeiro: Resumo por evento, bruto, taxas, líquido
-- [ ] Test export functionality
+- [x] Analyze busfolia-passageiros-2026-05-12.xlsx format
+- [x] Restore 3-tab Excel export (Dashboard, Passageiros, Financeiro)
+- [x] Tab 1 Dashboard: Total Passageiros, Taxa Conversão, Embarque, Datas
+- [x] Tab 2 Passageiros: #, Nome, CPF, Evento, Pedido, Status, Embarque, Data, Ingresso
+- [x] Tab 3 Financeiro: Resumo por evento, bruto, taxas, líquido
+- [x] Test export functionality
 
 ### Issue 3: New "Lista" Tab in Admin Menu
-- [ ] Add new menu item "Lista" in admin panel
-- [ ] Create simplified passenger list view
-- [ ] Show only 3 columns: Nome, Ponto de Embarque, Dia que vai
-- [ ] Add filter by date
-- [ ] Add filter by boarding point
-- [ ] Add search by name
-- [ ] Add print-friendly view
-- [ ] Add export as Excel/PDF
+- [x] Add new menu item "Lista" in admin panel
+- [x] Create simplified passenger list view
+- [x] Show only 3 columns: Nome, Ponto de Embarque, Dia que vai
+- [x] Add filter by date
+- [x] Add filter by boarding point
+- [x] Add search by name
+- [x] Add print-friendly view
+- [x] Add export as Excel/PDF
 
 ### Status F...inal: ✅ PRONTO PARA PRODUÇÃO
 

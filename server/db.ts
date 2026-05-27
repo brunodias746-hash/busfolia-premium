@@ -285,14 +285,40 @@ export async function getPassengersByOrder(orderId: number) {
 export async function getAllPassengers(eventId?: number) {
   const db = await getDb();
   if (!db) return [];
+  
+  // Get paid order IDs first
+  let whereCondition: any = eq(orders.status, "paid");
   if (eventId) {
-    const orderIds = await db.select({ id: orders.id }).from(orders).where(and(eq(orders.eventId, eventId), eq(orders.status, "paid")));
-    if (orderIds.length === 0) return [];
-    return db.select().from(passengers).where(inArray(passengers.orderId, orderIds.map(o => o.id)));
+    whereCondition = and(whereCondition, eq(orders.eventId, eventId));
   }
-  const paidOrderIds = await db.select({ id: orders.id }).from(orders).where(eq(orders.status, "paid"));
+  const paidOrderIds = await db.select({ id: orders.id }).from(orders).where(whereCondition);
+  
   if (paidOrderIds.length === 0) return [];
-  return db.select().from(passengers).where(inArray(passengers.orderId, paidOrderIds.map(o => o.id)));
+  
+  // Get passengers with boarding point and travel dates
+  const results = await db.select({
+    id: passengers.id,
+    orderId: passengers.orderId,
+    name: passengers.name,
+    cpf: passengers.cpf,
+    boardingPointId: passengers.boardingPointId,
+    checkInStatus: passengers.checkInStatus,
+    checkInAt: passengers.checkInAt,
+    createdAt: passengers.createdAt,
+    boardingPointLabel: boardingPoints.locationName,
+    city: boardingPoints.city,
+    transportDates: orders.transportDates,
+  }).from(passengers)
+    .leftJoin(boardingPoints, eq(passengers.boardingPointId, boardingPoints.id))
+    .leftJoin(orders, eq(passengers.orderId, orders.id))
+    .where(inArray(passengers.orderId, paidOrderIds.map(o => o.id)));
+  
+  // Enrich results with formatted boarding point and first travel date
+  return results.map(row => ({
+    ...row,
+    boardingPoint: row.city && row.boardingPointLabel ? `${row.city} - ${row.boardingPointLabel}` : row.boardingPointLabel || "",
+    travelDate: Array.isArray(row.transportDates) && row.transportDates.length > 0 ? row.transportDates[0] : "",
+  }));
 }
 
 export async function updatePassengerCheckIn(id: number, status: "pending" | "checked_in") {

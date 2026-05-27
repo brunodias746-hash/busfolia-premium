@@ -909,6 +909,49 @@ export const appRouter = router({
           const { getOrdersForExport } = await import("./db");
           return getOrdersForExport(input?.eventId);
         }),
+      exportExcel: adminProcedure
+        .input(z.object({ eventId: z.number().optional() }).optional())
+        .mutation(async ({ input }) => {
+          const { generatePassengerExcel } = await import("./lib/excel-export");
+          const { getOrdersForExport } = await import("./db");
+          
+          const orders = await getOrdersForExport(input?.eventId);
+          
+          const passengers = orders.map((order: any, index: number) => ({
+            id: index + 1,
+            name: order.passengerName || "N/A",
+            cpf: order.cpf || "",
+            eventName: order.eventName || "N/A",
+            orderId: order.orderId,
+            status: (order.status === "paid" ? "Pago" : order.status === "pending" ? "Pendente" : "Cancelado") as any,
+            boardingPoint: order.boardingPoint || "N/A",
+            travelDate: order.travelDate || "N/A",
+            ticketStatus: order.ticketStatus || "Pendente",
+          }));
+          
+          const financialMap = new Map<string, any>();
+          orders.forEach((order: any) => {
+            const key = order.eventName || "N/A";
+            if (!financialMap.has(key)) {
+              financialMap.set(key, {
+                eventName: key,
+                quantity: 0,
+                grossValue: 0,
+                stripeFee: 0,
+                netValue: 0,
+              });
+            }
+            const data = financialMap.get(key);
+            data.quantity += 1;
+            data.grossValue += (order.totalAmount || 0) / 100;
+            data.stripeFee += (order.stripeFee || 0) / 100;
+            data.netValue = data.grossValue - data.stripeFee;
+          });
+          
+          const financialData = Array.from(financialMap.values());
+          const buffer = await generatePassengerExcel(passengers, financialData);
+          return { buffer: buffer.toString("base64"), filename: "busfolia-passageiros.xlsx" };
+        }),
       resendEmail: adminProcedure
         .input(z.object({ orderId: z.number().int().positive() }))
         .mutation(async ({ input }) => {

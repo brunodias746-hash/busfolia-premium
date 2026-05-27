@@ -19,6 +19,7 @@ const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
 const AdminEventos = lazy(() => import("./pages/admin/Eventos"));
 const AdminPedidos = lazy(() => import("./pages/admin/Pedidos"));
 const AdminPassageiros = lazy(() => import("./pages/admin/Passageiros"));
+const AdminLista = lazy(() => import("./pages/admin/Lista").then(m => ({ default: m.ListaPage })));
 const AdminCheckin = lazy(() => import("./pages/admin/Checkin"));
 const AdminFinanceiro = lazy(() => import("./pages/admin/Financeiro"));
 const Ingresso = lazy(() => import("./pages/Ingresso"));
@@ -55,6 +56,7 @@ function Router() {
       <Route path="/admin/eventos">{() => <Suspense fallback={<AdminFallback />}><AdminEventos /></Suspense>}</Route>
       <Route path="/admin/pedidos">{() => <Suspense fallback={<AdminFallback />}><AdminPedidos /></Suspense>}</Route>
       <Route path="/admin/passageiros">{() => <Suspense fallback={<AdminFallback />}><AdminPassageiros /></Suspense>}</Route>
+      <Route path="/admin/lista">{() => <Suspense fallback={<AdminFallback />}><AdminLista /></Suspense>}</Route>
       <Route path="/admin/checkin">{() => <Suspense fallback={<AdminFallback />}><AdminCheckin /></Suspense>}</Route>
       <Route path="/admin/financeiro">{() => <Suspense fallback={<AdminFallback />}><AdminFinanceiro /></Suspense>}</Route>
 
