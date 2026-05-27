@@ -208,8 +208,21 @@ export async function getOrderByShortId(shortId: string) {
   const orderPassengers = await db.select().from(passengers).where(eq(passengers.orderId, order.id));
   const passengerNames = orderPassengers.map(p => p.name);
   
+  // Normalize and fix date year if needed (2001 -> 2026)
+  let transportDates = order.transportDates;
+  if (transportDates) {
+    try {
+      const { normalizeDateArray } = await import('./lib/date-normalizer');
+      const normalizedDates = normalizeDateArray(transportDates);
+      transportDates = JSON.stringify(normalizedDates);
+    } catch (e) {
+      // If parsing fails, leave as is
+    }
+  }
+  
   return {
     ...order,
+    transportDates,
     boardingPointLabel: boardingPoint[0] ? `${boardingPoint[0].city} - ${boardingPoint[0].locationName}` : 'Ponto desconhecido',
     passengerNames,
   };
@@ -226,8 +239,21 @@ export async function getOrderWithDetails(id: number) {
   const orderPassengers = await db.select().from(passengers).where(eq(passengers.orderId, id));
   const passengerNames = orderPassengers.map(p => p.name);
   
+  // Normalize and fix date year if needed (2001 -> 2026)
+  let transportDates = order[0].transportDates;
+  if (transportDates) {
+    try {
+      const { normalizeDateArray } = await import('./lib/date-normalizer');
+      const normalizedDates = normalizeDateArray(transportDates);
+      transportDates = JSON.stringify(normalizedDates);
+    } catch (e) {
+      // If parsing fails, leave as is
+    }
+  }
+  
   return {
     ...order[0],
+    transportDates,
     boardingPoint: boardingPoint[0],
     passengerNames,
   };
@@ -500,29 +526,17 @@ export async function getOrdersForExport(eventId?: number) {
     ? await db.select({ order: orders }).from(orders).where(and(eq(orders.status, "paid"), eq(orders.eventId, eventId))).orderBy(desc(orders.createdAt))
     : await db.select({ order: orders }).from(orders).where(eq(orders.status, "paid")).orderBy(desc(orders.createdAt));
 
-  // Helper function to parse and validate dates
-  const parseTransportDate = (dateStr: string): string => {
+  // Helper function to normalize and format dates
+  const parseTransportDate = async (dateStr: string): Promise<string> => {
     if (!dateStr) return "N/A";
     try {
-      // Try parsing ISO format: "2026-06-05"
-      const date = new Date(dateStr);
-      if (!isNaN(date.getTime())) {
-        const year = date.getFullYear();
-        // Validate year is 2026 (not 2001 or other invalid years)
-        if (year >= 2020 && year <= 2030) {
-          return date.toLocaleDateString("pt-BR");
-        }
+      const { normalizeDateString, formatDateToPortuguese } = await import('./lib/date-normalizer');
+      const normalized = normalizeDateString(dateStr);
+      if (normalized) {
+        return formatDateToPortuguese(normalized);
       }
     } catch (e) {
-      // Fall through to manual parsing
-    }
-    // Manual parsing for "DD/MM/YYYY" or "DD de Mês de YYYY" format
-    const parts = dateStr.split("/");
-    if (parts.length === 3) {
-      const year = parseInt(parts[2], 10);
-      if (year >= 2020 && year <= 2030) {
-        return dateStr;
-      }
+      // Fall through
     }
     return "N/A";
   };
@@ -540,8 +554,9 @@ export async function getOrdersForExport(eventId?: number) {
     if (order.transportDates) {
       try {
         const dates = JSON.parse(order.transportDates) as string[];
-        const parsedDates = dates.map(d => parseTransportDate(d)).filter(d => d !== "N/A");
-        transportDatesStr = parsedDates.length > 0 ? parsedDates.join(", ") : "N/A";
+        const parsedDates = await Promise.all(dates.map(d => parseTransportDate(d)));
+        const filtered = parsedDates.filter(d => d !== "N/A");
+        transportDatesStr = filtered.length > 0 ? filtered.join(", ") : "N/A";
       } catch (e) {
         transportDatesStr = "N/A";
       }

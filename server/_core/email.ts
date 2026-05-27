@@ -104,6 +104,12 @@ function formatDatesInPortuguese(dates: string[]): string {
       return null;
     }
     
+    // Validate year: if it's 2001 or outside 2020-2030, use 2026
+    const yearNum = parseInt(year, 10);
+    if (yearNum < 2020 || yearNum > 2030) {
+      year = '2026';
+    }
+    
     return { day, month, year };
   }).filter(Boolean) as Array<{ day: number; month: string; year: string }>;
 

@@ -7,8 +7,8 @@ import { trpc } from "@/lib/trpc";
 import { Download, Printer } from "lucide-react";
 
 export function ListaPage() {
-  const [selectedDate, setSelectedDate] = useState<string>("");
-  const [selectedBoardingPoint, setSelectedBoardingPoint] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<string>("all");
+  const [selectedBoardingPoint, setSelectedBoardingPoint] = useState<string>("all");
   const [searchName, setSearchName] = useState<string>("");
 
   // Fetch all passengers
@@ -34,8 +34,8 @@ export function ListaPage() {
   // Filter passengers
   const filteredPassengers = useMemo(() => {
     return passengers.filter((p: any) => {
-      const matchDate = !selectedDate || p.travelDate === selectedDate;
-      const matchPoint = !selectedBoardingPoint || p.boardingPoint === selectedBoardingPoint;
+      const matchDate = selectedDate === "all" || p.travelDate === selectedDate;
+      const matchPoint = selectedBoardingPoint === "all" || p.boardingPoint === selectedBoardingPoint;
       const matchName = !searchName || p.name.toLowerCase().includes(searchName.toLowerCase());
       return matchDate && matchPoint && matchName;
     });
@@ -99,7 +99,7 @@ ${i + 1}. ${p.name}
                 <SelectValue placeholder="Todas as datas" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas as datas</SelectItem>
+                <SelectItem value="all">Todas as datas</SelectItem>
                 {uniqueDates.map((date) => (
                   <SelectItem key={date} value={date}>
                     {date}
@@ -116,7 +116,7 @@ ${i + 1}. ${p.name}
                 <SelectValue placeholder="Todos os pontos" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos os pontos</SelectItem>
+                <SelectItem value="all">Todos os pontos</SelectItem>
                 {uniqueBoardingPoints.map((point) => (
                   <SelectItem key={point} value={point}>
                     {point}
@@ -127,7 +127,7 @@ ${i + 1}. ${p.name}
           </div>
 
           <div className="flex items-end gap-2">
-            <Button onClick={() => { setSearchName(""); setSelectedDate(""); setSelectedBoardingPoint(""); }} variant="outline" className="w-full">
+            <Button onClick={() => { setSearchName(""); setSelectedDate("all"); setSelectedBoardingPoint("all"); }} variant="outline" className="w-full">
               Limpar Filtros
             </Button>
           </div>

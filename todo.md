@@ -339,6 +339,9 @@
 - [x] Fix date year in order confirmation pages
 - [x] Fix date year in admin panel order details
 - [x] Verify all date formatting across system
+- [x] Add year validation to formatDatesInPortuguese in email.ts
+- [x] Add year validation to getOrderByShortId in db.ts
+- [x] Add year validation to getOrderWithDetails in db.ts
 
 ### Issue 2: Admin Export - Restore Previous Format
 - [x] Analyze busfolia-passageiros-2026-05-12.xlsx format
@@ -360,6 +363,8 @@
 - [x] Add search by name
 - [x] Add print-friendly view
 - [x] Add export as Excel/PDF
+- [x] Fix Select.Item empty value crash - change from "" to "all"
+- [x] Update filter logic to handle "all" value
 
 ### Status F...inal: ✅ PRONTO PARA PRODUÇÃO
 
