@@ -631,3 +631,33 @@
 - [ ] Testar Cartão de Crédito
 - [ ] Testar Boleto
 - [ ] Confirmar webhook recebe eventos
+
+
+## PHASE 17: 📊 PROFESSIONAL EXCEL EXPORTS (May 27, 2026)
+
+### Professional Export Layout Implementation
+- [ ] Analyze busfolia-passageiros-2026-05-12.xlsx reference file for exact styling
+- [ ] Create professional-export.ts utility with 3-tab template
+- [ ] Implement Dashboard tab with status cards and metrics
+- [ ] Implement Data tab with professional styling and status color-coding
+- [ ] Implement Financial tab with revenue breakdown
+- [ ] Fix date formatting: NaN/NaN/NaN → DD/MM/2026
+- [ ] Fix transport dates: N/A → real dates or "Todos os Dias"
+- [ ] Ensure all years are 2026, never 2001
+- [ ] Apply exact color palette: #1A1A1A, #D4AF37, #B8941F, #10B981, #FCD34D, #EF4444, #F5F5F5
+
+### Update All Export Endpoints
+- [ ] Update "Exportar Pedidos" to use professional layout
+- [ ] Update "Exportar Passageiros" to use professional layout
+- [ ] Update "Exportar Financeiro" to use professional layout
+- [ ] Update "Exportar Tudo" to use professional layout
+- [ ] Verify all exports have 3 tabs
+- [ ] Verify all exports have proper styling
+
+### Deployment & Testing
+- [ ] Test all exports locally
+- [ ] Deploy to production
+- [ ] Clear cache on busfolia.com.br
+- [ ] Verify exports are live and styled correctly
+- [ ] Confirm dates show 2026 (not 2001, not NaN)
+- [ ] Confirm status colors are correct

@@ -912,45 +912,49 @@ export const appRouter = router({
       exportExcel: adminProcedure
         .input(z.object({ eventId: z.number().optional() }).optional())
         .mutation(async ({ input }) => {
-          const { generatePassengerExcel } = await import("./lib/excel-export");
+          const { exportOrdersAsProfessional } = await import("./lib/export-wrapper");
           const { getOrdersForExport } = await import("./db");
           
           const orders = await getOrdersForExport(input?.eventId);
           
-          const passengers = orders.map((order: any, index: number) => ({
-            id: index + 1,
-            name: order.nomeCompleto || "N/A",
+          // Map to export format
+          const orderRows = orders.map((order: any) => ({
+            pedido: order.pedido || "N/A",
+            nomeCompleto: order.nomeCompleto || "N/A",
             cpf: order.cpf || "",
-            eventName: order.eventName || "N/A",
-            orderId: order.pedido || "N/A",
-            status: (order.status === "Pago" ? "Pago" : order.status === "Pendente" ? "Pendente" : "Cancelado") as "Pago" | "Pendente" | "Cancelado",
-            boardingPoint: order.pontoEmbarque || "N/A",
-            travelDate: order.datasTransporte || "N/A",
-            ticketStatus: "Enviado" as "Enviado" | "Pendente",
+            telefone: order.telefone || "",
+            email: order.email || "",
+            pontoEmbarque: order.pontoEmbarque || "N/A",
+            datasTransporte: order.datasTransporte || "N/A",
+            quantidadePassageiros: order.quantidadePassageiros || 0,
+            valorTotal: parseFloat(order.valorTotal || "0"),
+            status: order.status || "Pendente",
+            dataPedido: order.dataPedido || "N/A",
           }));
           
+          // Build financial summary
           const financialMap = new Map<string, any>();
           orders.forEach((order: any) => {
             const key = order.eventName || "N/A";
             if (!financialMap.has(key)) {
               financialMap.set(key, {
-                eventName: key,
-                quantity: 0,
-                grossValue: 0,
-                stripeFee: 0,
-                netValue: 0,
+                categoria: key,
+                quantidade: 0,
+                valorBruto: 0,
+                taxa: 0,
+                valorLiquido: 0,
               });
             }
             const data = financialMap.get(key);
-            data.quantity += 1;
-            data.grossValue += parseFloat(order.valorTotal || "0");
-            data.stripeFee += 0; // PIX doesn't have fees
-            data.netValue = data.grossValue - data.stripeFee;
+            data.quantidade += 1;
+            data.valorBruto += parseFloat(order.valorTotal || "0");
+            data.taxa += 0; // PIX doesn't have fees
+            data.valorLiquido = data.valorBruto - data.taxa;
           });
           
           const financialData = Array.from(financialMap.values());
-          const buffer = await generatePassengerExcel(passengers as any, financialData);
-          return { buffer: buffer.toString("base64"), filename: "busfolia-passageiros.xlsx" };
+          const buffer = await exportOrdersAsProfessional(orderRows, financialData);
+          return { buffer: buffer.toString("base64"), filename: "busfolia-pedidos.xlsx" };
         }),
       resendEmail: adminProcedure
         .input(z.object({ orderId: z.number().int().positive() }))
