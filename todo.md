@@ -353,6 +353,9 @@
 - [x] Fix date parsing to show 2026 instead of 2001
 - [x] Fix data mapping between getOrdersForExport and excel export
 - [x] Add eventName to getOrdersForExport output
+- [x] Update Pedidos export to professional layout
+- [x] Update Passageiros export to professional layout
+- [x] Update Financeiro export to professional layout
 
 ### Issue 3: New "Lista" Tab in Admin Menu
 - [x] Add new menu item "Lista" in admin panel

@@ -1024,6 +1024,39 @@ export const appRouter = router({
         .query(async ({ input }) => {
           return getPassengersForExport(input?.eventId);
         }),
+      exportExcel: adminProcedure
+        .input(z.object({ eventId: z.number().optional() }).optional())
+        .mutation(async ({ input }) => {
+          const { exportPassengersAsProfessional } = await import("./lib/export-wrapper");
+          const { getPassengersForExport, getFinancialData } = await import("./db");
+          
+          const passengers = await getPassengersForExport(input?.eventId);
+          const financialData = await getFinancialData(input?.eventId);
+          
+          // Map to export format
+          const passengerRows = passengers.map((p: any, idx: number) => ({
+            numero: idx + 1,
+            nome: p.name || "N/A",
+            cpf: p.cpf || "",
+            evento: p.eventName || "N/A",
+            pedido: p.orderId || "N/A",
+            status: p.status || "Pendente",
+            pontoEmbarque: p.boardingPoint || "N/A",
+            dataViagem: p.travelDate || "N/A",
+            ingresso: p.ticketStatus || "Pendente",
+          }));
+          
+          // Build financial summary
+          const financialSummary = financialData.byEvent.map((item: any) => ({
+            categoria: item.eventName || "N/A",
+            quantidade: item.passengerCount || 0,
+            valorBruto: (item.totalRevenue / 100) || 0,
+            taxa: (item.totalFees / 100) || 0,
+            valorLiquido: ((item.totalRevenue - item.totalFees) / 100) || 0,
+          }));
+          const buffer = await exportPassengersAsProfessional(passengerRows, financialSummary);
+          return { buffer: buffer.toString("base64"), filename: "busfolia-passageiros.xlsx" };
+        }),
     }),
 
     // Financial
@@ -1032,6 +1065,26 @@ export const appRouter = router({
         .input(z.object({ eventId: z.number().optional() }).optional())
         .query(async ({ input }) => {
           return getFinancialData(input?.eventId);
+        }),
+      exportExcel: adminProcedure
+        .input(z.object({ eventId: z.number().optional() }).optional())
+        .mutation(async ({ input }) => {
+          const { exportFinancialAsProfessional } = await import("./lib/export-wrapper");
+          const { getFinancialData } = await import("./db");
+          
+          const financialData = await getFinancialData(input?.eventId);
+          
+          // Map to export format - using byEvent array
+          const financialRows = financialData.byEvent.map((item: any) => ({
+            categoria: item.eventName || "N/A",
+            quantidade: item.passengerCount || 0,
+            valorBruto: (item.totalRevenue / 100) || 0,
+            taxa: (item.totalFees / 100) || 0,
+            valorLiquido: ((item.totalRevenue - item.totalFees) / 100) || 0,
+          }));
+          
+          const buffer = await exportFinancialAsProfessional(financialRows);
+          return { buffer: buffer.toString("base64"), filename: "busfolia-financeiro.xlsx" };
         }),
     }),
   }),
