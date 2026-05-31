@@ -8,6 +8,33 @@ import { trpc } from "@/lib/trpc";
 import { Download, Printer, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
+// Color and icon mapping for boarding points
+const boardingPointColors: Record<string, { bg: string; text: string; icon: string; color: string }> = {
+  "BELO HORIZONTE - SHOPPING": { bg: "bg-blue-100", text: "text-blue-900", icon: "🔵", color: "#3B82F6" },
+  "BETIM - PARTAGE SHOPPING": { bg: "bg-purple-100", text: "text-purple-900", icon: "🟣", color: "#A855F7" },
+  "CONTAGEM - PRAÇA DA CEMIG": { bg: "bg-green-100", text: "text-green-900", icon: "🟢", color: "#22C55E" },
+  "SANTA LUZIA - SORVETERIA 4 E": { bg: "bg-yellow-100", text: "text-yellow-900", icon: "🟡", color: "#EAB308" },
+  "BELO HORIZONTE - MINAS SHC": { bg: "bg-red-100", text: "text-red-900", icon: "🔴", color: "#EF4444" },
+  "BELO HORIZONTE - PRAÇA DA": { bg: "bg-orange-100", text: "text-orange-900", icon: "🟠", color: "#F97316" },
+};
+
+function getBoardingPointStyle(boardingPoint: string) {
+  // Try exact match first
+  if (boardingPointColors[boardingPoint]) {
+    return boardingPointColors[boardingPoint];
+  }
+  
+  // Try partial match
+  for (const [key, style] of Object.entries(boardingPointColors)) {
+    if (boardingPoint && boardingPoint.includes(key.split(' - ')[0])) {
+      return style;
+    }
+  }
+  
+  // Default style
+  return { bg: "bg-gray-100", text: "text-gray-900", icon: "📍", color: "#6B7280" };
+}
+
 // Normalize date to "DD de junho de 2026" format
 function normalizeDateFormat(dateStr: string): string | null {
   if (!dateStr || dateStr === "N/A" || dateStr === "NaN/NaN/NaN") return null;
@@ -253,8 +280,14 @@ export function ListaPage() {
                       <div className="col-span-2 text-sm text-muted-foreground font-mono">
                         {passenger.orderShortId || "N/A"}
                       </div>
-                      <div className="col-span-3 text-sm text-muted-foreground">
-                        📍 {passenger.boardingPoint || "N/A"}
+                      <div className="col-span-3 text-sm">
+                        {passenger.boardingPoint ? (
+                          <div className={`inline-block px-3 py-1 rounded-full font-medium ${getBoardingPointStyle(passenger.boardingPoint).bg} ${getBoardingPointStyle(passenger.boardingPoint).text}`}>
+                            {getBoardingPointStyle(passenger.boardingPoint).icon} {passenger.boardingPoint}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">N/A</span>
+                        )}
                       </div>
                       <div className="col-span-3 text-sm text-muted-foreground">
                         📅 {normalizedDate || "N/A"}
