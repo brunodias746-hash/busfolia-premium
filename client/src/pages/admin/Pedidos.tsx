@@ -1,10 +1,10 @@
 import AdminLayout from "@/components/AdminLayout";
 import { trpc } from "@/lib/trpc";
 import { formatCurrency } from "@/lib/constants";
-import { downloadXLSX, formatCurrencyForXLSX, formatDateForXLSX } from "@/lib/xlsxExport";
 import { ShoppingCart, Loader2, Eye, Download, Trash2, Mail, Ticket, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { toast } from "sonner";
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; cls: string }> = {
@@ -34,12 +34,13 @@ function PaymentMethodBadge({ order }: { order: any }) {
 
 export default function Pedidos() {
   const { data: orders, isLoading } = trpc.admin.orders.list.useQuery();
-  const { data: exportData } = trpc.admin.orders.exportCsv.useQuery();
   const [detailId, setDetailId] = useState<number | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const [showPixForm, setShowPixForm] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const deleteOrderMutation = trpc.admin.orders.delete.useMutation();
   const resendEmailMutation = trpc.admin.orders.resendEmail.useMutation();
+  const exportMutation = trpc.exports.generatePedidos.useMutation();
   const utils = trpc.useUtils();
 
   const handleDelete = async (orderId: number) => {
@@ -62,65 +63,32 @@ export default function Pedidos() {
     }
   };
 
-  function exportXLSX() {
-    if (!exportData || exportData.length === 0) return;
-    
-    const headers = [
-      "Pedido",
-      "Nome Completo",
-      "CPF",
-      "Telefone",
-      "Email",
-      "Ponto de Embarque",
-      "Datas de Transporte",
-      "Quantidade de Passageiros",
-      "Valor Total (R$)",
-      "Status",
-      "Data da Compra"
-    ];
-    
-    const rows = exportData.map((o: any) => [
-      o.pedido || '',
-      o.nomeCompleto || '',
-      o.cpf || '',
-      o.telefone || '',
-      o.email || '',
-      o.pontoEmbarque || '',
-      o.datasTransporte || '',
-      o.quantidadePassageiros || '',
-      o.valorTotal ? formatCurrencyForXLSX(parseInt(o.valorTotal.replace(/[^0-9]/g, '')) || 0) : 'R$ 0,00',
-      o.status || '',
-      o.dataCompra ? formatDateForXLSX(o.dataCompra) : '',
-    ]);
-    
-    // Calculate total
-    const totalValue = exportData.reduce((sum: number, o: any) => {
-      const val = parseInt(o.valorTotal?.replace(/[^0-9]/g, '') || '0');
-      return sum + val;
-    }, 0);
-    
-    const totals = [
-      'TOTAL',
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      exportData.length,
-      formatCurrencyForXLSX(totalValue),
-      '',
-      ''
-    ];
-    
-    downloadXLSX({
-      title: 'Relatório de Pedidos',
-      filename: `pedidos-${new Date().toISOString().split('T')[0]}.xlsx`,
-      headers,
-      rows,
-      totals,
-      columnWidths: [12, 20, 15, 15, 25, 25, 20, 18, 18, 15, 15]
-    });
+  async function exportXLSX() {
+    setIsExporting(true);
+    try {
+      const result = await exportMutation.mutateAsync({});
+      if (result.success && result.data) {
+        // Convert base64 to blob and download
+        const binaryString = atob(result.data);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = result.filename;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast.success('Excel exportado com sucesso!');
+      }
+    } catch (err) {
+      console.error('Export failed:', err);
+      toast.error('Erro ao exportar Excel');
+    } finally {
+      setIsExporting(false);
+    }
   }
 
   return (
@@ -134,7 +102,7 @@ export default function Pedidos() {
           <Button onClick={() => setShowPixForm(true)} className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto">
             <Plus className="w-4 h-4 mr-2" /> Nova Compra via PIX
           </Button>
-          <Button onClick={exportXLSX} variant="outline" className="border-white/10 w-full sm:w-auto" disabled={!exportData?.length}>
+          <Button onClick={exportXLSX} variant="outline" className="border-white/10 w-full sm:w-auto" disabled={isExporting}>
             <Download className="w-4 h-4 mr-2" /> Exportar Excel
           </Button>
         </div>

@@ -1,7 +1,6 @@
 import AdminLayout from "@/components/AdminLayout";
 import { trpc } from "@/lib/trpc";
 import { formatCurrency } from "@/lib/constants";
-import { downloadXLSX, formatCurrencyForXLSX } from "@/lib/xlsxExport";
 import {
   DollarSign,
   TrendingUp,
@@ -20,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function Financeiro() {
   const [selectedEvent, setSelectedEvent] = useState<string>("all");
@@ -30,50 +30,34 @@ export default function Financeiro() {
     eventId ? { eventId } : undefined
   );
 
-  const handleExportXLSX = () => {
-    if (!data) return;
-    
-    const headers = [
-      "Evento",
-      "Receita Bruta (R$)",
-      "Taxas (R$)",
-      "Receita Líquida (R$)",
-      "Quantidade de Pedidos",
-      "Quantidade de Passageiros"
-    ];
-    
-    const rows = data.byEvent.map((e) => [
-      e.eventName || '',
-      formatCurrencyForXLSX(e.totalRevenue),
-      formatCurrencyForXLSX(e.totalFees),
-      formatCurrencyForXLSX(e.totalRevenue - e.totalFees),
-      e.orderCount.toString(),
-      e.passengerCount.toString(),
-    ]);
-    
-    // Calculate totals
-    const totalRevenue = data.byEvent.reduce((sum, e) => sum + e.totalRevenue, 0);
-    const totalFees = data.byEvent.reduce((sum, e) => sum + e.totalFees, 0);
-    const totalOrders = data.byEvent.reduce((sum, e) => sum + e.orderCount, 0);
-    const totalPassengers = data.byEvent.reduce((sum, e) => sum + e.passengerCount, 0);
-    
-    const totals = [
-      'TOTAL',
-      formatCurrencyForXLSX(totalRevenue),
-      formatCurrencyForXLSX(totalFees),
-      formatCurrencyForXLSX(totalRevenue - totalFees),
-      totalOrders.toString(),
-      totalPassengers.toString(),
-    ];
-    
-    downloadXLSX({
-      title: 'Relatório Financeiro',
-      filename: `financeiro-${new Date().toISOString().split('T')[0]}.xlsx`,
-      headers,
-      rows,
-      totals,
-      columnWidths: [25, 20, 20, 20, 20, 20]
-    });
+  const exportMutation = trpc.exports.generateFinanceiro.useMutation();
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportXLSX = async () => {
+    setIsExporting(true);
+    try {
+      const result = await exportMutation.mutateAsync(eventId ? { eventId } : {});
+      if (result.success && result.data) {
+        const binaryString = atob(result.data);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = result.filename;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast.success('Excel exportado com sucesso!');
+      }
+    } catch (err) {
+      console.error('Export failed:', err);
+      toast.error('Erro ao exportar Excel');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   if (isLoading) {
@@ -111,7 +95,7 @@ export default function Financeiro() {
             variant="outline"
             size="sm"
             onClick={handleExportXLSX}
-            disabled={!data || data.byEvent.length === 0}
+            disabled={isExporting}
             className="border-white/10"
           >
             <Download className="w-4 h-4 mr-1" /> Excel

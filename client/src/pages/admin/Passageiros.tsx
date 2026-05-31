@@ -3,7 +3,6 @@ import { trpc } from "@/lib/trpc";
 import { Users, Loader2, Download, CheckCircle2, Clock, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { downloadXLSX, formatDateForXLSX } from "@/lib/xlsxExport";
 import {
   Select,
   SelectContent,
@@ -12,19 +11,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useState, useMemo } from "react";
+import { toast } from "sonner";
 
 export default function Passageiros() {
   const [selectedEvent, setSelectedEvent] = useState<string>("all");
   const [search, setSearch] = useState("");
   const eventId = selectedEvent === "all" ? undefined : parseInt(selectedEvent);
 
+  const [isExporting, setIsExporting] = useState(false);
   const { data: events } = trpc.admin.events.list.useQuery();
   const { data: passengers, isLoading } = trpc.admin.passengers.list.useQuery(
     eventId ? { eventId } : undefined
   );
-  const { data: exportData } = trpc.admin.passengers.exportCsv.useQuery(
-    eventId ? { eventId } : undefined
-  );
+  const exportMutation = trpc.exports.generatePassageiros.useMutation();
 
   const filtered = useMemo(() => {
     if (!passengers) return [];
@@ -37,50 +36,31 @@ export default function Passageiros() {
     );
   }, [passengers, search]);
 
-  function exportXLSX() {
-    if (!exportData || exportData.length === 0) return;
-    
-    const headers = [
-      "Nome Completo",
-      "CPF",
-      "Evento",
-      "Número do Pedido",
-      "Status do Pedido",
-      "Ponto de Embarque",
-      "Data de Transporte",
-      "Check-in"
-    ];
-    
-    const rows = exportData.map((p) => [
-      p.name || '',
-      p.cpf || '',
-      p.eventName || '',
-      p.orderShortId || '',
-      p.orderStatus || '',
-      p.boardingPoint || '',
-      p.transportDate ? formatDateForXLSX(p.transportDate) : '',
-      p.checkInStatus === "checked_in" ? "Sim" : "Não",
-    ]);
-    
-    const totals = [
-      'TOTAL',
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      exportData.filter(p => p.checkInStatus === 'checked_in').length
-    ];
-    
-    downloadXLSX({
-      title: 'Relatório de Passageiros',
-      filename: `passageiros-${new Date().toISOString().split('T')[0]}.xlsx`,
-      headers,
-      rows,
-      totals,
-      columnWidths: [25, 18, 20, 18, 18, 25, 18, 15]
-    });
+  async function exportXLSX() {
+    setIsExporting(true);
+    try {
+      const result = await exportMutation.mutateAsync(eventId ? { eventId } : {});
+      if (result.success && result.data) {
+        const binaryString = atob(result.data);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = result.filename;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast.success('Excel exportado com sucesso!');
+      }
+    } catch (err) {
+      console.error('Export failed:', err);
+      toast.error('Erro ao exportar Excel');
+    } finally {
+      setIsExporting(false);
+    }
   }
 
   const checkedIn = filtered.filter((p) => p.checkInStatus === "checked_in").length;
@@ -101,7 +81,7 @@ export default function Passageiros() {
             onClick={exportXLSX}
             variant="outline"
             className="border-white/10"
-            disabled={!exportData || exportData.length === 0}
+            disabled={isExporting}
           >
             <Download className="w-4 h-4 mr-2" /> Exportar Excel
           </Button>

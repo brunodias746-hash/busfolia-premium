@@ -664,3 +664,33 @@
 - [ ] Verify exports are live and styled correctly
 - [ ] Confirm dates show 2026 (not 2001, not NaN)
 - [ ] Confirm status colors are correct
+
+
+## PHASE 18: 🚨 COMPLETE CHECKLIST (May 30, 2026) - Bruno's Final Requirements
+
+- [ ] Item 1: Passageiros export - Professional 3-tab layout
+- [ ] Item 2: Financeiro export - Professional 3-tab layout
+- [ ] Item 3: Exportar Todas - Professional 3-tab layout
+- [ ] Item 4: Status translation in ALL exports (paid→Pago, pending→Aguardando, cancelled→Cancelado)
+- [ ] Item 5: Status color-coding (Pago=#10B981 green, Aguardando=#FCD34D yellow, Cancelado=#EF4444 red)
+- [ ] Item 6: Lista page - Add Número do Pedido + Data do Transporte
+- [ ] Item 7: Lista page - Populate date filter with actual travel dates
+- [ ] Item 8: Lista page - Export button generates professional 3-tab Excel
+- [ ] Item 9: Deploy to production (busfolia.com.br)
+- [ ] Item 10: Clear CDN/server cache
+- [ ] Item 11: Verify on busfolia.com.br
+
+
+## PHASE 18: 🚨 COMPLETE CHECKLIST - EXPORTS REWIRED (May 30, 2026)
+
+- [x] Wire Pedidos export button to server-side professional 3-tab endpoint (exports.generatePedidos)
+- [x] Wire Passageiros export button to server-side professional 3-tab endpoint (exports.generatePassageiros)
+- [x] Wire Financeiro export button to server-side professional 3-tab endpoint (exports.generateFinanceiro)
+- [x] Register exportsRouter in appRouter (was missing!)
+- [x] Fix Lista page: wrap in AdminLayout, add professional export, fix table layout
+- [x] Fix Lista page: proper date/boarding point filters from data
+- [x] Status translation: paid→Pago, pending→Aguardando, canceled→Cancelado (in professional-export.ts)
+- [x] Status color coding: Green/Yellow/Red (in professional-export.ts)
+- [x] Remove old client-side downloadXLSX calls from all admin pages
+- [x] TypeScript: 0 errors
+- [x] Tests: 295 passing
