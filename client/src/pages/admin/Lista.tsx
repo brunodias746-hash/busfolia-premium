@@ -55,7 +55,7 @@ export function ListaPage() {
   const { data: passengers = [], isLoading } = trpc.admin.passengers.list.useQuery();
   const exportMutation = trpc.exports.generatePassageiros.useMutation();
 
-  // Filter to only PAID passengers
+  // Filter to only PAID passengers (status is stored as "paid" in database)
   const paidPassengers = useMemo(() => {
     return passengers.filter((p: any) => p.status === "paid");
   }, [passengers]);
@@ -134,7 +134,7 @@ export function ListaPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-black font-heading">Lista de Embarque</h1>
-          <p className="text-muted-foreground text-sm">Lista simplificada para conferência no embarque (apenas passageiros pagos)</p>
+          <p className="text-muted-foreground text-sm">Lista simplificada para conferência no embarque (apenas passageiros pagos) - Total: {paidPassengers.length}</p>
         </div>
 
         {/* Filters */}
