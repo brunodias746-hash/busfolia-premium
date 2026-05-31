@@ -132,9 +132,20 @@ export function ListaPage() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div>
+        <div className="space-y-2">
           <h1 className="text-2xl font-black font-heading">Lista de Embarque</h1>
-          <p className="text-muted-foreground text-sm">Lista simplificada para conferência no embarque (apenas passageiros pagos) - Total: {paidPassengers.length}</p>
+          <p className="text-muted-foreground text-sm">Lista simplificada para conferência no embarque (apenas passageiros pagos)</p>
+          <div className="flex items-center gap-4 pt-2">
+            <div className="bg-gradient-to-r from-amber-500 to-amber-600 rounded-lg px-4 py-3 text-white font-bold text-lg">
+              <span className="text-sm font-medium opacity-90">Total de Passageiros:</span>
+              <div className="text-2xl font-black">{filteredPassengers.length}</div>
+            </div>
+            {filteredPassengers.length !== paidPassengers.length && (
+              <div className="text-sm text-muted-foreground">
+                (de {paidPassengers.length} pagos com filtros aplicados)
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Filters */}
