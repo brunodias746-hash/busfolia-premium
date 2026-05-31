@@ -156,7 +156,7 @@ export function ListaPage() {
         </div>
 
         {/* List Table */}
-        <Card className="p-6 bg-card border-border">
+        <Card className="p-6 bg-card border-border overflow-x-auto">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -172,9 +172,10 @@ export function ListaPage() {
               {/* Table header */}
               <div className="hidden md:grid grid-cols-12 gap-4 px-4 py-2 bg-muted/30 rounded-lg text-sm font-semibold text-muted-foreground">
                 <div className="col-span-1">#</div>
-                <div className="col-span-4">Nome</div>
-                <div className="col-span-4">Ponto de Embarque</div>
-                <div className="col-span-3">Data da Viagem</div>
+                <div className="col-span-3">Nome</div>
+                <div className="col-span-2">Pedido</div>
+                <div className="col-span-3">Embarque</div>
+                <div className="col-span-3">Data Viagem</div>
               </div>
 
               {/* Table rows */}
@@ -184,10 +185,13 @@ export function ListaPage() {
                     <div className="col-span-1 font-mono text-sm text-muted-foreground">
                       {index + 1}
                     </div>
-                    <div className="col-span-4 font-semibold text-foreground">
+                    <div className="col-span-3 font-semibold text-foreground">
                       {passenger.name}
                     </div>
-                    <div className="col-span-4 text-sm text-muted-foreground">
+                    <div className="col-span-2 text-sm text-muted-foreground font-mono">
+                      {passenger.orderShortId || "N/A"}
+                    </div>
+                    <div className="col-span-3 text-sm text-muted-foreground">
                       📍 {passenger.boardingPoint || "N/A"}
                     </div>
                     <div className="col-span-3 text-sm text-muted-foreground">

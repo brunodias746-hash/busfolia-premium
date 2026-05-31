@@ -334,17 +334,41 @@ export async function getAllPassengers(eventId?: number) {
     boardingPointLabel: boardingPoints.locationName,
     city: boardingPoints.city,
     transportDates: orders.transportDates,
+    orderShortId: orders.shortId,
   }).from(passengers)
     .leftJoin(boardingPoints, eq(passengers.boardingPointId, boardingPoints.id))
     .leftJoin(orders, eq(passengers.orderId, orders.id))
     .where(inArray(passengers.orderId, paidOrderIds.map(o => o.id)));
   
   // Enrich results with formatted boarding point and first travel date
-  return results.map(row => ({
-    ...row,
-    boardingPoint: row.city && row.boardingPointLabel ? `${row.city} - ${row.boardingPointLabel}` : row.boardingPointLabel || "",
-    travelDate: Array.isArray(row.transportDates) && row.transportDates.length > 0 ? row.transportDates[0] : "",
-  }));
+  return results.map(row => {
+    let dates: string[] = [];
+    if (row.transportDates) {
+      if (typeof row.transportDates === 'string') {
+        try {
+          dates = JSON.parse(row.transportDates);
+        } catch {
+          dates = [row.transportDates];
+        }
+      } else if (Array.isArray(row.transportDates)) {
+        dates = row.transportDates;
+      }
+    }
+    
+    let travelDate = "";
+    if (dates.length > 0) {
+      const firstDate = dates[0];
+      if (firstDate && firstDate !== "N/A" && firstDate !== "NaN/NaN/NaN" && firstDate !== "") {
+        travelDate = firstDate;
+      }
+    }
+    
+    return {
+      ...row,
+      boardingPoint: row.city && row.boardingPointLabel ? `${row.city} - ${row.boardingPointLabel}` : row.boardingPointLabel || "",
+      travelDate: travelDate,
+    };
+  });
 }
 
 export async function updatePassengerCheckIn(id: number, status: "pending" | "checked_in") {
