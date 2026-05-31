@@ -335,6 +335,7 @@ export async function getAllPassengers(eventId?: number) {
     city: boardingPoints.city,
     transportDates: orders.transportDates,
     orderShortId: orders.shortId,
+    orderStatus: orders.status,
   }).from(passengers)
     .leftJoin(boardingPoints, eq(passengers.boardingPointId, boardingPoints.id))
     .leftJoin(orders, eq(passengers.orderId, orders.id))
@@ -367,6 +368,7 @@ export async function getAllPassengers(eventId?: number) {
       ...row,
       boardingPoint: row.city && row.boardingPointLabel ? `${row.city} - ${row.boardingPointLabel}` : row.boardingPointLabel || "",
       travelDate: travelDate,
+      status: row.orderStatus || "paid",
     };
   });
 }
