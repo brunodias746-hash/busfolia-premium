@@ -8,6 +8,43 @@ import { trpc } from "@/lib/trpc";
 import { Download, Printer, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
+// Normalize date to "DD de junho de 2026" format
+function normalizeDateFormat(dateStr: string): string | null {
+  if (!dateStr || dateStr === "N/A" || dateStr === "NaN/NaN/NaN") return null;
+  
+  // Already in correct format
+  if (dateStr.match(/^\d{2} de junho de 2026$/)) {
+    return dateStr;
+  }
+  
+  // Parse "05/06/2026" format
+  if (dateStr.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+    const [day, month, year] = dateStr.split('/');
+    if (month === '06' && year === '2026') {
+      return `${day} de junho de 2026`;
+    }
+    return null;
+  }
+  
+  // Parse "2026-05-25" format (ISO) - skip these, they're order dates not travel dates
+  if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    return null;
+  }
+  
+  // Parse "05 Junho" or "05 junho" - normalize to "05 de junho de 2026"
+  if (dateStr.match(/^\d{2}\s+[Jj]unho$/)) {
+    const day = dateStr.split(/\s+/)[0];
+    return `${day} de junho de 2026`;
+  }
+  
+  // Parse "06 de Junho de 2026" - normalize to lowercase "junho"
+  if (dateStr.match(/^\d{2}\s+de\s+[Jj]unho\s+de\s+\d{4}$/)) {
+    return dateStr.replace(/Junho/, 'junho');
+  }
+  
+  return null;
+}
+
 export function ListaPage() {
   const [selectedDate, setSelectedDate] = useState<string>("all");
   const [selectedBoardingPoint, setSelectedBoardingPoint] = useState<string>("all");
@@ -18,36 +55,48 @@ export function ListaPage() {
   const { data: passengers = [], isLoading } = trpc.admin.passengers.list.useQuery();
   const exportMutation = trpc.exports.generatePassageiros.useMutation();
 
-  // Get unique dates and boarding points from data
+  // Filter to only PAID passengers
+  const paidPassengers = useMemo(() => {
+    return passengers.filter((p: any) => p.status === "paid");
+  }, [passengers]);
+
+  // Get unique normalized dates from PAID passengers only
   const uniqueDates = useMemo(() => {
     const dates = new Set<string>();
-    passengers.forEach((p: any) => {
-      if (p.travelDate && p.travelDate !== "N/A" && p.travelDate !== "") {
-        dates.add(p.travelDate);
+    paidPassengers.forEach((p: any) => {
+      const normalized = normalizeDateFormat(p.travelDate);
+      if (normalized) {
+        dates.add(normalized);
       }
     });
-    return Array.from(dates).sort();
-  }, [passengers]);
+    // Sort by day number
+    return Array.from(dates).sort((a, b) => {
+      const dayA = parseInt(a.split(' ')[0]);
+      const dayB = parseInt(b.split(' ')[0]);
+      return dayA - dayB;
+    });
+  }, [paidPassengers]);
 
   const uniqueBoardingPoints = useMemo(() => {
     const points = new Set<string>();
-    passengers.forEach((p: any) => {
+    paidPassengers.forEach((p: any) => {
       if (p.boardingPoint && p.boardingPoint !== "N/A" && p.boardingPoint !== "") {
         points.add(p.boardingPoint);
       }
     });
     return Array.from(points).sort();
-  }, [passengers]);
+  }, [paidPassengers]);
 
   // Filter passengers
   const filteredPassengers = useMemo(() => {
-    return passengers.filter((p: any) => {
-      const matchDate = selectedDate === "all" || p.travelDate === selectedDate;
+    return paidPassengers.filter((p: any) => {
+      const normalizedDate = normalizeDateFormat(p.travelDate);
+      const matchDate = selectedDate === "all" || normalizedDate === selectedDate;
       const matchPoint = selectedBoardingPoint === "all" || p.boardingPoint === selectedBoardingPoint;
       const matchName = !searchName || p.name.toLowerCase().includes(searchName.toLowerCase());
       return matchDate && matchPoint && matchName;
     });
-  }, [passengers, selectedDate, selectedBoardingPoint, searchName]);
+  }, [paidPassengers, selectedDate, selectedBoardingPoint, searchName]);
 
   const handlePrint = () => {
     window.print();
@@ -85,7 +134,7 @@ export function ListaPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-black font-heading">Lista de Embarque</h1>
-          <p className="text-muted-foreground text-sm">Lista simplificada para conferência no embarque</p>
+          <p className="text-muted-foreground text-sm">Lista simplificada para conferência no embarque (apenas passageiros pagos)</p>
         </div>
 
         {/* Filters */}
@@ -180,25 +229,28 @@ export function ListaPage() {
 
               {/* Table rows */}
               <div className="space-y-1">
-                {filteredPassengers.map((passenger: any, index: number) => (
-                  <div key={passenger.id} className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 px-4 py-3 bg-background rounded-lg border border-border hover:bg-muted/50 transition-colors">
-                    <div className="col-span-1 font-mono text-sm text-muted-foreground">
-                      {index + 1}
+                {filteredPassengers.map((passenger: any, index: number) => {
+                  const normalizedDate = normalizeDateFormat(passenger.travelDate);
+                  return (
+                    <div key={passenger.id} className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 px-4 py-3 bg-background rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                      <div className="col-span-1 font-mono text-sm text-muted-foreground">
+                        {index + 1}
+                      </div>
+                      <div className="col-span-3 font-semibold text-foreground">
+                        {passenger.name}
+                      </div>
+                      <div className="col-span-2 text-sm text-muted-foreground font-mono">
+                        {passenger.orderShortId || "N/A"}
+                      </div>
+                      <div className="col-span-3 text-sm text-muted-foreground">
+                        📍 {passenger.boardingPoint || "N/A"}
+                      </div>
+                      <div className="col-span-3 text-sm text-muted-foreground">
+                        📅 {normalizedDate || "N/A"}
+                      </div>
                     </div>
-                    <div className="col-span-3 font-semibold text-foreground">
-                      {passenger.name}
-                    </div>
-                    <div className="col-span-2 text-sm text-muted-foreground font-mono">
-                      {passenger.orderShortId || "N/A"}
-                    </div>
-                    <div className="col-span-3 text-sm text-muted-foreground">
-                      📍 {passenger.boardingPoint || "N/A"}
-                    </div>
-                    <div className="col-span-3 text-sm text-muted-foreground">
-                      📅 {passenger.travelDate || "N/A"}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
