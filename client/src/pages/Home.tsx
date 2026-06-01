@@ -525,7 +525,7 @@ function FAQSection() {
     { q: "O transporte inclui ida e volta?", a: "Sim! Todas as passagens incluem ida e volta garantida." },
     { q: "Posso escolher o ponto de embarque?", a: "Sim, temos diversos pontos de embarque em BH e região metropolitana." },
     { q: "Como funciona o pagamento?", a: "O pagamento é feito online via cartão de crédito, com processamento seguro pelo Stripe." },
-    { q: "Posso cancelar minha passagem?", a: "Consulte nossa política de cancelamento entrando em contato pelo WhatsApp." },
+    { q: "Posso cancelar minha passagem?", a: "Após a confirmação do pagamento, não será possível solicitar reembolso ou cancelamento da compra. Em caso de imprevistos, entre em contato pelo WhatsApp para verificarmos a possibilidade de transferência do ingresso para outra pessoa." },
   ];
   return (
     <section className="py-12 sm:py-20 bg-[#080808]">

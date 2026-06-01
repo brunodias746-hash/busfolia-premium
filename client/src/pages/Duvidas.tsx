@@ -29,7 +29,7 @@ const faqs = [
   {
     category: "Cancelamento e Suporte",
     items: [
-      { q: "Posso cancelar minha passagem?", a: "Consulte nossa política de cancelamento entrando em contato pelo WhatsApp. O prazo e condições variam conforme a proximidade do evento." },
+      { q: "Posso cancelar minha passagem?", a: "Após a confirmação do pagamento, não será possível solicitar reembolso ou cancelamento da compra. Em caso de imprevistos, entre em contato pelo WhatsApp para verificarmos a possibilidade de transferência do ingresso para outra pessoa." },
       { q: "E se o evento for cancelado?", a: "Em caso de cancelamento do evento, todos os passageiros serão reembolsados integralmente." },
       { q: "Como entro em contato com o suporte?", a: "Você pode nos contatar pelo WhatsApp, Instagram ou e-mail. Acesse a página de Contato para mais informações." },
     ],
