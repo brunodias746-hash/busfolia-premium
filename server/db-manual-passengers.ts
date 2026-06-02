@@ -2,6 +2,7 @@ import { getDb } from "./db";
 import { manualPassengers } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { sql } from "drizzle-orm";
+import { normalizeDateString } from "./lib/date-normalizer";
 
 export async function createManualPassenger(data: {
   eventId: number;
@@ -14,10 +15,14 @@ export async function createManualPassenger(data: {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
+  // Normalize travel date to ISO format (YYYY-MM-DD)
+  const isoDate = normalizeDateString(data.travelDate);
+  if (!isoDate) throw new Error(`Invalid travel date: ${data.travelDate}`);
+
   // Use raw SQL to insert without the notes column to avoid default issues
   const result = await db.execute(
     sql`INSERT INTO manual_passengers (eventId, name, travelDate, boardingPointId, referenceOrderId, createdBy, createdAt) 
-        VALUES (${data.eventId}, ${data.name}, ${data.travelDate}, ${data.boardingPointId}, ${data.referenceOrderId}, ${data.createdBy}, NOW())`
+        VALUES (${data.eventId}, ${data.name}, ${isoDate}, ${data.boardingPointId}, ${data.referenceOrderId}, ${data.createdBy}, NOW())`
   );
 
   return result;
