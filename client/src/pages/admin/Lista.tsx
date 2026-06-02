@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card } from "@/components/ui/card";
 import { AddManualPassengerModal } from "@/components/AddManualPassengerModal";
 import { trpc } from "@/lib/trpc";
-import { Download, Printer, Loader2 } from "lucide-react";
+import { Download, Printer, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 // Color and icon mapping for boarding points
@@ -88,6 +88,7 @@ export function ListaPage() {
   // Fetch all passengers
   const { data: passengers = [], isLoading, refetch: refetchPassengers } = trpc.admin.passengers.list.useQuery();
   const exportMutation = trpc.exports.generatePassageiros.useMutation();
+  const deleteManualPassengerMutation = trpc.admin.passengers.manualPassengers.delete.useMutation();
   const { data: manualPassengers = [], refetch: refetchManualPassengers } = trpc.admin.passengers.manualPassengers.listByEvent.useQuery({ eventId });
 
   // Filter to only PAID passengers (status is stored as "paid" in database)
@@ -135,7 +136,9 @@ export function ListaPage() {
     });
 
     const manualFiltered = manualPassengers.filter((p: any) => {
-      const matchDate = selectedDate === "all" || p.travelDate === selectedDate;
+      // Normalize manual passenger date from ISO (2026-06-13) to "13 de junho de 2026"
+      const normalizedManualDate = normalizeDateFormat(p.travelDate);
+      const matchDate = selectedDate === "all" || normalizedManualDate === selectedDate;
       // For manual passengers, find the boarding point name by ID
       const boardingPointName = uniqueBoardingPoints.find((bp: any) => bp.id === p.boardingPointId)?.name || "";
       const matchPoint = selectedBoardingPoint === "all" || boardingPointName === selectedBoardingPoint;
@@ -297,16 +300,28 @@ export function ListaPage() {
               <div className="space-y-1">
                 {filteredPassengers.map((passenger: any, index: number) => {
                   const normalizedDate = normalizeDateFormat(passenger.travelDate);
+                  const handleDeleteManualPassenger = async () => {
+                    if (!passenger.isManual) return;
+                    try {
+                      await deleteManualPassengerMutation.mutateAsync({ id: passenger.id });
+                      toast.success('Passageiro removido com sucesso');
+                      refetchManualPassengers();
+                    } catch (err) {
+                      toast.error('Erro ao remover passageiro');
+                    }
+                  };
+                  
                   return (
-                    <div key={passenger.id} className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 px-4 py-3 bg-background rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                    <div key={passenger.id} className={`grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 px-4 py-3 rounded-lg border transition-colors ${passenger.isManual ? 'bg-green-50 border-green-300 hover:bg-green-100' : 'bg-background border-border hover:bg-muted/50'}`}>
                       <div className="col-span-1 font-mono text-sm text-muted-foreground">
                         {index + 1}
                       </div>
                       <div className="col-span-3 font-semibold text-foreground">
                         {passenger.name}
+                        {passenger.isManual && <span className="ml-2 text-xs bg-green-600 text-white px-2 py-1 rounded">MANUAL</span>}
                       </div>
                       <div className="col-span-2 text-sm text-muted-foreground font-mono">
-                        {passenger.orderShortId || "N/A"}
+                        {passenger.orderShortId || passenger.referenceOrderId || "N/A"}
                       </div>
                       <div className="col-span-3 text-sm">
                         {passenger.boardingPoint ? (
@@ -317,8 +332,17 @@ export function ListaPage() {
                           <span className="text-muted-foreground">N/A</span>
                         )}
                       </div>
-                      <div className="col-span-3 text-sm text-muted-foreground">
-                        📅 {normalizedDate || "N/A"}
+                      <div className="col-span-2 text-sm text-muted-foreground flex items-center justify-between">
+                        <span>📅 {normalizedDate || "N/A"}</span>
+                        {passenger.isManual && (
+                          <button
+                            onClick={handleDeleteManualPassenger}
+                            className="ml-2 p-1 text-red-600 hover:bg-red-100 rounded transition-colors no-print"
+                            title="Remover passageiro"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   );
