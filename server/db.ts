@@ -538,9 +538,40 @@ export async function getPassengersForExport(eventId?: number) {
       boardingPoint: bp ? `${bp.city} - ${bp.locationName}` : "",
       transportDate: order.transportDates ? JSON.parse(order.transportDates)[0] : "",
       checkInStatus: p.checkInStatus,
+      isManual: false,
     });
   }
-  return enriched;
+
+  // Add manual passengers
+  const { manualPassengers } = await import("../drizzle/schema");
+  const manualQuery = db
+    .select({ manual: manualPassengers, boardingPoint: boardingPoints })
+    .from(manualPassengers)
+    .leftJoin(boardingPoints, eq(manualPassengers.boardingPointId, boardingPoints.id));
+
+  const manualRows = eventId
+    ? await manualQuery.where(eq(manualPassengers.eventId, eventId)).orderBy(manualPassengers.name)
+    : await manualQuery.orderBy(manualPassengers.name);
+
+  for (const row of manualRows) {
+    const m = row.manual;
+    const bp = row.boardingPoint;
+    const event = await getEventById(m.eventId);
+    enriched.push({
+      id: m.id,
+      name: m.name,
+      cpf: "",
+      eventName: event?.name ?? "",
+      orderShortId: m.referenceOrderId || "Manual",
+      orderStatus: "manual",
+      boardingPoint: bp ? `${bp.city} - ${bp.locationName}` : "",
+      transportDate: m.travelDate,
+      checkInStatus: "pending",
+      isManual: true,
+    });
+  }
+
+  return enriched.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 // ─── Export Functions ───

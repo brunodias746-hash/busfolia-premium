@@ -64,6 +64,13 @@
       "when": 1778623285073,
       "tag": "0008_curvy_blindfold",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1780409193301,
+      "tag": "0009_silly_eternity",
+      "breakpoints": true
     }
   ]
 }

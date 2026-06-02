@@ -1064,6 +1064,56 @@ export const appRouter = router({
         }),
     }),
 
+    // Manual Passengers (Operational additions to boarding list)
+    manualPassengers: router({
+      create: adminProcedure
+        .input(
+          z.object({
+            eventId: z.number().int().positive(),
+            name: z.string().min(2),
+            travelDate: z.string(),
+            boardingPointId: z.number().int().positive(),
+            referenceOrderId: z.string().optional(),
+            notes: z.string().optional(),
+          })
+        )
+        .mutation(async ({ ctx, input }) => {
+          const { createManualPassenger } = await import("./db-manual-passengers");
+          await createManualPassenger({
+            ...input,
+            createdBy: ctx.user.id,
+          });
+          return { success: true };
+        }),
+      
+      listByEventAndDate: adminProcedure
+        .input(
+          z.object({
+            eventId: z.number().int().positive(),
+            travelDate: z.string(),
+          })
+        )
+        .query(async ({ input }) => {
+          const { getManualPassengersByEventAndDate } = await import("./db-manual-passengers");
+          return getManualPassengersByEventAndDate(input.eventId, input.travelDate);
+        }),
+      
+      listByEvent: adminProcedure
+        .input(z.object({ eventId: z.number().int().positive() }))
+        .query(async ({ input }) => {
+          const { getManualPassengersByEvent } = await import("./db-manual-passengers");
+          return getManualPassengersByEvent(input.eventId);
+        }),
+      
+      delete: adminProcedure
+        .input(z.object({ id: z.number().int().positive() }))
+        .mutation(async ({ input }) => {
+          const { deleteManualPassenger } = await import("./db-manual-passengers");
+          await deleteManualPassenger(input.id);
+          return { success: true };
+        }),
+    }),
+
     // Financial
     financial: router({
       summary: adminProcedure
