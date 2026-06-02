@@ -18,9 +18,10 @@ export async function createManualPassenger(data: {
     name: data.name,
     travelDate: data.travelDate,
     boardingPointId: data.boardingPointId,
-    referenceOrderId: data.referenceOrderId,
+    referenceOrderId: data.referenceOrderId || null,
     createdBy: data.createdBy,
     createdAt: new Date(),
+    // notes is optional, omit it to let DB use NULL
   });
 
   return result;
