@@ -37,6 +37,7 @@ import {
   getOrderWithDetails,
 } from "./db";
 import { getStripe } from "./lib/stripe";
+import { normalizeDateString } from "./lib/date-normalizer";
 
 // ─── Validation helpers ───
 function validateCPF(cpf: string): boolean {
@@ -221,7 +222,7 @@ export const appRouter = router({
         customerEmail: input.customerEmail,
         customerPhone: input.customerPhone.replace(/\D/g, ""),
         boardingPointId: input.boardingPointId,
-        transportDates: input.purchaseType === "all_days" ? JSON.stringify(["Todos os Dias"]) : JSON.stringify([input.transportDate]),
+        transportDates: input.purchaseType === "all_days" ? JSON.stringify(["Todos os Dias"]) : JSON.stringify([normalizeDateString(input.transportDate) || input.transportDate]),
         purchaseType: input.purchaseType,
         quantity: qty,
         unitPriceCents,
@@ -454,7 +455,7 @@ export const appRouter = router({
         customerEmail: input.customerEmail,
         customerPhone: input.customerPhone.replace(/\D/g, ""),
         boardingPointId: input.boardingPointId,
-        transportDates: input.purchaseType === "all_days" ? JSON.stringify(["Todos os Dias"]) : JSON.stringify([input.transportDate]),
+        transportDates: input.purchaseType === "all_days" ? JSON.stringify(["Todos os Dias"]) : JSON.stringify([normalizeDateString(input.transportDate) || input.transportDate]),
         purchaseType: input.purchaseType,
         quantity: qty,
         unitPriceCents,
@@ -812,7 +813,7 @@ export const appRouter = router({
             customerEmail: input.customerEmail,
             customerPhone: "", // PIX orders don't require phone initially
             boardingPointId: input.boardingPointId,
-            transportDates: JSON.stringify(input.transportDates),
+            transportDates: JSON.stringify(input.transportDates.map(d => normalizeDateString(d) || d)),
             purchaseType: input.purchaseType,
             quantity: input.quantity,
             unitPriceCents,
@@ -858,7 +859,7 @@ export const appRouter = router({
               customerEmail: input.customerEmail,
               shortId,
               boardingPoint: `${boardingPoint.city} - ${boardingPoint.locationName}`,
-              transportDates: input.transportDates,
+              transportDates: input.transportDates.map(d => normalizeDateString(d) || d),
               quantity: input.quantity,
               totalAmountCents,
               whatsappLink: event.groupLink || "https://chat.whatsapp.com/KjaIneid0P9F6JScKsV7Po",

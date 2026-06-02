@@ -559,7 +559,8 @@ export async function getOrdersForExport(eventId?: number) {
       const { normalizeDateString, formatDateToPortuguese } = await import('./lib/date-normalizer');
       const normalized = normalizeDateString(dateStr);
       if (normalized) {
-        return formatDateToPortuguese(normalized);
+        const formatted = formatDateToPortuguese(normalized);
+        if (formatted) return formatted;
       }
     } catch (e) {
       // Fall through

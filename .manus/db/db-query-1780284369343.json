@@ -1,0 +1,255 @@
+{
+  "query": "\n-- Check order 990001 details\nSELECT \n  id, shortId, customerName, quantity, totalAmountCents, status, \n  transportDates, purchaseType, createdAt\nFROM orders\nWHERE shortId = 'BF-FLS5SU' OR id = 990001\nLIMIT 1;\n\n-- Check passengers for this order\nSELECT \n  id, orderId, name, cpf, boardingPointId, createdAt\nFROM passengers\nWHERE orderId IN (\n  SELECT id FROM orders WHERE shortId = 'BF-FLS5SU' OR id = 990001\n);\n\n-- Check all multi-date orders (quantity > 1 or purchaseType = 'multiple'/'all_days')\nSELECT \n  id, shortId, customerName, quantity, purchaseType, totalAmountCents, \n  transportDates, status, createdAt\nFROM orders\nWHERE quantity > 1 OR purchaseType IN ('multiple', 'all_days')\nLIMIT 20;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2dcXFJ5zHsK7P8Z.root --database ci3rs2m5P7Zem9o9Dnh5ee --execute \n-- Check order 990001 details\nSELECT \n  id, shortId, customerName, quantity, totalAmountCents, status, \n  transportDates, purchaseType, createdAt\nFROM orders\nWHERE shortId = 'BF-FLS5SU' OR id = 990001\nLIMIT 1;\n\n-- Check passengers for this order\nSELECT \n  id, orderId, name, cpf, boardingPointId, createdAt\nFROM passengers\nWHERE orderId IN (\n  SELECT id FROM orders WHERE shortId = 'BF-FLS5SU' OR id = 990001\n);\n\n-- Check all multi-date orders (quantity > 1 or purchaseType = 'multiple'/'all_days')\nSELECT \n  id, shortId, customerName, quantity, purchaseType, totalAmountCents, \n  transportDates, status, createdAt\nFROM orders\nWHERE quantity > 1 OR purchaseType IN ('multiple', 'all_days')\nLIMIT 20;\n",
+  "rows": [
+    {
+      "id": "990001",
+      "shortId": "BF-FLS5SU",
+      "customerName": "maria clara grossi pereira carvalho",
+      "quantity": "1",
+      "totalAmountCents": "12000",
+      "status": "paid",
+      "transportDates": "[\"12 Junho\",\"13 Junho\"]",
+      "purchaseType": "multiple",
+      "createdAt": "2026-04-27 17:44:39"
+    },
+    {
+      "id": "id",
+      "shortId": "shortId",
+      "customerName": "customerName",
+      "quantity": "quantity",
+      "totalAmountCents": "purchaseType",
+      "status": "totalAmountCents",
+      "transportDates": "transportDates",
+      "purchaseType": "status",
+      "createdAt": "createdAt"
+    },
+    {
+      "id": "420001",
+      "shortId": "BF-9GUVJV",
+      "customerName": "Bruno Dias",
+      "quantity": "1",
+      "totalAmountCents": "all_days",
+      "status": "20610",
+      "transportDates": "[\"Todos os Dias\"]",
+      "purchaseType": "pending_checkout",
+      "createdAt": "2026-04-10 21:01:57"
+    },
+    {
+      "id": "480001",
+      "shortId": "BF-XAFZV4",
+      "customerName": "brunodias",
+      "quantity": "1",
+      "totalAmountCents": "all_days",
+      "status": "20610",
+      "transportDates": "[\"Todos os Dias\"]",
+      "purchaseType": "pending_checkout",
+      "createdAt": "2026-04-13 01:41:50"
+    },
+    {
+      "id": "480002",
+      "shortId": "BF-USGCZX",
+      "customerName": "brunodias",
+      "quantity": "1",
+      "totalAmountCents": "all_days",
+      "status": "20610",
+      "transportDates": "[\"Todos os Dias\"]",
+      "purchaseType": "pending_checkout",
+      "createdAt": "2026-04-13 01:42:32"
+    },
+    {
+      "id": "480003",
+      "shortId": "BF-FEE9W8",
+      "customerName": "brunodias",
+      "quantity": "1",
+      "totalAmountCents": "all_days",
+      "status": "20610",
+      "transportDates": "[\"Todos os Dias\"]",
+      "purchaseType": "pending_checkout",
+      "createdAt": "2026-04-13 01:42:37"
+    },
+    {
+      "id": "480004",
+      "shortId": "BF-JE33N2",
+      "customerName": "brunodias",
+      "quantity": "1",
+      "totalAmountCents": "all_days",
+      "status": "20610",
+      "transportDates": "[\"Todos os Dias\"]",
+      "purchaseType": "pending_checkout",
+      "createdAt": "2026-04-13 01:42:51"
+    },
+    {
+      "id": "480005",
+      "shortId": "BF-9PGR5P",
+      "customerName": "brunodias",
+      "quantity": "1",
+      "totalAmountCents": "all_days",
+      "status": "20610",
+      "transportDates": "[\"Todos os Dias\"]",
+      "purchaseType": "pending_checkout",
+      "createdAt": "2026-04-13 01:43:31"
+    },
+    {
+      "id": "480006",
+      "shortId": "BF-B77YX3",
+      "customerName": "brunodias",
+      "quantity": "1",
+      "totalAmountCents": "all_days",
+      "status": "20610",
+      "transportDates": "[\"Todos os Dias\"]",
+      "purchaseType": "pending_checkout",
+      "createdAt": "2026-04-13 01:43:36"
+    },
+    {
+      "id": "540001",
+      "shortId": "BF-3YHFH7",
+      "customerName": "Gabriela Magalhães Rocha dos Santos",
+      "quantity": "2",
+      "totalAmountCents": "single",
+      "status": "13220",
+      "transportDates": "[\"12 de Junho de 2026\"]",
+      "purchaseType": "pending_checkout",
+      "createdAt": "2026-04-13 04:02:49"
+    },
+    {
+      "id": "570004",
+      "shortId": "BF-A86YDC",
+      "customerName": "brunodias",
+      "quantity": "1",
+      "totalAmountCents": "all_days",
+      "status": "20610",
+      "transportDates": "[\"Todos os Dias\"]",
+      "purchaseType": "pending_checkout",
+      "createdAt": "2026-04-13 13:55:39"
+    },
+    {
+      "id": "660005",
+      "shortId": "BF-M59KU7",
+      "customerName": "Willian Douglas da Silva ",
+      "quantity": "2",
+      "totalAmountCents": "single",
+      "status": "15220",
+      "transportDates": "[\"06 de Junho de 2026\"]",
+      "purchaseType": "pending_checkout",
+      "createdAt": "2026-04-15 22:19:17"
+    },
+    {
+      "id": "660006",
+      "shortId": "BF-Z9JBE4",
+      "customerName": "Ruan Pablo",
+      "quantity": "1",
+      "totalAmountCents": "multiple",
+      "status": "13220",
+      "transportDates": "[\"05 de Junho de 2026\"]",
+      "purchaseType": "pending_checkout",
+      "createdAt": "2026-04-15 22:22:55"
+    },
+    {
+      "id": "660009",
+      "shortId": "BF-4T8AXZ",
+      "customerName": "Willian Douglas da Silva ",
+      "quantity": "2",
+      "totalAmountCents": "single",
+      "status": "15220",
+      "transportDates": "[\"06 de Junho de 2026\"]",
+      "purchaseType": "pending_checkout",
+      "createdAt": "2026-04-15 22:27:29"
+    },
+    {
+      "id": "660013",
+      "shortId": "BF-SCPZU9",
+      "customerName": "Dafine Pereira",
+      "quantity": "1",
+      "totalAmountCents": "all_days",
+      "status": "20610",
+      "transportDates": "[\"Todos os Dias\"]",
+      "purchaseType": "pending_checkout",
+      "createdAt": "2026-04-15 22:38:58"
+    },
+    {
+      "id": "660014",
+      "shortId": "BF-2QCVWM",
+      "customerName": "Bruno henrique ",
+      "quantity": "2",
+      "totalAmountCents": "single",
+      "status": "15220",
+      "transportDates": "[\"06 de Junho de 2026\"]",
+      "purchaseType": "pending_checkout",
+      "createdAt": "2026-04-15 22:41:32"
+    },
+    {
+      "id": "690004",
+      "shortId": "BF-NNJNY5",
+      "customerName": "Dafine Pereira de Sousa",
+      "quantity": "1",
+      "totalAmountCents": "multiple",
+      "status": "17000",
+      "transportDates": "[\"05 Junho\",\"06 Junho\",\"12 Junho\",\"13 Junho\"]",
+      "purchaseType": "paid",
+      "createdAt": "2026-04-16 01:02:07"
+    },
+    {
+      "id": "750002",
+      "shortId": "BF-7KFCUA",
+      "customerName": "Elisangela candida",
+      "quantity": "2",
+      "totalAmountCents": "single",
+      "status": "11900",
+      "transportDates": "[\"06 Junho\"]",
+      "purchaseType": "paid",
+      "createdAt": "2026-04-16 21:33:26"
+    },
+    {
+      "id": "780001",
+      "shortId": "BF-GHKDET",
+      "customerName": "Bruno henrique ",
+      "quantity": "2",
+      "totalAmountCents": "single",
+      "status": "15220",
+      "transportDates": "[\"06 de Junho de 2026\"]",
+      "purchaseType": "canceled",
+      "createdAt": "2026-04-16 22:22:36"
+    },
+    {
+      "id": "780006",
+      "shortId": "BF-8CW7YD",
+      "customerName": "Bruno henrique ",
+      "quantity": "1",
+      "totalAmountCents": "multiple",
+      "status": "13220",
+      "transportDates": "[\"13 de Junho de 2026\"]",
+      "purchaseType": "pending_checkout",
+      "createdAt": "2026-04-16 23:27:45"
+    },
+    {
+      "id": "780007",
+      "shortId": "BF-572N3R",
+      "customerName": "Michael Cristian Araújo Silva Fonseca",
+      "quantity": "1",
+      "totalAmountCents": "multiple",
+      "status": "10200",
+      "transportDates": "[\"05 Junho\",\"13 Junho\"]",
+      "purchaseType": "paid",
+      "createdAt": "2026-04-17 00:18:45"
+    },
+    {
+      "id": "810001",
+      "shortId": "BF-6X3RJP",
+      "customerName": "Bruno henrique ",
+      "quantity": "1",
+      "totalAmountCents": "all_days",
+      "status": "20610",
+      "transportDates": "[\"Todos os Dias\"]",
+      "purchaseType": "pending_checkout",
+      "createdAt": "2026-04-17 04:29:14"
+    }
+  ],
+  "messages": [
+    "id\torderId\tname\tcpf\tboardingPointId\tcreatedAt",
+    "990001\t990001\tmaria clara grossi pereira carvalho\t\t30005\t2026-04-27 17:44:39"
+  ],
+  "stdout": "id\tshortId\tcustomerName\tquantity\ttotalAmountCents\tstatus\ttransportDates\tpurchaseType\tcreatedAt\n990001\tBF-FLS5SU\tmaria clara grossi pereira carvalho\t1\t12000\tpaid\t[\"12 Junho\",\"13 Junho\"]\tmultiple\t2026-04-27 17:44:39\nid\torderId\tname\tcpf\tboardingPointId\tcreatedAt\n990001\t990001\tmaria clara grossi pereira carvalho\t\t30005\t2026-04-27 17:44:39\nid\tshortId\tcustomerName\tquantity\tpurchaseType\ttotalAmountCents\ttransportDates\tstatus\tcreatedAt\n420001\tBF-9GUVJV\tBruno Dias\t1\tall_days\t20610\t[\"Todos os Dias\"]\tpending_checkout\t2026-04-10 21:01:57\n480001\tBF-XAFZV4\tbrunodias\t1\tall_days\t20610\t[\"Todos os Dias\"]\tpending_checkout\t2026-04-13 01:41:50\n480002\tBF-USGCZX\tbrunodias\t1\tall_days\t20610\t[\"Todos os Dias\"]\tpending_checkout\t2026-04-13 01:42:32\n480003\tBF-FEE9W8\tbrunodias\t1\tall_days\t20610\t[\"Todos os Dias\"]\tpending_checkout\t2026-04-13 01:42:37\n480004\tBF-JE33N2\tbrunodias\t1\tall_days\t20610\t[\"Todos os Dias\"]\tpending_checkout\t2026-04-13 01:42:51\n480005\tBF-9PGR5P\tbrunodias\t1\tall_days\t20610\t[\"Todos os Dias\"]\tpending_checkout\t2026-04-13 01:43:31\n480006\tBF-B77YX3\tbrunodias\t1\tall_days\t20610\t[\"Todos os Dias\"]\tpending_checkout\t2026-04-13 01:43:36\n540001\tBF-3YHFH7\tGabriela Magalhães Rocha dos Santos\t2\tsingle\t13220\t[\"12 de Junho de 2026\"]\tpending_checkout\t2026-04-13 04:02:49\n570004\tBF-A86YDC\tbrunodias\t1\tall_days\t20610\t[\"Todos os Dias\"]\tpending_checkout\t2026-04-13 13:55:39\n660005\tBF-M59KU7\tWillian Douglas da Silva \t2\tsingle\t15220\t[\"06 de Junho de 2026\"]\tpending_checkout\t2026-04-15 22:19:17\n660006\tBF-Z9JBE4\tRuan Pablo\t1\tmultiple\t13220\t[\"05 de Junho de 2026\"]\tpending_checkout\t2026-04-15 22:22:55\n660009\tBF-4T8AXZ\tWillian Douglas da Silva \t2\tsingle\t15220\t[\"06 de Junho de 2026\"]\tpending_checkout\t2026-04-15 22:27:29\n660013\tBF-SCPZU9\tDafine Pereira\t1\tall_days\t20610\t[\"Todos os Dias\"]\tpending_checkout\t2026-04-15 22:38:58\n660014\tBF-2QCVWM\tBruno henrique \t2\tsingle\t15220\t[\"06 de Junho de 2026\"]\tpending_checkout\t2026-04-15 22:41:32\n690004\tBF-NNJNY5\tDafine Pereira de Sousa\t1\tmultiple\t17000\t[\"05 Junho\",\"06 Junho\",\"12 Junho\",\"13 Junho\"]\tpaid\t2026-04-16 01:02:07\n750002\tBF-7KFCUA\tElisangela candida\t2\tsingle\t11900\t[\"06 Junho\"]\tpaid\t2026-04-16 21:33:26\n780001\tBF-GHKDET\tBruno henrique \t2\tsingle\t15220\t[\"06 de Junho de 2026\"]\tcanceled\t2026-04-16 22:22:36\n780006\tBF-8CW7YD\tBruno henrique \t1\tmultiple\t13220\t[\"13 de Junho de 2026\"]\tpending_checkout\t2026-04-16 23:27:45\n780007\tBF-572N3R\tMichael Cristian Araújo Silva Fonseca\t1\tmultiple\t10200\t[\"05 Junho\",\"13 Junho\"]\tpaid\t2026-04-17 00:18:45\n810001\tBF-6X3RJP\tBruno henrique \t1\tall_days\t20610\t[\"Todos os Dias\"]\tpending_checkout\t2026-04-17 04:29:14\n",
+  "stderr": "",
+  "execution_time_ms": 356
+}

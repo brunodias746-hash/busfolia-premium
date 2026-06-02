@@ -1,0 +1,9 @@
+{
+  "query": "SELECT id, shortId, transportDates FROM orders WHERE transportDates LIKE '%Invalid%' OR transportDates LIKE '%NaN%' OR transportDates LIKE '%2001%' LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2dcXFJ5zHsK7P8Z.root --database ci3rs2m5P7Zem9o9Dnh5ee --execute SELECT id, shortId, transportDates FROM orders WHERE transportDates LIKE '%Invalid%' OR transportDates LIKE '%NaN%' OR transportDates LIKE '%2001%' LIMIT 10;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 440
+}

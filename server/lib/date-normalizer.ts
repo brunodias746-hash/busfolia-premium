@@ -58,6 +58,19 @@ export function normalizeDateString(dateStr: string): string | null {
     return `${year}-${month}-${day}`;
   }
   
+  // Short Portuguese format: 12 Junho or 12 junho (without year - assume 2026)
+  if (dateStr.match(/^\d{1,2}\s+[a-záéíóúãõç]+$/i)) {
+    const parts = dateStr.split(/\s+/i);
+    if (parts.length === 2) {
+      const day = parts[0].padStart(2, '0');
+      const monthStr = parts[1].toLowerCase();
+      const month = MONTH_MAP[monthStr];
+      if (month) {
+        return `2026-${month}-${day}`;
+      }
+    }
+  }
+  
   // Portuguese text format: 05 de junho de 2026 or 5 de junho de 2026
   if (dateStr.match(/^\d{1,2}\s+de\s+\w+\s+de\s+\d{4}/i)) {
     const parts = dateStr.split(/\s+de\s+/i);
@@ -107,9 +120,13 @@ export function normalizeDateArray(dates: string[] | string): string[] {
  * Input: 2026-06-05
  * Output: 05 de junho de 2026
  */
-export function formatDateToPortuguese(isoDate: string): string {
+export function formatDateToPortuguese(dateInput: string): string | null {
+  // First, normalize the input to ISO format
+  const normalized = normalizeDateString(dateInput);
+  if (!normalized) return null;
+  
   try {
-    const date = new Date(isoDate + 'T00:00:00Z');
+    const date = new Date(normalized + 'T00:00:00Z');
     const day = date.getUTCDate().toString().padStart(2, '0');
     const monthNames = [
       'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
@@ -118,8 +135,11 @@ export function formatDateToPortuguese(isoDate: string): string {
     const month = monthNames[date.getUTCMonth()];
     const year = date.getUTCFullYear();
     
+    // Validate year is in acceptable range
+    if (year < 2020 || year > 2030) return null;
+    
     return `${parseInt(day)} de ${month} de ${year}`;
   } catch {
-    return isoDate;
+    return null;
   }
 }

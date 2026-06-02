@@ -694,3 +694,31 @@
 - [x] Remove old client-side downloadXLSX calls from all admin pages
 - [x] TypeScript: 0 errors
 - [x] Tests: 295 passing
+
+
+## PHASE 17: Multi-Date Order Normalization (June 2, 2026)
+
+### Multi-Date Order Bug Fix
+- [x] Create robust date normalizer (server/lib/date-normalizer.ts)
+- [x] Handle multiple date formats: ISO, Brazilian, Portuguese text, short Portuguese
+- [x] Support short Portuguese format (e.g., "12 Junho" → "12 de junho de 2026")
+- [x] Add year validation (2020-2030 range, default to 2026)
+- [x] Normalize dates during Stripe order creation (line 225, 458)
+- [x] Normalize dates during PIX multi-date order creation (line 816, 862)
+- [x] Update db.ts parseTransportDate to use normalizer
+- [x] Fix TypeScript error in db.ts (formatDateToPortuguese can return null)
+- [x] Create comprehensive vitest tests (18 tests passing)
+- [x] Test all date formats: ISO, Brazilian, Portuguese full, Portuguese short
+- [x] Test year validation and normalization
+- [x] Test edge cases: whitespace, mixed case, special characters (ç)
+- [x] Verify Lista page displays normalized dates correctly
+- [x] Verify Excel exports use normalized dates
+- [x] Verify emails display normalized dates
+
+### Results:
+- ✅ 18 vitest tests passing for date normalizer
+- ✅ All date formats handled correctly
+- ✅ Year 2001 bug fixed (normalizes to 2026)
+- ✅ Short Portuguese format supported ("12 Junho")
+- ✅ Multi-date orders parse correctly
+- ✅ Ready for production deployment

@@ -1,0 +1,21 @@
+{
+  "query": "\n-- Count total orders by status\nSELECT \n  COUNT(*) as total_orders,\n  COUNT(CASE WHEN status = 'paid' THEN 1 END) as paid_orders,\n  COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_orders,\n  COUNT(CASE WHEN status = 'pending_checkout' THEN 1 END) as pending_checkout_orders,\n  COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed_orders,\n  COUNT(CASE WHEN status = 'canceled' THEN 1 END) as canceled_orders\nFROM orders;\n\n-- Count passengers and their linked orders\nSELECT \n  COUNT(*) as total_passengers,\n  COUNT(DISTINCT orderId) as orders_with_passengers\nFROM passengers;\n\n-- Find orders without passengers\nSELECT \n  id, shortId, customerName, status, createdAt\nFROM orders\nWHERE id NOT IN (SELECT DISTINCT orderId FROM passengers)\nORDER BY createdAt DESC;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2dcXFJ5zHsK7P8Z.root --database ci3rs2m5P7Zem9o9Dnh5ee --execute \n-- Count total orders by status\nSELECT \n  COUNT(*) as total_orders,\n  COUNT(CASE WHEN status = 'paid' THEN 1 END) as paid_orders,\n  COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_orders,\n  COUNT(CASE WHEN status = 'pending_checkout' THEN 1 END) as pending_checkout_orders,\n  COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed_orders,\n  COUNT(CASE WHEN status = 'canceled' THEN 1 END) as canceled_orders\nFROM orders;\n\n-- Count passengers and their linked orders\nSELECT \n  COUNT(*) as total_passengers,\n  COUNT(DISTINCT orderId) as orders_with_passengers\nFROM passengers;\n\n-- Find orders without passengers\nSELECT \n  id, shortId, customerName, status, createdAt\nFROM orders\nWHERE id NOT IN (SELECT DISTINCT orderId FROM passengers)\nORDER BY createdAt DESC;\n",
+  "rows": [
+    {
+      "total_orders": "273",
+      "paid_orders": "83",
+      "pending_orders": "111",
+      "pending_checkout_orders": "60",
+      "failed_orders": "0",
+      "canceled_orders": "19"
+    }
+  ],
+  "messages": [
+    "total_passengers\torders_with_passengers",
+    "342\t273"
+  ],
+  "stdout": "total_orders\tpaid_orders\tpending_orders\tpending_checkout_orders\tfailed_orders\tcanceled_orders\n273\t83\t111\t60\t0\t19\ntotal_passengers\torders_with_passengers\n342\t273\n",
+  "stderr": "",
+  "execution_time_ms": 277
+}
