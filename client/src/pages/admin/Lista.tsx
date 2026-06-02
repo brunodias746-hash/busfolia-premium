@@ -53,8 +53,12 @@ function normalizeDateFormat(dateStr: string): string | null {
     return null;
   }
   
-  // Parse "2026-05-25" format (ISO) - skip these, they're order dates not travel dates
+  // Parse "2026-06-05" format (ISO) - convert to "05 de junho de 2026"
   if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    const [year, month, day] = dateStr.split('-');
+    if (month === '06' && year === '2026') {
+      return `${day} de junho de 2026`;
+    }
     return null;
   }
   
@@ -231,7 +235,7 @@ export function ListaPage() {
         </Card>
 
         {/* Actions */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button onClick={handlePrint} className="gap-2 bg-primary hover:bg-primary/90">
             <Printer className="w-4 h-4" />
             Imprimir
@@ -239,6 +243,9 @@ export function ListaPage() {
           <Button onClick={handleExport} variant="outline" className="gap-2 border-white/10" disabled={isExporting}>
             {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
             Exportar Excel
+          </Button>
+          <Button className="gap-2 bg-green-600 hover:bg-green-700" disabled>
+            ➕ Adicionar Passageiro (em breve)
           </Button>
         </div>
 

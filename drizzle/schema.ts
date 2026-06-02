@@ -99,6 +99,22 @@ export const passengers = mysqlTable("passengers", {
 export type Passenger = typeof passengers.$inferSelect;
 export type InsertPassenger = typeof passengers.$inferInsert;
 
+// ─── Manual Passengers (Operational additions, not linked to orders) ───
+export const manualPassengers = mysqlTable("manual_passengers", {
+  id: int("id").autoincrement().primaryKey(),
+  eventId: int("eventId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  travelDate: varchar("travelDate", { length: 10 }).notNull(), // ISO format: YYYY-MM-DD
+  boardingPointId: int("boardingPointId").notNull(),
+  referenceOrderId: varchar("referenceOrderId", { length: 12 }), // Optional: e.g., "BF-XXXXX"
+  notes: text("notes"), // Optional: reason for manual addition
+  createdBy: int("createdBy").notNull(), // User ID who added this
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ManualPassenger = typeof manualPassengers.$inferSelect;
+export type InsertManualPassenger = typeof manualPassengers.$inferInsert;
+
 // ─── Payments ───
 export const payments = mysqlTable("payments", {
   id: int("id").autoincrement().primaryKey(),

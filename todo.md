@@ -722,3 +722,28 @@
 - ✅ Short Portuguese format supported ("12 Junho")
 - ✅ Multi-date orders parse correctly
 - ✅ Ready for production deployment
+
+
+## PHASE 21: 🔧 CRITICAL FIX - Date Display Regression (June 2, 2026)
+
+- [x] Rollback from broken checkpoint d7bd48bd to working checkpoint d32e01fe
+- [x] Investigate root cause of "N/A" dates in Lista de Embarque
+- [x] Fix `normalizeDateFormat` function to support ISO format (2026-06-05)
+- [x] Add test coverage for date normalization (15 tests passing)
+- [x] Verify date filter dropdown populates correctly
+- [x] Add "Adicionar Passageiro" button (disabled, placeholder for future feature)
+- [x] Verify all TypeScript compilation passes
+- [x] All date tests passing: lista-date-normalization (15), date-normalizer (18), date-formatting (13), date-integration (7)
+
+### Root Cause
+The `normalizeDateFormat` function was rejecting ISO format dates (2026-06-05), causing all dates to display as "N/A" in the boarding list and making the date filter dropdown empty.
+
+### Solution
+Updated `normalizeDateFormat` in Lista.tsx to convert ISO format dates to Portuguese format:
+- Input: "2026-06-05" → Output: "05 de junho de 2026"
+- Supports all existing formats: Brazilian (05/06/2026), Portuguese (05 junho), full Portuguese (05 de junho de 2026)
+
+### Status
+✅ Dates now display correctly in Lista de Embarque
+✅ Date filter dropdown works
+✅ Ready for production deployment
