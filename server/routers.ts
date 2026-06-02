@@ -1018,6 +1018,49 @@ export const appRouter = router({
         .query(async ({ input }) => {
           return getAllPassengers(input?.eventId);
         }),
+      manualPassengers: router({
+        create: adminProcedure
+          .input(
+            z.object({
+              eventId: z.number().int().positive(),
+              name: z.string().min(1),
+              travelDate: z.string().min(1),
+              boardingPointId: z.number().int().positive(),
+              referenceOrderId: z.string().nullable().optional(),
+              createdBy: z.number().int().positive(),
+            })
+          )
+          .mutation(async ({ ctx, input }) => {
+            const { createManualPassenger } = await import("./db-manual-passengers");
+            await createManualPassenger({
+              eventId: input.eventId,
+              name: input.name,
+              travelDate: input.travelDate,
+              boardingPointId: input.boardingPointId,
+              referenceOrderId: input.referenceOrderId || null,
+              createdBy: ctx.user.id,
+            });
+            return { success: true };
+          }),
+        listByEvent: adminProcedure
+          .input(z.object({ eventId: z.number().int().positive() }))
+          .query(async ({ input }) => {
+            const { getManualPassengersByEvent } = await import("./db-manual-passengers");
+            const manualPassengers = await getManualPassengersByEvent(input.eventId);
+            // Return with boarding point names for display
+            return manualPassengers.map((p: any) => ({
+              ...p,
+              isManual: true,
+            }));
+          }),
+        delete: adminProcedure
+          .input(z.object({ id: z.number().int().positive() }))
+          .mutation(async ({ input }) => {
+            const { deleteManualPassenger } = await import("./db-manual-passengers");
+            await deleteManualPassenger(input.id);
+            return { success: true };
+          }),
+      }),
       checkIn: adminProcedure
         .input(z.object({ id: z.number(), status: z.enum(["pending", "checked_in"]) }))
         .mutation(async ({ input }) => {

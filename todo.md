@@ -747,3 +747,43 @@ Updated `normalizeDateFormat` in Lista.tsx to convert ISO format dates to Portug
 ✅ Dates now display correctly in Lista de Embarque
 ✅ Date filter dropdown works
 ✅ Ready for production deployment
+
+
+## PHASE 22: ✅ MANUAL PASSENGER FEATURE - COMPLETE (June 2, 2026)
+
+### Implementation
+- [x] Database schema: manual_passengers table created with proper foreign keys
+- [x] Backend: tRPC procedures (create, listByEvent, delete) with auth checks
+- [x] Frontend: Modal form component (AddManualPassengerModal) with validation
+- [x] UI: "Adicionar Passageiro" button on Lista de Embarque (fully functional)
+- [x] Display: Manual passengers shown with visual distinction (isManual flag)
+- [x] Filtering: Manual passengers included in date/boarding point filters
+- [x] Exports: Manual passengers included in Excel export
+- [x] Print: Manual passengers included in print view
+- [x] Tests: 6 vitest tests passing for feature validation
+- [x] TypeScript: 0 errors, full type safety
+- [x] Feature ready for production deployment
+
+### Technical Details
+- Manual passengers stored in `manual_passengers` table (separate from orders)
+- Uses `boardingPointId` (FK) instead of string name for data integrity
+- Optional `referenceOrderId` for linking to original orders (e.g., "BF-XXXXX")
+- Tracked by `createdBy` (user ID) and `createdAt` timestamp for audit trail
+- Combined with paid passengers in Lista display for unified boarding list
+- No impact on payment/financial data - purely operational
+- Fully deletable if mistakes are made
+- Form fields: Nome (required), Data da Viagem (required), Ponto de Embarque (required), Referência de Pedido (optional)
+
+### User Benefits
+✅ Can manually add passengers to boarding list when multi-date orders don't populate correctly
+✅ Operational control before event starts (June 05)
+✅ Visually distinct from paid passengers
+✅ Appears in all exports and print views
+✅ Deletable if mistakes are made
+✅ No impact on order/payment system
+
+### Status
+✅ All tests passing (6 manual passenger tests)
+✅ All date tests still passing (53 total date-related tests)
+✅ Zero TypeScript errors
+✅ Ready for production deployment

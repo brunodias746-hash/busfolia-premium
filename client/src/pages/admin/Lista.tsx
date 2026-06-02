@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
+import { AddManualPassengerModal } from "@/components/AddManualPassengerModal";
 import { trpc } from "@/lib/trpc";
 import { Download, Printer, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -81,10 +82,13 @@ export function ListaPage() {
   const [selectedBoardingPoint, setSelectedBoardingPoint] = useState<string>("all");
   const [searchName, setSearchName] = useState<string>("");
   const [isExporting, setIsExporting] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [eventId] = useState(1); // Assuming event ID 1, should be dynamic in production
 
   // Fetch all passengers
-  const { data: passengers = [], isLoading } = trpc.admin.passengers.list.useQuery();
+  const { data: passengers = [], isLoading, refetch: refetchPassengers } = trpc.admin.passengers.list.useQuery();
   const exportMutation = trpc.exports.generatePassageiros.useMutation();
+  const { data: manualPassengers = [], refetch: refetchManualPassengers } = trpc.admin.passengers.manualPassengers.listByEvent.useQuery({ eventId });
 
   // Filter to only PAID passengers (status is stored as "paid" in database)
   const paidPassengers = useMemo(() => {
@@ -109,25 +113,42 @@ export function ListaPage() {
   }, [paidPassengers]);
 
   const uniqueBoardingPoints = useMemo(() => {
-    const points = new Set<string>();
+    const points = new Map<string, number>();
     paidPassengers.forEach((p: any) => {
       if (p.boardingPoint && p.boardingPoint !== "N/A" && p.boardingPoint !== "") {
-        points.add(p.boardingPoint);
+        // Use boardingPointId if available, otherwise use hash of name
+        const id = p.boardingPointId || Math.abs(p.boardingPoint.split('').reduce((a: number, c: string) => a + c.charCodeAt(0), 0));
+        points.set(p.boardingPoint, id);
       }
     });
-    return Array.from(points).sort();
+    return Array.from(points).map(([name, id]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name));
   }, [paidPassengers]);
 
-  // Filter passengers
+  // Filter passengers and combine with manual passengers
   const filteredPassengers = useMemo(() => {
-    return paidPassengers.filter((p: any) => {
+    const paidFiltered = paidPassengers.filter((p: any) => {
       const normalizedDate = normalizeDateFormat(p.travelDate);
       const matchDate = selectedDate === "all" || normalizedDate === selectedDate;
       const matchPoint = selectedBoardingPoint === "all" || p.boardingPoint === selectedBoardingPoint;
       const matchName = !searchName || p.name.toLowerCase().includes(searchName.toLowerCase());
       return matchDate && matchPoint && matchName;
     });
-  }, [paidPassengers, selectedDate, selectedBoardingPoint, searchName]);
+
+    const manualFiltered = manualPassengers.filter((p: any) => {
+      const matchDate = selectedDate === "all" || p.travelDate === selectedDate;
+      // For manual passengers, find the boarding point name by ID
+      const boardingPointName = uniqueBoardingPoints.find((bp: any) => bp.id === p.boardingPointId)?.name || "";
+      const matchPoint = selectedBoardingPoint === "all" || boardingPointName === selectedBoardingPoint;
+      const matchName = !searchName || p.name.toLowerCase().includes(searchName.toLowerCase());
+      return matchDate && matchPoint && matchName;
+    });
+
+    return [...paidFiltered, ...manualFiltered.map((p: any) => ({
+      ...p,
+      isManual: true,
+      boardingPoint: uniqueBoardingPoints.find((bp: any) => bp.id === p.boardingPointId)?.name || "N/A",
+    }))];
+  }, [paidPassengers, manualPassengers, selectedDate, selectedBoardingPoint, searchName, uniqueBoardingPoints]);
 
   const handlePrint = () => {
     window.print();
@@ -218,8 +239,8 @@ export function ListaPage() {
                 <SelectContent>
                   <SelectItem value="all">Todos os pontos</SelectItem>
                   {uniqueBoardingPoints.map((point) => (
-                    <SelectItem key={point} value={point}>
-                      {point}
+                    <SelectItem key={point.id} value={point.name}>
+                      {point.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -244,8 +265,8 @@ export function ListaPage() {
             {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
             Exportar Excel
           </Button>
-          <Button className="gap-2 bg-green-600 hover:bg-green-700" disabled>
-            ➕ Adicionar Passageiro (em breve)
+          <Button onClick={() => setIsModalOpen(true)} className="gap-2 bg-green-600 hover:bg-green-700">
+            ➕ Adicionar Passageiro
           </Button>
         </div>
 
@@ -306,6 +327,19 @@ export function ListaPage() {
             </div>
           )}
         </Card>
+
+        {/* Manual Passenger Modal */}
+        <AddManualPassengerModal
+          open={isModalOpen}
+          onOpenChange={setIsModalOpen}
+          eventId={eventId}
+          availableDates={uniqueDates}
+          availableBoardingPoints={uniqueBoardingPoints}
+          onPassengerAdded={() => {
+            refetchPassengers();
+            refetchManualPassengers();
+          }}
+        />
 
         {/* Print Stylesheet */}
         <style>{`
