@@ -5,9 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
-import { Download, Printer, Loader2, Plus } from "lucide-react";
+import { Download, Printer, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { AddManualPassengerModal } from "@/components/AddManualPassengerModal";
 
 // Color and icon mapping for boarding points
 const boardingPointColors: Record<string, { bg: string; text: string; icon: string; color: string }> = {
@@ -78,14 +77,11 @@ export function ListaPage() {
   const [selectedBoardingPoint, setSelectedBoardingPoint] = useState<string>("all");
   const [searchName, setSearchName] = useState<string>("");
   const [isExporting, setIsExporting] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Fetch all passengers
-  const { data: passengers = [], isLoading, refetch: refetchPassengers } = trpc.admin.passengers.list.useQuery({});
+  const { data: passengers = [], isLoading } = trpc.admin.passengers.list.useQuery();
   const exportMutation = trpc.exports.generatePassageiros.useMutation();
-  const { data: boardingPoints = [] } = trpc.admin.boardingPoints.list.useQuery({ eventId: 1 });
 
-  const { data: manualPassengers = [] } = trpc.admin.manualPassengers.listByEvent.useQuery({ eventId: 1 });
   // Filter to only PAID passengers (status is stored as "paid" in database)
   const paidPassengers = useMemo(() => {
     return passengers.filter((p: any) => p.status === "paid");
@@ -118,32 +114,16 @@ export function ListaPage() {
     return Array.from(points).sort();
   }, [paidPassengers]);
 
-  // Filter passengers (combine paid + manual)
+  // Filter passengers
   const filteredPassengers = useMemo(() => {
-    const filteredPaid = paidPassengers.filter((p: any) => {
+    return paidPassengers.filter((p: any) => {
       const normalizedDate = normalizeDateFormat(p.travelDate);
       const matchDate = selectedDate === "all" || normalizedDate === selectedDate;
       const matchPoint = selectedBoardingPoint === "all" || p.boardingPoint === selectedBoardingPoint;
       const matchName = !searchName || p.name.toLowerCase().includes(searchName.toLowerCase());
       return matchDate && matchPoint && matchName;
     });
-    
-    const filteredManual = manualPassengers.filter((p: any) => {
-      const normalizedDate = `${p.travelDate.split('-')[2]} de junho de 2026`;
-      const matchDate = selectedDate === "all" || normalizedDate === selectedDate;
-      const bp = boardingPoints.find((bp: any) => bp.id === p.boardingPointId);
-      const matchPoint = selectedBoardingPoint === "all" || bp?.locationName === selectedBoardingPoint;
-      const matchName = !searchName || p.name.toLowerCase().includes(searchName.toLowerCase());
-      return matchDate && matchPoint && matchName;
-    }).map((p: any) => ({
-      ...p,
-      isManual: true,
-      boardingPoint: boardingPoints.find((bp: any) => bp.id === p.boardingPointId)?.locationName,
-      orderShortId: p.referenceOrderId || "Manual",
-    }));
-    
-    return [...filteredPaid, ...filteredManual];
-  }, [paidPassengers, manualPassengers, selectedDate, selectedBoardingPoint, searchName, boardingPoints]);
+  }, [paidPassengers, selectedDate, selectedBoardingPoint, searchName]);
 
   const handlePrint = () => {
     window.print();
@@ -252,10 +232,6 @@ export function ListaPage() {
 
         {/* Actions */}
         <div className="flex gap-2">
-          <Button onClick={() => setIsModalOpen(true)} className="gap-2 bg-green-600 hover:bg-green-700">
-            <Plus className="w-4 h-4" />
-            Adicionar Passageiro
-          </Button>
           <Button onClick={handlePrint} className="gap-2 bg-primary hover:bg-primary/90">
             <Printer className="w-4 h-4" />
             Imprimir
@@ -292,23 +268,14 @@ export function ListaPage() {
               {/* Table rows */}
               <div className="space-y-1">
                 {filteredPassengers.map((passenger: any, index: number) => {
-                  const normalizedDate = passenger.isManual 
-                    ? `${passenger.travelDate.split('-')[2]} de junho de 2026`
-                    : normalizeDateFormat(passenger.travelDate);
+                  const normalizedDate = normalizeDateFormat(passenger.travelDate);
                   return (
-                    <div key={`${passenger.isManual ? 'manual' : 'paid'}-${passenger.id}`} className={`grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 px-4 py-3 rounded-lg border transition-colors ${
-                      passenger.isManual 
-                        ? 'bg-green-50/50 border-green-200 hover:bg-green-100/50' 
-                        : 'bg-background border-border hover:bg-muted/50'
-                    }`}>
+                    <div key={passenger.id} className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 px-4 py-3 bg-background rounded-lg border border-border hover:bg-muted/50 transition-colors">
                       <div className="col-span-1 font-mono text-sm text-muted-foreground">
                         {index + 1}
                       </div>
-                      <div className="col-span-3 font-semibold text-foreground flex items-center gap-2">
+                      <div className="col-span-3 font-semibold text-foreground">
                         {passenger.name}
-                        {passenger.isManual && (
-                          <span className="inline-block px-2 py-0.5 text-xs font-bold bg-green-600 text-white rounded">MANUAL</span>
-                        )}
                       </div>
                       <div className="col-span-2 text-sm text-muted-foreground font-mono">
                         {passenger.orderShortId || "N/A"}
@@ -322,27 +289,8 @@ export function ListaPage() {
                           <span className="text-muted-foreground">N/A</span>
                         )}
                       </div>
-                      <div className="col-span-3 text-sm text-muted-foreground flex items-center justify-between">
-                        <span>📅 {normalizedDate || "N/A"}</span>
-                        {passenger.isManual && (
-                          <button
-                            onClick={() => {
-                              const deleteMutation = trpc.admin.manualPassengers.delete.useMutation();
-                              deleteMutation.mutate(
-                                { id: passenger.id },
-                                {
-                                  onSuccess: () => {
-                                    toast.success("Passageiro removido");
-                                    refetchPassengers();
-                                  },
-                                }
-                              );
-                            }}
-                            className="text-xs text-red-600 hover:text-red-700 font-medium"
-                          >
-                            ✕ Remover
-                          </button>
-                        )}
+                      <div className="col-span-3 text-sm text-muted-foreground">
+                        📅 {normalizedDate || "N/A"}
                       </div>
                     </div>
                   );
@@ -360,17 +308,6 @@ export function ListaPage() {
             .print-only { display: block !important; }
           }
         `}</style>
-        {/* Manual Passenger Modal */}
-        {selectedDate !== "all" && (
-          <AddManualPassengerModal
-            open={isModalOpen}
-            onOpenChange={setIsModalOpen}
-            eventId={1}
-            travelDate={selectedDate.match(/^\d{2}/) ? `2026-06-${selectedDate.split(' ')[0]}` : "2026-06-05"}
-            boardingPoints={boardingPoints}
-            onSuccess={() => refetchPassengers()}
-          />
-        )}
       </div>
     </AdminLayout>
   );

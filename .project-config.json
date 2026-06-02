@@ -1,0 +1,49 @@
+{
+  "build_command": "pnpm run build",
+  "capabilities": [
+    "server",
+    "db",
+    "user"
+  ],
+  "dev_command": "pnpm run dev",
+  "env_vars": {
+    "DATABASE_URL": "mysql://2dcXFJ5zHsK7P8Z.root:sR1r6qP7c8XFAU7z9OwV@gateway05.us-east-1.prod.aws.tidbcloud.com:4000/ci3rs2m5P7Zem9o9Dnh5ee?ssl={\"rejectUnauthorized\":true}"
+  },
+  "experiments": [
+    "no_db_push"
+  ],
+  "git_remote": {
+    "repo_url": "s3://vida-prod-gitrepo/webdev-git/310519663481702841/ci3rs2m5P7Zem9o9Dnh5ee",
+    "access_key_id": "ASIAZV3A2ECZDG3XZUSM",
+    "secret_access_key": "nLuL6kphbyk5rAOodpxsnRByZEwvRQjJp3qhHMBh",
+    "session_token": "IQoJb3JpZ2luX2VjEF4aCXVzLWVhc3QtMSJHMEUCIEdgeXKl0fFICylYBKhOp+NLgqIH7GH8IbeguzSRd+HSAiEA0Xk6k14i9+4WvIUjk6ClFDhIJmIKFPR88nz8E0gsFRkq9gMIJxAEGgw2NjUzODYwOTg4NjYiDPYewWcx9rDGM+7M3irTA5Ji3AXUy18XYM3wVqMlCjf7jXu6tBm5g/GzqGvDac4ghMw9/DPNnJ6bFadcHMfBVbEimQE1sg1A8UliJH1rv5o2FHPFqJcWU4HdecW9l0GKgy/zl0jm7AwdPjcEv677Ym/8JFFFoQU7TyarDMq+UuaJBzvHAWzrtw56BvLtb8+z2Zkjk9LvuI+OC/STBwugJ06iSMuAfwB2RWMZ17EhWIzQP4WqDHXcl3ssUMe94Jhb269TtJ55SfF1yokgWjqAZJ7Z20XwJfGTL6BubQftRPwZSC/NhFmyeQ910zn1NMpAiYaF+3NtCohfgy0jhtjTcy6cDNc5scYPPodo2qAn7VdXD3Kk2WRzXeyUe4CXLxgVTaxsn28HX+29TPRUzfWZU4520GzAeApw8J3/ZLm6D2BjtXeiy15BqRxWZrb2bmBoJHQ432JiugS2FCB4Jz0Bv0FAzG/Fpazma4uATsLvj8VagH34riw1T+EduvinIB35QTg+WaTHsykmsSbEL3hIyANguoPembPbZUEOQIhoJM9xQl1tzSLQSSBrNPG61VqMeWvj6vFFk8K065OJjnYpP+ikY8tBYQZqgAvLOIr42zs3V4Rks8yhJ8eqTF5HRpC3Omv5MPrD+9AGOp0BUF9gQ5IZwoa2oXRzsmMyjeK9ayObsRMHZvwilx585UJp3ifjVCFsZkG5VHtLbBXRREjhjeBKO9NTjG+QlqLhBNi1NNU2TSvNErz8UvVZVFJJbyv6EM4mfUBgvxtBBlD9cg1s9eXZtM4EyoV1wpjOBm2qRrSmUfrLKSH3EYT/f3r4So5yrA1mQbC5Iija+Ys1L91Ok36LY1MoQfwuJg==",
+    "expiration": "2026-06-03T02:00:26.000Z"
+  },
+  "name": "busfolia-premium",
+  "path": "/home/ubuntu/busfolia-premium",
+  "port": 3000,
+  "secrets": {
+    "ASAAS_API_KEY": "$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OjM1ZDM3NjM0LWU3MDItNDA4Mi04ZTZiLTRiMWEwYTJjYmNiNDo6JGFhY2hfNTFkNWY2NmEtNTY1Yi00MzMzLWJhZDctODI3ZGMzNTNjNjdj",
+    "ASAAS_WEBHOOK_SECRET": "whsec_yZRlSBipkh_xWq0rsqceCP_Y4frN42JscjGJV-gWzZk",
+    "BUILT_IN_FORGE_API_KEY": "75VAG32EGjgS6D3vMezkrN",
+    "BUILT_IN_FORGE_API_URL": "https://forge.manus.ai",
+    "JWT_SECRET": "8FkJCG8iaYLSctHXbvFCxU",
+    "OAUTH_SERVER_URL": "https://api.manus.im",
+    "OWNER_NAME": "Bruno Dias",
+    "OWNER_OPEN_ID": "EJdY4zeu3VsCN3vExgz9cA",
+    "RESEND_API_KEY": "re_MCCKWQXL_Bsv7zh1mu2VyspeU1By7bBjM",
+    "STRIPE_SECRET_KEY": "sk_test_51THrsPAwu6Dcem2PGPB1h26pAXc3y0SOsvR4yjyktWineJJ7IBoPwFKESYRSsWGE0B41HcNx4DeEXnz6YFOxkWx400uSYSZDL2",
+    "STRIPE_WEBHOOK_SECRET": "whsec_keDJ1fwnRxQECTpapqWeD1lQIYgQsv8R",
+    "VITE_ANALYTICS_ENDPOINT": "https://manus-analytics.com",
+    "VITE_ANALYTICS_WEBSITE_ID": "dc6c9114-4a25-445e-8911-16ad8007983f",
+    "VITE_APP_ID": "ci3rs2m5P7Zem9o9Dnh5ee",
+    "VITE_APP_LOGO": "https://files.manuscdn.com/user_upload_by_module/web_dev_logo/310519663481702841/JHbHALJjnWgQRLlg.webp",
+    "VITE_APP_TITLE": "BUS FOLIA - TRANSPORTE OFICIAL PLRS 2026",
+    "VITE_FRONTEND_FORGE_API_KEY": "GHmaLjJVvjNKGjeSHM3V8U",
+    "VITE_FRONTEND_FORGE_API_URL": "https://forge.manus.ai",
+    "VITE_OAUTH_PORTAL_URL": "https://manus.im",
+    "VITE_STRIPE_PUBLISHABLE_KEY": "pk_test_51THrsPAwu6Dcem2PqLBMb5fd2aviTaRwv24q51eY0Lj6f2peFxhUTGV1oFioWqNNNP7dIHxWvSNB2gbNjRujmGyf00VnDFzVsC"
+  },
+  "template_id": "web-db-user",
+  "test_command": "pnpm test"
+}
