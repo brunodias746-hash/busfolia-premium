@@ -1,6 +1,7 @@
 import { getDb } from "./db";
-import { manualPassengers, boardingPoints } from "../drizzle/schema";
-import { eq, and } from "drizzle-orm";
+import { manualPassengers } from "../drizzle/schema";
+import { eq } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 
 export async function createManualPassenger(data: {
   eventId: number;
@@ -13,16 +14,11 @@ export async function createManualPassenger(data: {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const result = await db.insert(manualPassengers).values({
-    eventId: data.eventId,
-    name: data.name,
-    travelDate: data.travelDate,
-    boardingPointId: data.boardingPointId,
-    referenceOrderId: data.referenceOrderId || null,
-    createdBy: data.createdBy,
-    createdAt: new Date(),
-    // notes is optional, omit it to let DB use NULL
-  });
+  // Use raw SQL to insert without the notes column to avoid default issues
+  const result = await db.execute(
+    sql`INSERT INTO manual_passengers (eventId, name, travelDate, boardingPointId, referenceOrderId, createdBy, createdAt) 
+        VALUES (${data.eventId}, ${data.name}, ${data.travelDate}, ${data.boardingPointId}, ${data.referenceOrderId}, ${data.createdBy}, NOW())`
+  );
 
   return result;
 }

@@ -71,6 +71,13 @@
       "when": 1780409193301,
       "tag": "0009_silly_eternity",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1780413814833,
+      "tag": "0010_perpetual_dazzler",
+      "breakpoints": true
     }
   ]
 }

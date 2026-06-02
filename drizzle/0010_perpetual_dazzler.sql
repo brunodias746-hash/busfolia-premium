@@ -1,0 +1,1 @@
+ALTER TABLE `manual_passengers` MODIFY COLUMN `notes` text DEFAULT (null);
