@@ -1,6 +1,6 @@
 // FORCE REBUILD: 2026-05-18-PIX-FIXO-V3-CACHE-BYPASS
 // Router updated to use pix-v3-fixo.ts for guaranteed cache invalidation
-import { COOKIE_NAME } from "@shared/const";
+import { COOKIE_NAME, PLRS_2026_EVENT_DATES } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { exportsRouter } from "./routers/exports";
@@ -222,7 +222,7 @@ export const appRouter = router({
         customerEmail: input.customerEmail,
         customerPhone: input.customerPhone.replace(/\D/g, ""),
         boardingPointId: input.boardingPointId,
-        transportDates: input.purchaseType === "all_days" ? JSON.stringify(["Todos os Dias"]) : JSON.stringify([normalizeDateString(input.transportDate) || input.transportDate]),
+        transportDates: input.purchaseType === "all_days" ? JSON.stringify(PLRS_2026_EVENT_DATES) : JSON.stringify([normalizeDateString(input.transportDate) || input.transportDate]),
         purchaseType: input.purchaseType,
         quantity: qty,
         unitPriceCents,
@@ -455,7 +455,7 @@ export const appRouter = router({
         customerEmail: input.customerEmail,
         customerPhone: input.customerPhone.replace(/\D/g, ""),
         boardingPointId: input.boardingPointId,
-        transportDates: input.purchaseType === "all_days" ? JSON.stringify(["Todos os Dias"]) : JSON.stringify([normalizeDateString(input.transportDate) || input.transportDate]),
+        transportDates: input.purchaseType === "all_days" ? JSON.stringify(PLRS_2026_EVENT_DATES) : JSON.stringify([normalizeDateString(input.transportDate) || input.transportDate]),
         purchaseType: input.purchaseType,
         quantity: qty,
         unitPriceCents,

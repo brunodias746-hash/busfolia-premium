@@ -787,3 +787,24 @@ Updated `normalizeDateFormat` in Lista.tsx to convert ISO format dates to Portug
 ✅ All date tests still passing (53 total date-related tests)
 ✅ Zero TypeScript errors
 ✅ Ready for production deployment
+
+
+## PHASE 23: ✅ GHOST DATE & PASSPORT DATES FIX (June 2, 2026)
+
+### Issues Fixed
+- [x] Ghost date "01 de junho de 2026" - removed from database
+- [x] Passport passengers showing on wrong dates - corrected
+- [x] All 17 passport orders backfilled with correct event dates
+
+### Implementation
+- [x] Added PLRS_2026_EVENT_DATES constant to shared/const.ts
+- [x] Updated routers.ts to use actual event dates for passport orders (all_days)
+- [x] Created and ran backfill script (server/backfill-passport-dates.mjs)
+- [x] Fixed orders: BF-37J24K (Grazielly Carollyne), BF-W5VAR5 (Samara Karollyne), and 15 others
+
+### Results
+✅ 17 passport orders fixed
+✅ Passport passengers now appear on all 4 event dates (05, 06, 12, 13 de junho)
+✅ Date filter dropdown now shows only valid event dates
+✅ Ghost date "01 de junho" removed
+✅ Ready for production deployment
