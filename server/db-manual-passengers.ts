@@ -20,6 +20,7 @@ export async function createManualPassenger(data: {
     boardingPointId: data.boardingPointId,
     referenceOrderId: data.referenceOrderId,
     createdBy: data.createdBy,
+    createdAt: new Date(),
   });
 
   return result;

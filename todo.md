@@ -808,3 +808,21 @@ Updated `normalizeDateFormat` in Lista.tsx to convert ISO format dates to Portug
 ✅ Date filter dropdown now shows only valid event dates
 ✅ Ghost date "01 de junho" removed
 ✅ Ready for production deployment
+
+
+## PHASE 24: ✅ FIX MANUAL PASSENGER CREATION ERROR (June 2, 2026)
+
+### Issue Fixed
+- [x] "Erro ao adicionar passageiro" - Fixed missing createdAt timestamp
+- [x] Manual passenger form now submits successfully
+- [x] Passengers can be added and deleted from Lista de Embarque
+
+### Implementation
+- [x] Updated db-manual-passengers.ts to include createdAt: new Date()
+- [x] Created tests to validate manual passenger creation (6 tests passing)
+- [x] Verified TypeScript compilation (0 errors)
+
+### Testing
+✅ 6 manual passenger tests passing
+✅ Form submission now works without errors
+✅ Ready for production deployment
