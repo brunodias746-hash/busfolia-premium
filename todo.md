@@ -845,3 +845,13 @@ Updated `normalizeDateFormat` in Lista.tsx to convert ISO format dates to Portug
 - [x] Verify all prices display correctly in UI
 - [x] Test checkout flow with updated prices (14 tests passing)
 - [x] All price updates complete and tested
+
+
+## PHASE 27: 🗑️ REMOVE R$6.10 FEE
+- [x] Remove fee from event card display (Home.tsx)
+- [x] Remove fee from date selection screen (routers.ts)
+- [x] Remove fee from order summary/total (Sucesso.tsx)
+- [x] Remove fee from PIX checkout (routers.ts)
+- [x] Remove fee from email confirmation and PDF (no fee in templates)
+- [x] Test all flows without fee (14 tests passing)
+- [ ] Deploy and verify on busfolia.com.br

@@ -145,12 +145,8 @@ export default function Sucesso() {
               {/* Pricing Breakdown */}
               <div className="bg-white/3 rounded-lg sm:rounded-xl p-3 sm:p-4 space-y-2">
                 <div className="flex justify-between text-xs sm:text-sm">
-                  <span className="text-muted-foreground">Preço Base</span>
+                  <span className="text-muted-foreground">Preço</span>
                   <span className="font-medium">{formatCurrency(baseTotalCents)}</span>
-                </div>
-                <div className="flex justify-between text-xs sm:text-sm">
-                  <span className="text-muted-foreground">Taxa</span>
-                  <span className="font-medium">{formatCurrency(taxTotalCents)}</span>
                 </div>
                 {discountCents > 0 && (
                   <div className="flex justify-between text-xs sm:text-sm">

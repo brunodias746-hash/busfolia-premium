@@ -322,7 +322,6 @@ function EventsSection() {
                       <div>
                         <span className="text-xs text-muted-foreground uppercase tracking-wider">A partir de</span>
                         <div className="text-3xl sm:text-4xl font-black font-heading text-primary">{formatCurrency(event.priceCents)}</div>
-                        {event.feeCents > 0 && <span className="text-xs text-muted-foreground">+ {formatCurrency(event.feeCents)} taxa</span>}
                       </div>
                       <div className="flex flex-col gap-2 w-full sm:w-auto sm:ml-4">
                         <Link href="/comprar">

@@ -206,10 +206,10 @@ export const appRouter = router({
         unitPriceCents = basePriceCents * daysCount; // Dynamic base price × number of days
         feeCents = event.feeCents * daysCount; // R$ 6,10 × number of days
       }
-      // For "all_days" (Passaporte), use fixed price of R$ 200,00
+      // For "all_days" (Passaporte), use fixed price of R$ 250,00
       else if (input.purchaseType === "all_days") {
         unitPriceCents = 25000; // R$ 250,00 in cents
-        feeCents = 610; // R$ 6,10 fee for all_days (fixed, not multiplied)
+        feeCents = 0; // No fee
       }
       
       const totalAmountCents = (unitPriceCents + feeCents) * qty;
@@ -791,15 +791,15 @@ export const appRouter = router({
             
             let daysCount = 1;
             unitPriceCents = basePriceCents;
-            feeCents = 610; // R$6,10 fixed fee
+            feeCents = 0; // No fee
             
             if (input.purchaseType === "multiple") {
               daysCount = input.transportDates.length;
               unitPriceCents = basePriceCents * daysCount;
-              feeCents = 610 * daysCount;
+              feeCents = 0; // No fee
             } else if (input.purchaseType === "all_days") {
-              unitPriceCents = 20000; // R$200,00
-              feeCents = 610; // R$6,10 fixed
+              unitPriceCents = 25000; // R$250,00
+              feeCents = 0; // No fee
             }
             
             totalAmountCents = (unitPriceCents + feeCents) * input.quantity;
