@@ -826,3 +826,15 @@ Updated `normalizeDateFormat` in Lista.tsx to convert ISO format dates to Portug
 ✅ 6 manual passenger tests passing
 ✅ Form submission now works without errors
 ✅ Ready for production deployment
+
+
+## PHASE 25: 💰 UPDATE TICKET PRICES
+- [x] Update BH/Santa Luzia price from R$60 to R$70
+- [x] Update Betim/Contagem price from R$70 to R$80
+- [x] Update Passport price from R$200 to R$250
+- [x] Verify prices in checkout (PIX and Stripe)
+- [x] Verify prices in order summary
+- [x] Verify prices on all pages
+- [x] Test checkout flow with new prices (14 tests passing)
+- [ ] Deploy and verify on busfolia.com.br
+- [ ] Confirm prices are correct on custom domain (not cached)

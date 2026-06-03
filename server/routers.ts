@@ -188,10 +188,10 @@ export const appRouter = router({
       })();
       
       // Dynamic base price based on boarding point city
-      let basePriceCents = 6000; // Default: R$60,00 (BH or SANTA LUZIA)
+      let basePriceCents = 7000; // Default: R$70,00 (BH or SANTA LUZIA)
       if (boardingPoint) {
         if (boardingPoint.city === 'BETIM' || boardingPoint.city === 'CONTAGEM') {
-          basePriceCents = 7000; // R$70,00
+          basePriceCents = 8000; // R$80,00
         }
       }
       
@@ -208,7 +208,7 @@ export const appRouter = router({
       }
       // For "all_days" (Passaporte), use fixed price of R$ 200,00
       else if (input.purchaseType === "all_days") {
-        unitPriceCents = 20000; // R$ 200,00 in cents
+        unitPriceCents = 25000; // R$ 250,00 in cents
         feeCents = 610; // R$ 6,10 fee for all_days (fixed, not multiplied)
       }
       
@@ -423,10 +423,10 @@ export const appRouter = router({
       })();
       
       // Dynamic base price based on boarding point city
-      let basePriceCents = 6000; // Default: R$60,00 (BH or SANTA LUZIA)
+      let basePriceCents = 7000; // Default: R$70,00 (BH or SANTA LUZIA)
       if (boardingPoint) {
         if (boardingPoint.city === 'BETIM' || boardingPoint.city === 'CONTAGEM') {
-          basePriceCents = 7000; // R$70,00
+          basePriceCents = 8000; // R$80,00
         }
       }
       
@@ -442,7 +442,7 @@ export const appRouter = router({
       }
       // For "all_days" (Passaporte), use fixed price of R$ 200,00
       else if (input.purchaseType === "all_days") {
-        unitPriceCents = 20000; // R$ 200,00 in cents
+        unitPriceCents = 25000; // R$ 250,00 in cents
       }
       
       const totalAmountCents = unitPriceCents * qty; // Sem taxa
@@ -784,9 +784,9 @@ export const appRouter = router({
             feeCents = 0; // No tax for manual PIX orders
           } else {
             // Fallback to automatic calculation
-            let basePriceCents = 6000; // Default: R$60,00 (BH or SANTA LUZIA)
+            let basePriceCents = 7000; // Default: R$70,00 (BH or SANTA LUZIA)
             if (boardingPoint.city === 'BETIM' || boardingPoint.city === 'CONTAGEM') {
-              basePriceCents = 7000; // R$70,00
+              basePriceCents = 8000; // R$80,00
             }
             
             let daysCount = 1;
