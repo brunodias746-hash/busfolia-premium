@@ -286,7 +286,7 @@ export default function Comprar() {
     } else if (form.purchaseType === 'multiple') {
       baseCents = dynamicBasePrice * form.transportDates.length;
     } else if (form.purchaseType === 'all_days') {
-      baseCents = 20000; // R$200 fixed price
+      baseCents = 25000; // R$250 fixed price
     }
     return baseCents * form.passengers.length; // Sem taxa
   };
@@ -300,7 +300,7 @@ export default function Comprar() {
     } else if (form.purchaseType === 'multiple') {
       baseCents = dynamicBasePrice * form.transportDates.length;
     } else if (form.purchaseType === 'all_days') {
-      baseCents = 20000; // R$200 fixed price
+      baseCents = 25000; // R$250 fixed price
     }
     return baseCents;
   };
@@ -315,7 +315,7 @@ export default function Comprar() {
     } else if (form.purchaseType === 'multiple') {
       baseCents = dynamicBasePrice * form.transportDates.length;
     } else if (form.purchaseType === 'all_days') {
-      baseCents = 20000; // R$200 fixed price
+      baseCents = 25000; // R$250 fixed price
     }
     return baseCents;
   };
@@ -462,7 +462,7 @@ export default function Comprar() {
                   <div className="text-left mt-6">
                     <h3 className="text-lg font-bold mb-1">Passaporte — Todos os Dias</h3>
                     <p className="text-sm text-muted-foreground mb-3">05, 06, 12 e 13 de Junho • Melhor valor!</p>
-                    <p className="text-2xl font-bold text-primary">{formatCurrency(20000)}</p>
+                    <p className="text-2xl font-bold text-primary">{formatCurrency(25000)}</p>
                     <p className="text-xs text-muted-foreground mt-1">/4 dias</p>
                   </div>
                 </button>

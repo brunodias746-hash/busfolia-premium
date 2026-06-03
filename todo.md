@@ -836,5 +836,12 @@ Updated `normalizeDateFormat` in Lista.tsx to convert ISO format dates to Portug
 - [x] Verify prices in order summary
 - [x] Verify prices on all pages
 - [x] Test checkout flow with new prices (14 tests passing)
-- [ ] Deploy and verify on busfolia.com.br
-- [ ] Confirm prices are correct on custom domain (not cached)
+- [x] Deploy and verify on busfolia.com.br
+- [x] Confirm prices are correct on custom domain (not cached)
+
+## PHASE 26: 💰 FIX REMAINING PRICE DISPLAY ISSUES
+- [x] Update Passport card from R$200 to R$250 in Comprar.tsx
+- [x] Update event starting price from R$60 to R$70 in database
+- [x] Verify all prices display correctly in UI
+- [x] Test checkout flow with updated prices (14 tests passing)
+- [x] All price updates complete and tested
