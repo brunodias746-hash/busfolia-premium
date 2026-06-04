@@ -889,8 +889,8 @@ Updated `normalizeDateFormat` in Lista.tsx to convert ISO format dates to Portug
 - [x] Test all boarding point transitions (BH R$70, Betim R$80, Passport R$250)
 - [x] Verify animation triggers on price changes
 - [x] Verify no animation when price stays same
-- [ ] Test animation in preview environment
-- [ ] Save checkpoint
+- [x] Test animation in preview environment
+- [x] Save checkpoint (version: 3f081e95)
 
 ### Implementation Details
 - [x] Component: client/src/components/AnimatedPrice.tsx
@@ -904,4 +904,23 @@ Updated `normalizeDateFormat` in Lista.tsx to convert ISO format dates to Portug
 ✅ Animation fully implemented
 ✅ 25 vitest tests passing
 ✅ TypeScript compilation: 0 errors
-✅ Ready for preview testing and production deployment
+✅ Preview testing completed
+✅ Checkpoint saved: 3f081e95
+✅ Ready for production deployment
+
+
+## 🚨 BUG FIX: PIX Payment Screen Shows Wrong Price
+- [x] Investigate PIX payment flow to find hardcoded price
+- [x] Trace price calculation through payment procedures
+- [x] Fix PIX price calculation to use dynamic boarding point pricing
+- [x] Update PIX QR code generation with correct price
+- [x] Test PIX payment flow with all boarding points (BH R$70, Betim R$80, Passport R$250)
+- [x] Verify fix in preview environment
+- [ ] Save checkpoint
+
+### Issue Details
+PIX payment screen shows R$70 for all boarding points instead of using dynamic pricing:
+- Should show R$70 for BH/Santa Luzia
+- Should show R$80 for Betim/Contagem
+- Should show R$250 for Passport
+- QR Code, copy-paste key, and payment instructions must reflect correct price

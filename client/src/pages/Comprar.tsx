@@ -805,21 +805,21 @@ export default function Comprar() {
                   (bp: any) => bp.id === form.boardingPointId
                 )?.locationName || '';
                 
-                let pricePerDay = 60;
+                let pricePerDay = 70;
                 if (
                   boardingPoint.toLowerCase().includes('belo') ||
                   boardingPoint.toLowerCase().includes('santa')
                 ) {
-                  pricePerDay = 60;
+                  pricePerDay = 70;
                 } else if (
                   boardingPoint.toLowerCase().includes('betim') ||
                   boardingPoint.toLowerCase().includes('contagem')
                 ) {
-                  pricePerDay = 70;
+                  pricePerDay = 80;
                 }
 
                 if (form.purchaseType === 'all_days') {
-                  return 200;
+                  return 250;
                 } else if (form.purchaseType === 'multiple') {
                   return pricePerDay * form.transportDates.length * form.passengers.length;
                 } else {
