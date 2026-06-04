@@ -268,12 +268,12 @@ export default function Comprar() {
     const boardingPoint = boardingPoints?.find(bp => bp.id === form.boardingPointId);
     if (!boardingPoint) return event?.priceCents || 0;
     
-    // BETIM or CONTAGEM → R$70,00 (7000 cents)
+    // BETIM or CONTAGEM → R$80,00 (8000 cents)
     if (boardingPoint.city === 'BETIM' || boardingPoint.city === 'CONTAGEM') {
-      return 7000;
+      return 8000;
     }
-    // BH (Belo Horizonte) or SANTA LUZIA → R$60,00 (6000 cents)
-    return 6000;
+    // BH (Belo Horizonte) or SANTA LUZIA → R$70,00 (7000 cents)
+    return 7000;
   };
 
   const calculateTotal = (): number => {
@@ -396,6 +396,16 @@ export default function Comprar() {
           <div className="space-y-6">
             <div>
               <h2 className="text-lg sm:text-xl font-bold mb-4">Escolha sua passagem</h2>
+              
+              {/* Price Info Message */}
+              <div className="bg-primary/10 border border-primary/30 rounded-lg p-3 mb-6">
+                <p className="text-sm text-foreground">
+                  💰 <span className="font-semibold">Valores — Ida e Volta:</span>
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  📍 BH e Santa Luzia: R$ 70,00 • 📍 Betim e Contagem: R$ 80,00 • 🎟️ Passaporte: R$ 250,00
+                </p>
+              </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 {/* Dia Único */}

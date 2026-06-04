@@ -855,3 +855,26 @@ Updated `normalizeDateFormat` in Lista.tsx to convert ISO format dates to Portug
 - [x] Remove fee from email confirmation and PDF (no fee in templates)
 - [x] Test all flows without fee (14 tests passing)
 - [ ] Deploy and verify on busfolia.com.br
+
+
+## PHASE 28: 💰 DYNAMIC PRICING BY BOARDING POINT
+- [x] Investigate current ticket selection and pricing flow
+- [x] Update ticket selection screen to show price varies by boarding point
+- [x] Implement dynamic price calculation based on boarding point selection
+- [x] Update order summary to show correct price based on boarding point
+- [x] Test pricing flow with all boarding points (BH R$70, Betim R$80, Passport R$250)
+- [x] Verify checkout charges correct amount for each boarding point
+- [ ] Deploy and verify on busfolia.com.br
+
+### Implementation Details
+- [x] Created BOARDING_POINT_PRICES constant in shared/const.ts
+- [x] Updated Comprar.tsx to show dynamic price based on boarding point selection
+- [x] Implemented price calculation in routers.ts for both Stripe and PIX flows
+- [x] Added price info message to ticket selection screen
+- [x] Created 12 comprehensive vitest tests for dynamic pricing
+- [x] All tests passing, zero TypeScript errors
+
+### Status
+✅ Dynamic pricing fully implemented
+✅ 12 vitest tests passing
+✅ Ready for production deployment
