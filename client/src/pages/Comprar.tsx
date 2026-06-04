@@ -8,6 +8,7 @@ import { ArrowLeft, ArrowRight, Plus, Trash2, Loader2, ShieldCheck, User, MapPin
 import { toast } from "sonner";
 import { PublicLayout } from "@/components/PublicLayout";
 import { SimpleManualPixPayment } from "@/components/SimpleManualPixPayment";
+import { AnimatedPrice } from "@/components/AnimatedPrice";
 import { trackInitiateCheckout } from "@/utils/meta-pixel";
 
 // Valida CPF usando algoritmo oficial
@@ -565,7 +566,13 @@ export default function Comprar() {
               <div className="mt-6 space-y-4">
                 <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex justify-between items-center">
                   <span className="font-medium">Total:</span>
-                  <span className="text-2xl font-bold text-primary">{formatCurrency(calculateStep0Total())}</span>
+                  <AnimatedPrice
+                    value={calculateStep0Total()}
+                    className="text-2xl font-bold text-primary"
+                    duration={0.4}
+                  >
+                    {formatCurrency(calculateStep0Total())}
+                  </AnimatedPrice>
                 </div>
                 <Button onClick={handleNext} className="w-full gold-gradient text-black font-bold py-3 rounded-xl">
                   Continuar <ArrowRight className="w-4 h-4 ml-2" />

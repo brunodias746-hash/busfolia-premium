@@ -878,3 +878,30 @@ Updated `normalizeDateFormat` in Lista.tsx to convert ISO format dates to Portug
 ✅ Dynamic pricing fully implemented
 ✅ 12 vitest tests passing
 ✅ Ready for production deployment
+
+
+## PHASE 29: ✨ SMOOTH PRICE ANIMATION ON BOARDING POINT CHANGE
+- [x] Create AnimatedPrice component using framer-motion
+- [x] Implement fade and scale animation (0.4s duration)
+- [x] Respect prefers-reduced-motion accessibility preference
+- [x] Integrate AnimatedPrice into Comprar.tsx Step 0 total display
+- [x] Create 25 comprehensive vitest tests for animation logic
+- [x] Test all boarding point transitions (BH R$70, Betim R$80, Passport R$250)
+- [x] Verify animation triggers on price changes
+- [x] Verify no animation when price stays same
+- [ ] Test animation in preview environment
+- [ ] Save checkpoint
+
+### Implementation Details
+- [x] Component: client/src/components/AnimatedPrice.tsx
+- [x] Uses framer-motion for smooth transitions
+- [x] Animation: opacity 0→1, scale 0.95→1.0
+- [x] Timing: 0.4s easeOut
+- [x] Accessibility: Respects prefers-reduced-motion
+- [x] Tests: server/animated-price-logic.test.ts (25 tests passing)
+
+### Status
+✅ Animation fully implemented
+✅ 25 vitest tests passing
+✅ TypeScript compilation: 0 errors
+✅ Ready for preview testing and production deployment
