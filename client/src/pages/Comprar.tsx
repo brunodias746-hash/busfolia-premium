@@ -4,12 +4,13 @@ import { trpc } from "@/lib/trpc";
 import { trpcClient } from "@/lib/trpcClient";
 import { formatCurrency, formatCPF, formatPhone } from "@/lib/constants";
 import { useState, useMemo, useCallback, useEffect } from "react";
-import { ArrowLeft, ArrowRight, Plus, Trash2, Loader2, ShieldCheck, User, MapPin, CreditCard, Check, MessageCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, Plus, Trash2, Loader2, ShieldCheck, User, MapPin, CreditCard, Check, MessageCircle, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { PublicLayout } from "@/components/PublicLayout";
 import { SimpleManualPixPayment } from "@/components/SimpleManualPixPayment";
 import { AnimatedPrice } from "@/components/AnimatedPrice";
 import { trackInitiateCheckout } from "@/utils/meta-pixel";
+import { isSoldOutDate } from "@shared/const";
 
 // Valida CPF usando algoritmo oficial
 function validateCPF(cpf: string): boolean {
@@ -184,7 +185,9 @@ export default function Comprar() {
   function validateStep0(): boolean {
     const e: Record<string, string> = {};
     if (form.purchaseType === 'single' && !form.transportDate) e.transportDate = "Selecione uma data";
+    if (form.purchaseType === 'single' && form.transportDate && isSoldOutDate(form.transportDate)) e.transportDate = "Esta data está esgotada";
     if (form.purchaseType === 'multiple' && form.transportDates.length < 2) e.transportDates = "Selecione pelo menos 2 datas";
+    if (form.purchaseType === 'multiple' && form.transportDates.some(d => isSoldOutDate(d))) e.transportDates = "Uma ou mais datas selecionadas estão esgotadas";
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -484,29 +487,45 @@ export default function Comprar() {
                 <div>
                   <label className="text-sm font-medium text-foreground/80 mb-3 block">SELECIONE 1 DATA</label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {dates.map((d) => (
+                    {dates.map((d) => {
+                      const isSoldOut = isSoldOutDate(d);
+                      return (
                       <button
                         key={d}
+                        disabled={isSoldOut}
                         onClick={() => {
-                          setForm(prev => ({ ...prev, transportDate: d }));
-                          if (errors.transportDate) {
-                            setErrors(prev => {
-                              const updated = { ...prev };
-                              delete updated.transportDate;
-                              return updated;
-                            });
+                          if (!isSoldOut) {
+                            setForm(prev => ({ ...prev, transportDate: d }));
+                            if (errors.transportDate) {
+                              setErrors(prev => {
+                                const updated = { ...prev };
+                                delete updated.transportDate;
+                                return updated;
+                              });
+                            }
                           }
                         }}
-                        className={`border-2 rounded-xl p-3 text-center transition-all ${
-                          form.transportDate === d
+                        className={`border-2 rounded-xl p-3 text-center transition-all relative ${
+                          isSoldOut
+                            ? "border-red-400/30 bg-red-500/5 opacity-60 cursor-not-allowed"
+                            : form.transportDate === d
                             ? "border-primary bg-primary/10"
                             : "border-white/10 hover:border-white/20 bg-white/5"
                         }`}
                       >
                         <div className="text-sm font-bold">{d.split(" ")[0]}</div>
                         <div className="text-xs text-muted-foreground">{d.split(" ")[2]}</div>
+                        {isSoldOut && (
+                          <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40">
+                            <div className="text-center">
+                              <Lock className="w-4 h-4 mx-auto mb-1 text-red-400" />
+                              <div className="text-xs font-bold text-red-400">ESGOTADO</div>
+                            </div>
+                          </div>
+                        )}
                       </button>
-                    ))}
+                    );
+                    })}
                   </div>
                   {errors.transportDate && <p className="text-xs text-red-400 mt-2">{errors.transportDate}</p>}
                 </div>
@@ -516,37 +535,53 @@ export default function Comprar() {
                 <div>
                   <label className="text-sm font-medium text-foreground/80 mb-3 block">SELECIONE 2 OU MAIS DATAS</label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {dates.map((d) => (
+                    {dates.map((d) => {
+                      const isSoldOut = isSoldOutDate(d);
+                      return (
                       <button
                         key={d}
+                        disabled={isSoldOut}
                         onClick={() => {
-                          setForm(prev => {
-                            const isSelected = prev.transportDates.includes(d);
-                            return {
-                              ...prev,
-                              transportDates: isSelected
-                                ? prev.transportDates.filter(date => date !== d)
-                                : [...prev.transportDates, d]
-                            };
-                          });
-                          if (errors.transportDates) {
-                            setErrors(prev => {
-                              const updated = { ...prev };
-                              delete updated.transportDates;
-                              return updated;
+                          if (!isSoldOut) {
+                            setForm(prev => {
+                              const isSelected = prev.transportDates.includes(d);
+                              return {
+                                ...prev,
+                                transportDates: isSelected
+                                  ? prev.transportDates.filter(date => date !== d)
+                                  : [...prev.transportDates, d]
+                              };
                             });
+                            if (errors.transportDates) {
+                              setErrors(prev => {
+                                const updated = { ...prev };
+                                delete updated.transportDates;
+                                return updated;
+                              });
+                            }
                           }
                         }}
-                        className={`border-2 rounded-xl p-3 text-center transition-all ${
-                          form.transportDates.includes(d)
+                        className={`border-2 rounded-xl p-3 text-center transition-all relative ${
+                          isSoldOut
+                            ? "border-red-400/30 bg-red-500/5 opacity-60 cursor-not-allowed"
+                            : form.transportDates.includes(d)
                             ? "border-primary bg-primary/10"
                             : "border-white/10 hover:border-white/20 bg-white/5"
                         }`}
                       >
                         <div className="text-sm font-bold">{d.split(" ")[0]}</div>
                         <div className="text-xs text-muted-foreground">{d.split(" ")[2]}</div>
+                        {isSoldOut && (
+                          <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40">
+                            <div className="text-center">
+                              <Lock className="w-4 h-4 mx-auto mb-1 text-red-400" />
+                              <div className="text-xs font-bold text-red-400">ESGOTADO</div>
+                            </div>
+                          </div>
+                        )}
                       </button>
-                    ))}
+                    );
+                    })}
                   </div>
                   {errors.transportDates && <p className="text-xs text-red-400 mt-2">{errors.transportDates}</p>}
                   {form.transportDates.length > 0 && (

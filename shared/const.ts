@@ -11,3 +11,15 @@ export const PLRS_2026_EVENT_DATES = [
   "12 de junho de 2026",
   "13 de junho de 2026",
 ];
+
+// Sold-out dates (no new purchases allowed)
+export const SOLD_OUT_DATES = [
+  "05 de junho de 2026", // June 5th - buses are full
+];
+
+// Helper function to check if a date is sold out
+export function isSoldOutDate(dateStr: string): boolean {
+  return SOLD_OUT_DATES.some(soldOutDate => 
+    dateStr.toLowerCase().includes('05') && dateStr.toLowerCase().includes('junho')
+  );
+}

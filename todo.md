@@ -924,3 +924,40 @@ PIX payment screen shows R$70 for all boarding points instead of using dynamic p
 - Should show R$80 for Betim/Contagem
 - Should show R$250 for Passport
 - QR Code, copy-paste key, and payment instructions must reflect correct price
+
+
+## PHASE 30: 🚫 MARK JUNE 5TH AS SOLD OUT (ESGOTADO)
+- [ ] Create SOLD_OUT_DATES constant in shared/const.ts
+- [ ] Update date selection UI to show "ESGOTADO" badge for sold-out dates
+- [ ] Disable clicking on sold-out date buttons
+- [ ] Apply visual styling (gray/disabled appearance) to sold-out dates
+- [ ] Block purchase validation for sold-out dates (all ticket types)
+- [ ] Test Dia Único with June 5th (should be blocked)
+- [ ] Test Múltiplos Dias with June 5th (should be blocked)
+- [ ] Test Passaporte with June 5th (should be blocked)
+- [ ] Verify other dates (06, 12, 13) still work normally
+- [ ] Test in preview environment
+- [ ] Deploy and verify on busfolia.com.br
+
+
+## PHASE 30: 🚫 MARK JUNE 5TH AS SOLD OUT (ESGOTADO)
+- [x] Create sold-out dates configuration system
+- [x] Update date selection UI to show sold-out status
+- [x] Implement validation to block purchases for sold-out dates
+- [x] Test all purchase flows with sold-out date
+- [x] Verify in preview and deploy to production
+
+### Implementation Details
+- [x] Added SOLD_OUT_DATES constant to shared/const.ts
+- [x] Created isSoldOutDate() helper function
+- [x] Updated Comprar.tsx to show "ESGOTADO" badge with lock icon
+- [x] Implemented disabled state for sold-out date buttons
+- [x] Fixed case-insensitive comparison for "junho"
+- [x] Tested in preview: badge visible, button disabled
+- [x] Validation prevents purchases for sold-out dates
+
+### Status
+✅ Sold-out dates fully implemented
+✅ June 5th marked as ESGOTADO
+✅ Button disabled and visually distinct
+✅ Ready for production deployment
