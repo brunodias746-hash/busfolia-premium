@@ -14,7 +14,7 @@ const COLORS = {
 
 // ─── Types ───
 export interface EnrichedPassenger {
-  id: number;
+  id: number | string;
   name: string;
   cpf: string;
   eventName: string;
@@ -23,6 +23,7 @@ export interface EnrichedPassenger {
   boardingPoint: string;
   transportDate: string;
   checkInStatus: string;
+  origem?: string;
 }
 
 export interface EnrichedOrder {
@@ -373,7 +374,7 @@ function createPassengersSheet(workbook: ExcelJS.Workbook, input: ExportInput) {
   sheet.getRow(2).height = 8;
 
   // ─── Row 3: Column Headers (Gold) ───
-  const headers = ["#", "Nome", "CPF", "Evento", "Pedido", "Status", "Ponto de Embarque", "Data Viagem", "Ingresso"];
+  const headers = ["#", "Nome", "CPF", "Evento", "Pedido", "Status", "Ponto de Embarque", "Data Viagem", "Ingresso", "Origem"];
   const headerRow = sheet.getRow(3);
   headers.forEach((h, i) => {
     const cell = headerRow.getCell(i + 1);
@@ -394,7 +395,7 @@ function createPassengersSheet(workbook: ExcelJS.Workbook, input: ExportInput) {
   sheet.views = [{ state: "frozen", ySplit: 3, xSplit: 0 }];
 
   // AutoFilter on row 3
-  sheet.autoFilter = { from: "A3", to: "I3" };
+  sheet.autoFilter = { from: "A3", to: "J3" };
 
   // ─── Data Rows ───
   // Only include paid passengers (already filtered by getPassengersForExport which joins on paid orders)
@@ -415,9 +416,10 @@ function createPassengersSheet(workbook: ExcelJS.Workbook, input: ExportInput) {
     row.getCell(7).value = p.boardingPoint;
     row.getCell(8).value = travelDate;
     row.getCell(9).value = checkInLabel;
+    row.getCell(10).value = p.origem || "Pago";
 
     // Font for all cells
-    for (let i = 1; i <= 9; i++) {
+    for (let i = 1; i <= 10; i++) {
       row.getCell(i).font = { name: "Arial", size: 10 };
       row.getCell(i).alignment = { horizontal: i === 1 ? "center" : "left", vertical: "middle" };
     }
@@ -425,10 +427,11 @@ function createPassengersSheet(workbook: ExcelJS.Workbook, input: ExportInput) {
     row.getCell(5).alignment = { horizontal: "center", vertical: "middle" };
     row.getCell(8).alignment = { horizontal: "center", vertical: "middle" };
     row.getCell(9).alignment = { horizontal: "center", vertical: "middle" };
+    row.getCell(10).alignment = { horizontal: "center", vertical: "middle" };
 
     // Zebra striping
     if (idx % 2 === 0) {
-      for (let i = 1; i <= 9; i++) {
+      for (let i = 1; i <= 10; i++) {
         setFill(row.getCell(i), COLORS.LIGHT_GRAY);
       }
     }
@@ -446,8 +449,20 @@ function createPassengersSheet(workbook: ExcelJS.Workbook, input: ExportInput) {
       statusCell.font = { name: "Arial", size: 10, bold: true, color: { argb: COLORS.WHITE } };
     }
 
+    // Origin color coding (Manual passengers in light blue)
+    if (p.origem === "Manual") {
+      for (let i = 1; i <= 10; i++) {
+        const cell = row.getCell(i);
+        if (idx % 2 === 0) {
+          setFill(cell, "FFE0F2FE"); // Light blue on gray
+        } else {
+          setFill(cell, "FFBFDBFE"); // Slightly darker light blue
+        }
+      }
+    }
+
     // Borders
-    setBorder(row, 9);
+    setBorder(row, 10);
     row.height = 22;
   });
 }

@@ -538,8 +538,38 @@ export async function getPassengersForExport(eventId?: number) {
       boardingPoint: bp ? `${bp.city} - ${bp.locationName}` : "",
       transportDate: order.transportDates ? JSON.parse(order.transportDates)[0] : "",
       checkInStatus: p.checkInStatus,
+      origem: "Pago",
     });
   }
+
+  // Add manual passengers
+  const { manualPassengers: manualPassengersTable } = await import("../drizzle/schema");
+  let manualRows;
+  if (eventId) {
+    manualRows = await db.select().from(manualPassengersTable).where(eq(manualPassengersTable.eventId, eventId)).orderBy(manualPassengersTable.name);
+  } else {
+    manualRows = await db.select().from(manualPassengersTable).orderBy(manualPassengersTable.name);
+  }
+
+  for (const mp of manualRows) {
+    const event = await getEventById(mp.eventId);
+    const bp = mp.boardingPointId ? await getBoardingPointById(mp.boardingPointId) : null;
+    enriched.push({
+      id: `manual-${mp.id}`,
+      name: mp.name,
+      cpf: "",
+      eventName: event?.name ?? "",
+      orderShortId: mp.referenceOrderId ?? "-",
+      orderStatus: "paid",
+      boardingPoint: bp ? `${bp.city} - ${bp.locationName}` : "",
+      transportDate: mp.travelDate,
+      checkInStatus: "pending",
+      origem: "Manual",
+    });
+  }
+
+  // Sort by name
+  enriched.sort((a, b) => a.name.localeCompare(b.name));
   return enriched;
 }
 
