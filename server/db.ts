@@ -670,18 +670,32 @@ export async function countPaidPassengersForDate(eventId: number, travelDate: st
   const db = await getDb();
   if (!db) return 0;
   
-  // Count passengers from paid orders
-  const paidOrdersResult = await db
-    .select({ count: sql<number>`COUNT(*)` })
-    .from(passengers)
-    .innerJoin(orders, eq(passengers.orderId, orders.id))
+  // Get all paid orders for this event
+  const paidOrders = await db
+    .select()
+    .from(orders)
     .where(and(
       eq(orders.eventId, eventId),
-      eq(orders.status, 'paid'),
-      eq(sql`DATE(${orders.createdAt})`, travelDate)
+      eq(orders.status, 'paid')
     ));
   
-  const paidOrdersCount = paidOrdersResult[0]?.count || 0;
+  // Count passengers whose order includes this travelDate
+  let paidOrdersCount = 0;
+  for (const order of paidOrders) {
+    try {
+      const transportDates = JSON.parse(order.transportDates);
+      if (Array.isArray(transportDates) && transportDates.includes(travelDate)) {
+        // Count all passengers for this order
+        const passengerCount = await db
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(passengers)
+          .where(eq(passengers.orderId, order.id));
+        paidOrdersCount += passengerCount[0]?.count || 0;
+      }
+    } catch (e) {
+      // Skip if transportDates is not valid JSON
+    }
+  }
   
   // Count manually added passengers
   const manualPassengersResult = await db
