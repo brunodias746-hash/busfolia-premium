@@ -325,7 +325,6 @@ function PixOrderForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [boardingPointId, setBoardingPointId] = useState<number | null>(null);
-  const [purchaseDate, setPurchaseDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [purchaseType, setPurchaseType] = useState<"single" | "multiple" | "all_days">("single");
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [passengers, setPassengers] = useState<Passenger[]>([{ id: "1", name: "", email: "" }]);
@@ -391,7 +390,6 @@ function PixOrderForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
         customerName,
         customerEmail,
         boardingPointId,
-        purchaseDate,
         purchaseType,
         transportDates: datesForSubmit,
         quantity: passengers.length,
@@ -449,14 +447,17 @@ function PixOrderForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-1 block">Data da Compra *</label>
-              <input
-                type="date"
-                value={purchaseDate}
-                onChange={(e) => setPurchaseDate(e.target.value)}
-                className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              <label className="text-sm font-medium mb-1 block">Data da Viagem *</label>
+              <select
+                value={selectedDates[0] ?? ""}
+                onChange={(e) => setSelectedDates(e.target.value ? [e.target.value] : [])}
+                className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 [&>option]:text-black"
                 required
-              />
+              >
+                <option value="">Selecione a data da viagem</option>
+                <option value="2026-06-12">12 de Junho de 2026</option>
+                <option value="2026-06-13">13 de Junho de 2026</option>
+              </select>
             </div>
 
             <div>
