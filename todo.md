@@ -998,3 +998,15 @@ PIX payment screen shows R$70 for all boarding points instead of using dynamic p
 ✅ Bug fixed - Manual passengers now appear in Excel export
 ✅ Origem column identifies manual vs paid passengers
 ✅ Ready for production deployment
+
+## PHASE 31: 🎟️ SEAT AVAILABILITY COUNTER SYSTEM
+- [ ] Design database schema for seat availability tracking
+- [ ] Create seat_availability table (eventId, travelDate, totalSeats, availableSeats)
+- [ ] Implement seat counter logic on purchase (decrement by passenger count)
+- [ ] Implement seat counter logic on manual passenger addition
+- [ ] Add visual indicators: green (>20), yellow (10-20), red (<10), gray (0)
+- [ ] Create admin panel for manual seat adjustment
+- [ ] Mark June 6th as ESGOTADO (sold out)
+- [ ] Test counter with simulated purchases
+- [ ] Verify real-time updates without page reload
+- [ ] Deploy and verify on busfolia.com.br

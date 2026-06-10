@@ -134,3 +134,17 @@ export const payments = mysqlTable("payments", {
 
 export type Payment = typeof payments.$inferSelect;
 export type InsertPayment = typeof payments.$inferInsert;
+
+// ─── Seat Availability (Track available seats per date per event) ───
+export const seatAvailability = mysqlTable("seat_availability", {
+  id: int("id").autoincrement().primaryKey(),
+  eventId: int("eventId").notNull(),
+  travelDate: varchar("travelDate", { length: 10 }).notNull(), // ISO format: YYYY-MM-DD
+  totalSeats: int("totalSeats").notNull().default(100),
+  availableSeats: int("availableSeats").notNull().default(100),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SeatAvailability = typeof seatAvailability.$inferSelect;
+export type InsertSeatAvailability = typeof seatAvailability.$inferInsert;

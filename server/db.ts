@@ -1,7 +1,7 @@
 import { eq, and, sql, desc, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, events, boardingPoints, orders, passengers, payments } from "../drizzle/schema";
-import type { InsertEvent, InsertBoardingPoint, InsertOrder, InsertPassenger, InsertPayment } from "../drizzle/schema";
+import { InsertUser, users, events, boardingPoints, orders, passengers, payments, seatAvailability } from "../drizzle/schema";
+import type { InsertEvent, InsertBoardingPoint, InsertOrder, InsertPassenger, InsertPayment, SeatAvailability } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -635,4 +635,72 @@ export async function getOrdersForExport(eventId?: number) {
     });
   }
   return enriched;
+}
+
+
+// ─── Seat Availability Functions ───
+export async function getSeatAvailability(eventId: number, travelDate: string): Promise<SeatAvailability | null> {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db
+    .select()
+    .from(seatAvailability)
+    .where(and(eq(seatAvailability.eventId, eventId), eq(seatAvailability.travelDate, travelDate)))
+    .limit(1);
+  
+  return result[0] || null;
+}
+
+export async function getAllSeatAvailability(eventId: number): Promise<SeatAvailability[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db
+    .select()
+    .from(seatAvailability)
+    .where(eq(seatAvailability.eventId, eventId));
+}
+
+export async function decrementAvailableSeats(eventId: number, travelDate: string, count: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  
+  await db
+    .update(seatAvailability)
+    .set({ availableSeats: sql`availableSeats - ${count}` })
+    .where(and(eq(seatAvailability.eventId, eventId), eq(seatAvailability.travelDate, travelDate)));
+}
+
+export async function incrementAvailableSeats(eventId: number, travelDate: string, count: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  
+  await db
+    .update(seatAvailability)
+    .set({ availableSeats: sql`availableSeats + ${count}` })
+    .where(and(eq(seatAvailability.eventId, eventId), eq(seatAvailability.travelDate, travelDate)));
+}
+
+export async function updateTotalSeats(eventId: number, travelDate: string, totalSeats: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  
+  const existing = await getSeatAvailability(eventId, travelDate);
+  
+  if (existing) {
+    // Update existing record
+    await db
+      .update(seatAvailability)
+      .set({ totalSeats, availableSeats: totalSeats })
+      .where(and(eq(seatAvailability.eventId, eventId), eq(seatAvailability.travelDate, travelDate)));
+  } else {
+    // Create new record
+    await db.insert(seatAvailability).values({
+      eventId,
+      travelDate,
+      totalSeats,
+      availableSeats: totalSeats,
+    });
+  }
 }

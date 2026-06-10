@@ -78,6 +78,13 @@
       "when": 1780413814833,
       "tag": "0010_perpetual_dazzler",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1781058367034,
+      "tag": "0011_normal_rattler",
+      "breakpoints": true
     }
   ]
 }
