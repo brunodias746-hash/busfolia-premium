@@ -10,7 +10,14 @@ import { PublicLayout } from "@/components/PublicLayout";
 import { SimpleManualPixPayment } from "@/components/SimpleManualPixPayment";
 import { AnimatedPrice } from "@/components/AnimatedPrice";
 import { trackInitiateCheckout } from "@/utils/meta-pixel";
-import { isSoldOutDate } from "@shared/const";
+import { isSoldOutDate, getSeatIndicator } from "@shared/const";
+
+// Convert date string format "12 de junho de 2026" to "2026-06-12"
+function getDateString(dateStr: string): string {
+  const dayNum = parseInt(dateStr.split(" ")[0]);
+  const monthStr = dateStr.includes("junho") ? "06" : dateStr.includes("maio") ? "05" : "06";
+  return `2026-${monthStr}-${String(dayNum).padStart(2, "0")}`;
+}
 
 // Valida CPF usando algoritmo oficial
 function validateCPF(cpf: string): boolean {
@@ -126,6 +133,12 @@ export default function Comprar() {
   const eventId = useMemo(() => event?.id ?? 0, [event]);
 
   const { data: boardingPoints } = trpc.events.boardingPoints.useQuery(
+    { eventId },
+    { enabled: eventId > 0 }
+  );
+
+  // Fetch seat availability for all dates
+  const { data: seatAvailability } = trpc.seats.getAllAvailability.useQuery(
     { eventId },
     { enabled: eventId > 0 }
   );
@@ -489,6 +502,10 @@ export default function Comprar() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {dates.map((d) => {
                       const isSoldOut = isSoldOutDate(d);
+                      const dateStr = getDateString(d);
+                      const seatData = seatAvailability?.find(s => s.travelDate === dateStr);
+                      const availableSeats = seatData?.availableSeats ?? 0;
+                      const indicator = getSeatIndicator(availableSeats);
                       return (
                       <button
                         key={d}
@@ -515,6 +532,11 @@ export default function Comprar() {
                       >
                         <div className="text-sm font-bold">{d.split(" ")[0]}</div>
                         <div className="text-xs text-muted-foreground">{d.split(" ")[2]}</div>
+                        {!isSoldOut && seatData && (
+                          <div className="text-xs font-medium mt-2 text-foreground">
+                            <div>{indicator.icon} {indicator.label}</div>
+                          </div>
+                        )}
                         {isSoldOut && (
                           <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40">
                             <div className="text-center">
