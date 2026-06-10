@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users, events, boardingPoints, orders, passengers, payments, seatAvailability } from "../drizzle/schema";
 import type { InsertEvent, InsertBoardingPoint, InsertOrder, InsertPassenger, InsertPayment, SeatAvailability } from "../drizzle/schema";
 import { ENV } from './_core/env';
+import { gt } from "drizzle-orm";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -666,17 +667,22 @@ export async function getSeatAvailability(eventId: number, travelDate: string): 
 }
 
 // Count all paid passengers for a specific date (orders + manual passengers)
+// Cutoff timestamp: only count orders created after this point
+// This allows resetting available seats to a specific number
+const SEATS_CUTOFF_TIMESTAMP = new Date('2026-06-10T13:00:00Z');
+
 export async function countPaidPassengersForDate(eventId: number, travelDate: string): Promise<number> {
   const db = await getDb();
   if (!db) return 0;
   
-  // Get all paid orders for this event
+  // Get all paid orders for this event created AFTER the cutoff
   const paidOrders = await db
     .select()
     .from(orders)
     .where(and(
       eq(orders.eventId, eventId),
-      eq(orders.status, 'paid')
+      eq(orders.status, 'paid'),
+      gt(orders.createdAt, SEATS_CUTOFF_TIMESTAMP)
     ));
   
   // Count passengers whose order includes this travelDate
@@ -697,13 +703,14 @@ export async function countPaidPassengersForDate(eventId: number, travelDate: st
     }
   }
   
-  // Count manually added passengers
+  // Count manually added passengers created AFTER the cutoff
   const manualPassengersResult = await db
     .select({ count: sql<number>`COUNT(*)` })
     .from(sql`manual_passengers`)
     .where(and(
       eq(sql`eventId`, eventId),
-      eq(sql`travelDate`, travelDate)
+      eq(sql`travelDate`, travelDate),
+      gt(sql`createdAt`, SEATS_CUTOFF_TIMESTAMP)
     ));
   
   const manualCount = manualPassengersResult[0]?.count || 0;
