@@ -22,6 +22,7 @@ const AdminPassageiros = lazy(() => import("./pages/admin/Passageiros"));
 const AdminLista = lazy(() => import("./pages/admin/Lista").then(m => ({ default: m.ListaPage })));
 const AdminCheckin = lazy(() => import("./pages/admin/Checkin"));
 const AdminFinanceiro = lazy(() => import("./pages/admin/Financeiro"));
+const AdminVagas = lazy(() => import("./pages/admin/Vagas"));
 const Ingresso = lazy(() => import("./pages/Ingresso"));
 
 function AdminFallback() {
@@ -59,6 +60,7 @@ function Router() {
       <Route path="/admin/lista">{() => <Suspense fallback={<AdminFallback />}><AdminLista /></Suspense>}</Route>
       <Route path="/admin/checkin">{() => <Suspense fallback={<AdminFallback />}><AdminCheckin /></Suspense>}</Route>
       <Route path="/admin/financeiro">{() => <Suspense fallback={<AdminFallback />}><AdminFinanceiro /></Suspense>}</Route>
+      <Route path="/admin/vagas">{() => <Suspense fallback={<AdminFallback />}><AdminVagas /></Suspense>}</Route>
 
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

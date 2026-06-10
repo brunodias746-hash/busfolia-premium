@@ -1010,3 +1010,16 @@ PIX payment screen shows R$70 for all boarding points instead of using dynamic p
 - [ ] Test counter with simulated purchases
 - [ ] Verify real-time updates without page reload
 - [ ] Deploy and verify on busfolia.com.br
+
+
+## 🔧 CRITICAL: Real-Time Seat Counter (Total - Paid Passengers)
+- [ ] Refactor seat_availability table: store TOTAL seats instead of remaining
+- [ ] Create DB query to count paid passengers per day (orders.status='paid' + manual_passengers)
+- [ ] Update tRPC getAvailability to calculate: remaining = total - paid_count
+- [ ] Create admin panel to edit total seats per day
+- [ ] Implement automatic SOLD OUT when remaining = 0
+- [ ] Test with real paid orders (verify counter decrements on page reload)
+- [ ] Test with manually added passengers (verify they count in calculation)
+- [ ] Test cancellation/refund (verify seat is returned)
+- [ ] Deploy to production and verify on busfolia.com.br
+- [ ] Confirm counter updates correctly with new purchases

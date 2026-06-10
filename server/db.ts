@@ -649,50 +649,89 @@ export async function getSeatAvailability(eventId: number, travelDate: string): 
     .where(and(eq(seatAvailability.eventId, eventId), eq(seatAvailability.travelDate, travelDate)))
     .limit(1);
   
-  return result[0] || null;
+  if (!result[0]) return null;
+  
+  // Calculate available seats in real-time: total - paid passengers
+  const paidCount = await countPaidPassengersForDate(eventId, travelDate);
+  const availableSeats = Math.max(0, result[0].totalSeats - paidCount);
+  
+  return {
+    ...result[0],
+    availableSeats,
+  };
+}
+
+// Count all paid passengers for a specific date (orders + manual passengers)
+export async function countPaidPassengersForDate(eventId: number, travelDate: string): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  
+  // Count passengers from paid orders
+  const paidOrdersResult = await db
+    .select({ count: sql<number>`COUNT(*)` })
+    .from(passengers)
+    .innerJoin(orders, eq(passengers.orderId, orders.id))
+    .where(and(
+      eq(orders.eventId, eventId),
+      eq(orders.status, 'paid'),
+      eq(sql`DATE(${orders.createdAt})`, travelDate)
+    ));
+  
+  const paidOrdersCount = paidOrdersResult[0]?.count || 0;
+  
+  // Count manually added passengers
+  const manualPassengersResult = await db
+    .select({ count: sql<number>`COUNT(*)` })
+    .from(sql`manual_passengers`)
+    .where(and(
+      eq(sql`eventId`, eventId),
+      eq(sql`travelDate`, travelDate)
+    ));
+  
+  const manualCount = manualPassengersResult[0]?.count || 0;
+  
+  return paidOrdersCount + manualCount;
 }
 
 export async function getAllSeatAvailability(eventId: number): Promise<SeatAvailability[]> {
   const db = await getDb();
   if (!db) return [];
   
-  return await db
+  const results = await db
     .select()
     .from(seatAvailability)
     .where(eq(seatAvailability.eventId, eventId));
+  
+  // Calculate available seats in real-time for each date
+  return Promise.all(results.map(async (seat) => {
+    const paidCount = await countPaidPassengersForDate(eventId, seat.travelDate);
+    const availableSeats = Math.max(0, seat.totalSeats - paidCount);
+    return {
+      ...seat,
+      availableSeats,
+    };
+  }));
 }
 
-export async function decrementAvailableSeats(eventId: number, travelDate: string, count: number): Promise<void> {
-  const db = await getDb();
-  if (!db) return;
-  
-  await db
-    .update(seatAvailability)
-    .set({ availableSeats: sql`availableSeats - ${count}` })
-    .where(and(eq(seatAvailability.eventId, eventId), eq(seatAvailability.travelDate, travelDate)));
-}
-
-export async function incrementAvailableSeats(eventId: number, travelDate: string, count: number): Promise<void> {
-  const db = await getDb();
-  if (!db) return;
-  
-  await db
-    .update(seatAvailability)
-    .set({ availableSeats: sql`availableSeats + ${count}` })
-    .where(and(eq(seatAvailability.eventId, eventId), eq(seatAvailability.travelDate, travelDate)));
-}
+// Deprecated: These functions are replaced by real-time calculation
+// export async function decrementAvailableSeats(eventId: number, travelDate: string, count: number): Promise<void> {}
+// export async function incrementAvailableSeats(eventId: number, travelDate: string, count: number): Promise<void> {}
 
 export async function updateTotalSeats(eventId: number, travelDate: string, totalSeats: number): Promise<void> {
   const db = await getDb();
   if (!db) return;
   
-  const existing = await getSeatAvailability(eventId, travelDate);
+  const existing = await db
+    .select()
+    .from(seatAvailability)
+    .where(and(eq(seatAvailability.eventId, eventId), eq(seatAvailability.travelDate, travelDate)))
+    .limit(1);
   
-  if (existing) {
-    // Update existing record
+  if (existing[0]) {
+    // Update existing record (only totalSeats, availableSeats is calculated in real-time)
     await db
       .update(seatAvailability)
-      .set({ totalSeats, availableSeats: totalSeats })
+      .set({ totalSeats })
       .where(and(eq(seatAvailability.eventId, eventId), eq(seatAvailability.travelDate, travelDate)));
   } else {
     // Create new record
