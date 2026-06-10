@@ -469,20 +469,18 @@ export default function Comprar() {
                   </div>
                 </button>
 
-                {/* Passaporte - Todos os Dias */}
+                {/* Passaporte - Todos os Dias (ESGOTADO) */}
                 <button
+                  disabled={true}
                   onClick={() => setForm(f => ({ ...f, purchaseType: 'all_days' }))}
-                  className={`relative border-2 rounded-2xl p-6 transition-all ${
-                    form.purchaseType === 'all_days'
-                      ? "border-primary bg-primary/5"
-                      : "border-white/10 hover:border-white/20 bg-white/5"
-                  }`}
+                  className={`relative border-2 rounded-2xl p-6 transition-all border-red-400/30 bg-red-500/5 opacity-60 cursor-not-allowed`}
                 >
-                  {form.purchaseType === 'all_days' && (
-                    <div className="absolute top-3 right-3 w-6 h-6 rounded-full gold-gradient flex items-center justify-center">
-                      <Check className="w-4 h-4 text-black" />
+                  <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/40">
+                    <div className="text-center">
+                      <Lock className="w-6 h-6 mx-auto mb-2 text-red-400" />
+                      <div className="text-sm font-bold text-red-400">ESGOTADO</div>
                     </div>
-                  )}
+                  </div>
                   <div className="absolute top-3 left-3">
                     <span className="bg-primary text-black text-xs font-bold px-2.5 py-1 rounded-full">MAIS POPULAR</span>
                   </div>
