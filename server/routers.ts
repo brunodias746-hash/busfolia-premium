@@ -35,6 +35,9 @@ import {
   getFinancialData,
   getPassengersForExport,
   getOrderWithDetails,
+  getSeatAvailability,
+  getAllSeatAvailability,
+  updateTotalSeats,
 } from "./db";
 import { getStripe } from "./lib/stripe";
 import { normalizeDateString } from "./lib/date-normalizer";
@@ -592,6 +595,28 @@ export const appRouter = router({
         }
 
         return { success: true, message: "Pagamento confirmado com sucesso" };
+      }),
+  }),
+
+  // ─── Seat Availability ───
+  seats: router({
+    getAvailability: publicProcedure
+      .input(z.object({ eventId: z.number(), travelDate: z.string() }))
+      .query(async ({ input }) => {
+        return getSeatAvailability(input.eventId, input.travelDate);
+      }),
+    
+    getAllAvailability: publicProcedure
+      .input(z.object({ eventId: z.number() }))
+      .query(async ({ input }) => {
+        return getAllSeatAvailability(input.eventId);
+      }),
+    
+    updateSeats: adminProcedure
+      .input(z.object({ eventId: z.number(), travelDate: z.string(), totalSeats: z.number().int().positive() }))
+      .mutation(async ({ input }) => {
+        await updateTotalSeats(input.eventId, input.travelDate, input.totalSeats);
+        return { success: true };
       }),
   }),
 
