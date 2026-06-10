@@ -768,6 +768,7 @@ export const appRouter = router({
             customerName: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
             customerEmail: z.string().email("E-mail inválido"),
             boardingPointId: z.number().int().positive(),
+            purchaseDate: z.string().optional(),
             purchaseType: z.enum(["single", "multiple", "all_days"]),
             transportDates: z.array(z.string()).min(1, "Selecione pelo menos uma data"),
             quantity: z.number().int().min(1, "Quantidade mínima é 1"),
