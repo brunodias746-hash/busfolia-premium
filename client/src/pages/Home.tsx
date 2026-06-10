@@ -521,9 +521,9 @@ function TestimonialsSection() {
 
 function FAQSection() {
   const faqs = [
-    { q: "O transporte inclui ida e volta?", a: "Sim! Todas as passagens incluem ida e volta garantida." },
-    { q: "Posso escolher o ponto de embarque?", a: "Sim, temos diversos pontos de embarque em BH e região metropolitana." },
-    { q: "Como funciona o pagamento?", a: "O pagamento é feito online via cartão de crédito, com processamento seguro pelo Stripe." },
+    { q: "O transporte inclui ida e volta?", a: "Sim! Todas as passagens incluem ida e volta garantida, com saída e retorno do mesmo ponto." },
+    { q: "Posso escolher o ponto de embarque?", a: "Sim, temos diversos pontos de embarque em BH e região metropolitana. Os valores variam conforme o ponto escolhido." },
+    { q: "Como funciona o pagamento?", a: "O pagamento é feito via PIX ou através de um link de pagamento enviado via WhatsApp. Rápido, seguro e sem taxas extras." },
     { q: "Posso cancelar minha passagem?", a: "Após a confirmação do pagamento, não será possível solicitar reembolso ou cancelamento da compra. Em caso de imprevistos, entre em contato pelo WhatsApp para verificarmos a possibilidade de transferência do ingresso para outra pessoa." },
   ];
   return (
@@ -532,7 +532,7 @@ function FAQSection() {
         <div className="text-center mb-8 sm:mb-12">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-black font-heading mb-2 sm:mb-3">Perguntas <span className="gold-text">Frequentes</span></h2>
         </div>
-        <Accordion type="single" collapsible className="space-y-2 sm:space-y-3">
+        <Accordion type="single" collapsible className="space-y-2 sm:space-y-3" defaultValue="faq-2">
           {faqs.map((faq, i) => (
             <AccordionItem key={i} value={`faq-${i}`} className="glass-card rounded-lg sm:rounded-xl border-none px-4 sm:px-6">
               <AccordionTrigger className="text-left text-sm sm:text-base font-medium hover:no-underline hover:text-primary py-3 sm:py-4">{faq.q}</AccordionTrigger>
