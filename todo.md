@@ -62,10 +62,10 @@
 - [x] Implementar busca por pedido
 
 ## FASE 10: ADMIN - EVENTOS
-- [ ] Todo evento criado deve aparecer na hero principal
-- [ ] Banner/capa enviado no admin deve alimentar a hero
-- [ ] Permitir editar evento
-- [ ] Permitir upload de capa (padrão: 1920x780)
+- [x] Todo evento criado deve aparecer na hero principal
+- [x] Banner/capa enviado no admin deve alimentar a hero
+- [x] Permitir editar evento
+- [x] Permitir upload de capa (padrão: 1920x780)
 
 ## FASE 11: EXPORTAÇÃO
 - [ ] Melhorar estrutura da planilha exportada
