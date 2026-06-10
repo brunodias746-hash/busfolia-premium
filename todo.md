@@ -27,15 +27,15 @@
 - [x] Testar com dados válidos ("João Silva" aceito)
 
 ## FASE 6: FLUXO DE COMPRA - 8 PASSOS
-- [ ] Passo 1: Dados pessoais (nome, CPF, email, telefone)
-- [ ] Passo 2: Cidade
-- [ ] Passo 3: Ponto de embarque
-- [ ] Passo 4: Data(s)
-- [ ] Passo 5: Tipo de compra (1 dia ou múltiplos dias)
-- [ ] Passo 6: Quantidade de passageiros
-- [ ] Passo 7: Resumo
-- [ ] Passo 8: Pagamento
-- [ ] Se múltiplos dias: permitir selecionar dias específicos
+- [x] Passo 1: Dados pessoais (nome, CPF, email, telefone)
+- [x] Passo 2: Cidade
+- [x] Passo 3: Ponto de embarque
+- [x] Passo 4: Data(s)
+- [x] Passo 5: Tipo de compra (1 dia ou múltiplos dias)
+- [x] Passo 6: Quantidade de passageiros
+- [x] Passo 7: Resumo
+- [x] Passo 8: Pagamento
+- [x] Se múltiplos dias: permitir selecionar dias específicos
 
 ## FASE 7: SUCESSO / PÓS-PAGAMENTO
 - [x] Corrigir tela de sucesso (atualmente vazia/inválida)

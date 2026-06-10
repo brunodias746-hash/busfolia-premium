@@ -1,4 +1,3 @@
-'use client';
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { trpcClient } from "@/lib/trpcClient";
@@ -48,6 +47,7 @@ interface FormData {
   customerEmail: string;
   customerPhone: string;
   boardingPointId: number;
+  city: string;
   transportDate: string;
   transportDates: string[];
   purchaseType: 'single' | 'multiple' | 'all_days';
@@ -67,26 +67,38 @@ const INITIAL_FORM: FormData = {
   customerEmail: "",
   customerPhone: "",
   boardingPointId: 0,
+  city: "",
   transportDate: "",
   transportDates: [],
   purchaseType: 'single',
   passengers: [{ name: "", cpf: "", boardingPointId: 0 }],
 };
 
+const STEP_LABELS = [
+  "Dados Pessoais",
+  "Cidade",
+  "Ponto de Embarque",
+  "Tipo de Compra",
+  "Data(s)",
+  "Passageiros",
+  "Resumo",
+  "Pagamento"
+];
+
 function StepIndicator({ current, steps }: { current: number; steps: string[] }) {
   return (
-    <div className="flex items-center justify-center gap-2 mb-8">
+    <div className="flex items-center justify-center gap-2 mb-8 overflow-x-auto pb-2">
       {steps.map((label, i) => (
-        <div key={i} className="flex items-center gap-2">
+        <div key={i} className="flex items-center gap-2 flex-shrink-0">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
             i <= current ? "gold-gradient text-black" : "bg-white/5 text-muted-foreground"
           }`}>
             {i + 1}
           </div>
-          <span className={`text-xs font-medium hidden sm:inline ${i <= current ? "text-primary" : "text-muted-foreground"}`}>
+          <span className={`text-xs font-medium hidden sm:inline whitespace-nowrap ${i <= current ? "text-primary" : "text-muted-foreground"}`}>
             {label}
           </span>
-          {i < steps.length - 1 && <div className={`w-8 h-px ${i < current ? "bg-primary" : "bg-white/10"}`} />}
+          {i < steps.length - 1 && <div className={`w-8 h-px flex-shrink-0 ${i < current ? "bg-primary" : "bg-white/10"}`} />}
         </div>
       ))}
     </div>
@@ -101,9 +113,9 @@ export default function Comprar() {
   const [couponMessage, setCouponMessage] = useState<{ type: 'success' | 'error' | null; text: string }>({ type: null, text: "" });
   const [appliedCoupon, setAppliedCoupon] = useState<{ couponId: string; discountPercentage: number; discountAmountCents: number } | null>(null);
   const [couponValidating, setCouponValidating] = useState(false);
-  // PIX Manual é o único método de pagamento disponível
   const [pixData, setPixData] = useState<{ orderId: number; shortId: string; qrCodeDataUrl: string; pixCopyPaste: string; totalAmountCents: number } | null>(null);
   const [pixOrderId, setPixOrderId] = useState<number | null>(null);
+  const [isCreatingOrder, setIsCreatingOrder] = useState(false);
 
   // Carregar dados salvos do localStorage ao montar o componente
   useEffect(() => {
@@ -143,23 +155,22 @@ export default function Comprar() {
     { enabled: eventId > 0 }
   );
 
-  // Stripe removido - apenas PIX Manual disponível
-
   const createPixOrder = trpc.checkout.createPixOrder.useMutation({
     onSuccess: (data) => {
       setPixData(data);
       setPixOrderId(data.orderId);
-      setStep(3);
+      setStep(7);
       toast.success("Codigo PIX gerado com sucesso!");
     },
     onError: (err) => {
       toast.error(err.message || "Erro ao criar pedido PIX");
+      setIsCreatingOrder(false);
     },
   });
 
   const checkPixStatus = trpc.checkout.checkPixStatus.useQuery(
     { orderId: pixOrderId ?? 0 },
-    { enabled: pixOrderId !== null && step === 3, refetchInterval: 2000 }
+    { enabled: pixOrderId !== null && step === 7, refetchInterval: 2000 }
   );
 
   const confirmPixPayment = trpc.checkout.confirmPixPayment.useMutation({
@@ -195,7 +206,53 @@ export default function Comprar() {
     return days.map((d: string) => `${d} de ${month} de ${year}`);
   }, [event]);
 
+  // Get unique cities from boarding points
+  const cities = useMemo(() => {
+    if (!boardingPoints) return [];
+    const uniqueCities = Array.from(new Set(boardingPoints.map(bp => bp.city)));
+    return uniqueCities.sort();
+  }, [boardingPoints]);
+
+  // Get boarding points for selected city
+  const boardingPointsForCity = useMemo(() => {
+    if (!boardingPoints || !form.city) return [];
+    return boardingPoints.filter(bp => bp.city === form.city);
+  }, [boardingPoints, form.city]);
+
+  // Validation functions
   function validateStep0(): boolean {
+    const e: Record<string, string> = {};
+    const nameParts = form.customerName.trim().split(/\s+/).filter(part => part.length > 0);
+    if (nameParts.length < 2) e.customerName = "Nome completo obrigatório (nome + sobrenome)";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.customerEmail)) e.customerEmail = "E-mail inválido";
+    const phoneClean = form.customerPhone.replace(/\D/g, "");
+    if (phoneClean.length < 10) e.customerPhone = "Telefone inválido";
+    const cpfClean = form.customerCpf.replace(/\D/g, "");
+    if (cpfClean.length !== 11) e.customerCpf = "CPF inválido (11 dígitos)";
+    else if (!validateCPF(cpfClean)) e.customerCpf = "CPF inválido";
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  }
+
+  function validateStep1(): boolean {
+    const e: Record<string, string> = {};
+    if (!form.city) e.city = "Selecione uma cidade";
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  }
+
+  function validateStep2(): boolean {
+    const e: Record<string, string> = {};
+    if (form.boardingPointId === 0) e.boardingPointId = "Selecione um ponto de embarque";
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  }
+
+  function validateStep3(): boolean {
+    return true; // No validation needed for purchase type selection
+  }
+
+  function validateStep4(): boolean {
     const e: Record<string, string> = {};
     if (form.purchaseType === 'single' && !form.transportDate) e.transportDate = "Selecione uma data";
     if (form.purchaseType === 'single' && form.transportDate && isSoldOutDate(form.transportDate)) e.transportDate = "Esta data está esgotada";
@@ -205,20 +262,9 @@ export default function Comprar() {
     return Object.keys(e).length === 0;
   }
 
-  function validateStep1(): boolean {
+  function validateStep5(): boolean {
     const e: Record<string, string> = {};
-    // Validate customer name: must have at least 2 words (name + surname)
-    const nameParts = form.customerName.trim().split(/\s+/).filter(part => part.length > 0);
-    if (nameParts.length < 2) e.customerName = "Nome completo obrigatório (nome + sobrenome)";
-    const cpfClean = form.customerCpf.replace(/\D/g, "");
-    if (cpfClean.length !== 11) e.customerCpf = "CPF inválido (11 dígitos)";
-    else if (!validateCPF(cpfClean)) e.customerCpf = "CPF inválido";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.customerEmail)) e.customerEmail = "E-mail inválido";
-    const phoneClean = form.customerPhone.replace(/\D/g, "");
-    if (phoneClean.length < 10) e.customerPhone = "Telefone inválido";
-    if (form.boardingPointId === 0) e.boardingPointId = "Selecione um ponto de embarque";
     form.passengers.forEach((p, i) => {
-      // Validate passenger name: must have at least 2 words (name + surname)
       const passengerNameParts = p.name.trim().split(/\s+/).filter(part => part.length > 0);
       if (passengerNameParts.length < 2) e[`passenger_${i}_name`] = "Nome completo obrigatório (nome + sobrenome)";
       const cpfClean = p.cpf.replace(/\D/g, "");
@@ -229,36 +275,35 @@ export default function Comprar() {
     return Object.keys(e).length === 0;
   }
 
-  // Controlled component handlers com useCallback
-  const handleTransportDateChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    setForm(prev => ({ ...prev, transportDate: value }));
-    // Clear error immediately when user selects
-    if (value && errors.transportDate) {
-      setErrors(prev => {
-        const updated = { ...prev };
-        delete updated.transportDate;
-        return updated;
-      });
-    }
-  }, [errors.transportDate]);
-
-  const handleBoardingPointChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = parseInt(e.target.value, 10);
-    setForm(prev => ({ ...prev, boardingPointId: value }));
-    // Clear error immediately when user selects
-    if (value !== 0 && errors.boardingPointId) {
-      setErrors(prev => {
-        const updated = { ...prev };
-        delete updated.boardingPointId;
-        return updated;
-      });
-    }
-  }, [errors.boardingPointId]);
-
   function handleNext() {
     if (step === 0 && validateStep0()) setStep(1);
     else if (step === 1 && validateStep1()) setStep(2);
+    else if (step === 2 && validateStep2()) setStep(3);
+    else if (step === 3 && validateStep3()) setStep(4);
+    else if (step === 4 && validateStep4()) setStep(5);
+    else if (step === 5 && validateStep5()) setStep(6);
+  }
+
+  function handlePayment() {
+    setIsCreatingOrder(true);
+    // The createPixOrder mutation will handle the order creation
+    createPixOrder.mutate({
+      eventId: eventId,
+      customerName: form.customerName,
+      customerCpf: form.customerCpf,
+      customerEmail: form.customerEmail,
+      customerPhone: form.customerPhone,
+      boardingPointId: form.boardingPointId,
+      transportDate: form.purchaseType === 'single' ? form.transportDate : form.transportDates[0] || '',
+      transportDatesCount: form.purchaseType === 'multiple' ? form.transportDates.length : 1,
+      purchaseType: form.purchaseType,
+      passengers: form.passengers.map(p => ({
+        name: p.name,
+        cpf: p.cpf,
+        boardingPointId: form.boardingPointId,
+      })),
+      origin: window.location.origin,
+    });
   }
 
   function addPassenger() {
@@ -294,7 +339,6 @@ export default function Comprar() {
   };
 
   const calculateTotal = (): number => {
-    // PIX Manual sem taxa - total = base price apenas
     if (!event) return 0;
     const dynamicBasePrice = getDynamicBasePrice();
     let baseCents = 0;
@@ -305,7 +349,7 @@ export default function Comprar() {
     } else if (form.purchaseType === 'all_days') {
       baseCents = 25000; // R$250 fixed price
     }
-    return baseCents * form.passengers.length; // Sem taxa
+    return baseCents * form.passengers.length;
   };
   
   const calculateBasePrice = (): number => {
@@ -322,23 +366,7 @@ export default function Comprar() {
     return baseCents;
   };
   
-  // Calculate Step 0 total (ticket only, no passengers multiplier)
-  const calculateStep0Total = (): number => {
-    if (!event) return 0;
-    const dynamicBasePrice = getDynamicBasePrice();
-    let baseCents = 0;
-    if (form.purchaseType === 'single') {
-      baseCents = dynamicBasePrice;
-    } else if (form.purchaseType === 'multiple') {
-      baseCents = dynamicBasePrice * form.transportDates.length;
-    } else if (form.purchaseType === 'all_days') {
-      baseCents = 25000; // R$250 fixed price
-    }
-    return baseCents;
-  };
-  
   const calculateTax = (): number => {
-    // PIX Manual não tem taxa
     return 0;
   };
   
@@ -406,242 +434,13 @@ export default function Comprar() {
         </h1>
         <p className="text-center text-xs sm:text-base text-muted-foreground mb-6 sm:mb-8">Pedro Leopoldo Rodeio Show 2026</p>
 
-        <StepIndicator current={step} steps={["Datas", "Dados", "Pagamento"]} />
+        <StepIndicator current={step} steps={STEP_LABELS} />
 
-        {/* STEP 0: Ticket Selection */}
+        {/* STEP 0: Personal Data */}
         {step === 0 && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-lg sm:text-xl font-bold mb-4">Escolha sua passagem</h2>
-              
-              {/* Price Info Message */}
-              <div className="bg-primary/10 border border-primary/30 rounded-lg p-3 mb-6">
-                <p className="text-sm text-foreground">
-                  💰 <span className="font-semibold">Valores — Ida e Volta:</span>
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  📍 BH e Santa Luzia: R$ 70,00 • 📍 Betim e Contagem: R$ 80,00 • 🎟️ Passaporte: R$ 250,00
-                </p>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                {/* Dia Único */}
-                <button
-                  onClick={() => setForm(f => ({ ...f, purchaseType: 'single' }))}
-                  className={`relative border-2 rounded-2xl p-6 transition-all ${
-                    form.purchaseType === 'single'
-                      ? "border-primary bg-primary/5"
-                      : "border-white/10 hover:border-white/20 bg-white/5"
-                  }`}
-                >
-                  {form.purchaseType === 'single' && (
-                    <div className="absolute top-3 right-3 w-6 h-6 rounded-full gold-gradient flex items-center justify-center">
-                      <Check className="w-4 h-4 text-black" />
-                    </div>
-                  )}
-                  <div className="text-left">
-                    <h3 className="text-lg font-bold mb-1">Dia Único</h3>
-                    <p className="text-sm text-muted-foreground mb-3">Escolha 1 dia do evento</p>
-                    <p className="text-2xl font-bold text-primary">{formatCurrency(getDynamicBasePrice())}</p>
-                    <p className="text-xs text-muted-foreground mt-1">/dia</p>
-                  </div>
-                </button>
-
-                {/* Múltiplos Dias */}
-                <button
-                  onClick={() => setForm(f => ({ ...f, purchaseType: 'multiple', transportDates: [] }))}
-                  className={`relative border-2 rounded-2xl p-6 transition-all ${
-                    form.purchaseType === 'multiple'
-                      ? "border-primary bg-primary/5"
-                      : "border-white/10 hover:border-white/20 bg-white/5"
-                  }`}
-                >
-                  {form.purchaseType === 'multiple' && (
-                    <div className="absolute top-3 right-3 w-6 h-6 rounded-full gold-gradient flex items-center justify-center">
-                      <Check className="w-4 h-4 text-black" />
-                    </div>
-                  )}
-                  <div className="text-left">
-                    <h3 className="text-lg font-bold mb-1">Múltiplos Dias</h3>
-                    <p className="text-sm text-muted-foreground mb-3">Escolha 2 ou mais dias</p>
-                    <p className="text-2xl font-bold text-primary">{formatCurrency(getDynamicBasePrice() * 2)}</p>
-                    <p className="text-xs text-muted-foreground mt-1">/2 dias</p>
-                  </div>
-                </button>
-
-                {/* Passaporte - Todos os Dias (ESGOTADO) */}
-                <button
-                  disabled={true}
-                  onClick={() => setForm(f => ({ ...f, purchaseType: 'all_days' }))}
-                  className={`relative border-2 rounded-2xl p-6 transition-all border-red-400/30 bg-red-500/5 opacity-60 cursor-not-allowed`}
-                >
-                  <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/40">
-                    <div className="text-center">
-                      <Lock className="w-6 h-6 mx-auto mb-2 text-red-400" />
-                      <div className="text-sm font-bold text-red-400">ESGOTADO</div>
-                    </div>
-                  </div>
-                  <div className="absolute top-3 left-3">
-                    <span className="bg-primary text-black text-xs font-bold px-2.5 py-1 rounded-full">MAIS POPULAR</span>
-                  </div>
-                  <div className="text-left mt-6">
-                    <h3 className="text-lg font-bold mb-1">Passaporte — Todos os Dias</h3>
-                    <p className="text-sm text-muted-foreground mb-3">05, 06, 12 e 13 de Junho • Melhor valor!</p>
-                    <p className="text-2xl font-bold text-primary">{formatCurrency(25000)}</p>
-                    <p className="text-xs text-muted-foreground mt-1">/4 dias</p>
-                  </div>
-                </button>
-              </div>
-
-              {/* Date Selection Grid */}
-              {form.purchaseType === 'single' && (
-                <div>
-                  <label className="text-sm font-medium text-foreground/80 mb-3 block">SELECIONE 1 DATA</label>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {dates.map((d) => {
-                      const isSoldOut = isSoldOutDate(d);
-                      const dateStr = getDateString(d);
-                      const seatData = seatAvailability?.find(s => s.travelDate === dateStr);
-                      const availableSeats = seatData?.availableSeats ?? 0;
-                      const indicator = getSeatIndicator(availableSeats);
-                      return (
-                      <button
-                        key={d}
-                        disabled={isSoldOut}
-                        onClick={() => {
-                          if (!isSoldOut) {
-                            setForm(prev => ({ ...prev, transportDate: d }));
-                            if (errors.transportDate) {
-                              setErrors(prev => {
-                                const updated = { ...prev };
-                                delete updated.transportDate;
-                                return updated;
-                              });
-                            }
-                          }
-                        }}
-                        className={`border-2 rounded-xl p-3 text-center transition-all relative ${
-                          isSoldOut
-                            ? "border-red-400/30 bg-red-500/5 opacity-60 cursor-not-allowed"
-                            : form.transportDate === d
-                            ? "border-primary bg-primary/10"
-                            : "border-white/10 hover:border-white/20 bg-white/5"
-                        }`}
-                      >
-                        <div className="text-sm font-bold">{d.split(" ")[0]}</div>
-                        <div className="text-xs text-muted-foreground">{d.split(" ")[2]}</div>
-                        {!isSoldOut && seatData && (
-                          <div className="text-xs font-medium mt-2 text-foreground">
-                            <div>{indicator.icon} {indicator.label}</div>
-                          </div>
-                        )}
-                        {isSoldOut && (
-                          <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40">
-                            <div className="text-center">
-                              <Lock className="w-4 h-4 mx-auto mb-1 text-red-400" />
-                              <div className="text-xs font-bold text-red-400">ESGOTADO</div>
-                            </div>
-                          </div>
-                        )}
-                      </button>
-                    );
-                    })}
-                  </div>
-                  {errors.transportDate && <p className="text-xs text-red-400 mt-2">{errors.transportDate}</p>}
-                </div>
-              )}
-
-              {form.purchaseType === 'multiple' && (
-                <div>
-                  <label className="text-sm font-medium text-foreground/80 mb-3 block">SELECIONE 2 OU MAIS DATAS</label>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {dates.map((d) => {
-                      const isSoldOut = isSoldOutDate(d);
-                      return (
-                      <button
-                        key={d}
-                        disabled={isSoldOut}
-                        onClick={() => {
-                          if (!isSoldOut) {
-                            setForm(prev => {
-                              const isSelected = prev.transportDates.includes(d);
-                              return {
-                                ...prev,
-                                transportDates: isSelected
-                                  ? prev.transportDates.filter(date => date !== d)
-                                  : [...prev.transportDates, d]
-                              };
-                            });
-                            if (errors.transportDates) {
-                              setErrors(prev => {
-                                const updated = { ...prev };
-                                delete updated.transportDates;
-                                return updated;
-                              });
-                            }
-                          }
-                        }}
-                        className={`border-2 rounded-xl p-3 text-center transition-all relative ${
-                          isSoldOut
-                            ? "border-red-400/30 bg-red-500/5 opacity-60 cursor-not-allowed"
-                            : form.transportDates.includes(d)
-                            ? "border-primary bg-primary/10"
-                            : "border-white/10 hover:border-white/20 bg-white/5"
-                        }`}
-                      >
-                        <div className="text-sm font-bold">{d.split(" ")[0]}</div>
-                        <div className="text-xs text-muted-foreground">{d.split(" ")[2]}</div>
-                        {isSoldOut && (
-                          <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40">
-                            <div className="text-center">
-                              <Lock className="w-4 h-4 mx-auto mb-1 text-red-400" />
-                              <div className="text-xs font-bold text-red-400">ESGOTADO</div>
-                            </div>
-                          </div>
-                        )}
-                      </button>
-                    );
-                    })}
-                  </div>
-                  {errors.transportDates && <p className="text-xs text-red-400 mt-2">{errors.transportDates}</p>}
-                  {form.transportDates.length > 0 && (
-                    <p className="text-xs text-primary mt-2">Selecionadas {form.transportDates.length} datas</p>
-                  )}
-                </div>
-              )}
-
-              {form.purchaseType === 'all_days' && (
-                <div className="bg-primary/10 border border-primary/30 rounded-xl p-4">
-                  <p className="text-sm text-foreground">✓ Passaporte válido para <span className="font-bold">todos os 4 dias do evento</span></p>
-                  <p className="text-xs text-muted-foreground mt-2">05, 06, 12 e 13 de Junho de 2026</p>
-                </div>
-              )}
-
-              {/* Total and Continue */}
-              <div className="mt-6 space-y-4">
-                <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex justify-between items-center">
-                  <span className="font-medium">Total:</span>
-                  <AnimatedPrice
-                    value={calculateStep0Total()}
-                    className="text-2xl font-bold text-primary"
-                    duration={0.4}
-                  >
-                    {formatCurrency(calculateStep0Total())}
-                  </AnimatedPrice>
-                </div>
-                <Button onClick={handleNext} className="w-full gold-gradient text-black font-bold py-3 rounded-xl">
-                  Continuar <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 1: Personal Data & Boarding */}
-        {step === 1 && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-lg sm:text-xl font-bold mb-4">Seus dados</h2>
+              <h2 className="text-lg sm:text-xl font-bold mb-4">Seus dados pessoais</h2>
               <p className="text-sm text-muted-foreground mb-6">Informações para o ingresso e confirmação</p>
 
               <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-5">
@@ -692,19 +491,78 @@ export default function Comprar() {
                   />
                   {errors.customerCpf && <p className="text-xs text-red-400 mt-1">{errors.customerCpf}</p>}
                 </div>
+              </div>
+            </div>
 
+            <div className="flex gap-3 pt-4">
+              <Button variant="outline" onClick={() => setStep(0)} disabled className="flex-1 border-white/10 hover:bg-white/5 opacity-50">
+                <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
+              </Button>
+              <Button onClick={handleNext} className="flex-1 gold-gradient text-black font-bold">
+                Próximo <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 1: City Selection */}
+        {step === 1 && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-lg sm:text-xl font-bold mb-4">Selecione sua cidade</h2>
+              <p className="text-sm text-muted-foreground mb-6">Escolha a cidade de embarque</p>
+
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-5">
+                <div>
+                  <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Cidade *</label>
+                  <select
+                    value={form.city}
+                    onChange={(e) => setForm((f) => ({ ...f, city: e.target.value, boardingPointId: 0 }))}
+                    className="w-full bg-[#1F1F1F] border border-white/10 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  >
+                    <option value="">Selecione uma cidade</option>
+                    {cities.map((city) => (
+                      <option key={city} value={city}>
+                        {city}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.city && <p className="text-xs text-red-400 mt-1">{errors.city}</p>}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <Button variant="outline" onClick={() => setStep(0)} className="flex-1 border-white/10 hover:bg-white/5">
+                <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
+              </Button>
+              <Button onClick={handleNext} className="flex-1 gold-gradient text-black font-bold">
+                Próximo <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 2: Boarding Point Selection */}
+        {step === 2 && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-lg sm:text-xl font-bold mb-4">Selecione o ponto de embarque</h2>
+              <p className="text-sm text-muted-foreground mb-6">Escolha onde você embarcará</p>
+
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-5">
                 <div>
                   <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Ponto de embarque *</label>
                   <select
                     value={form.boardingPointId}
-                    onChange={handleBoardingPointChange}
+                    onChange={(e) => setForm((f) => ({ ...f, boardingPointId: parseInt(e.target.value, 10) }))}
                     className="w-full bg-[#1F1F1F] border border-white/10 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                   >
                     <option value={0}>Selecione um ponto</option>
-                    {boardingPoints && boardingPoints.length > 0 ? (
-                      boardingPoints.map((bp) => (
+                    {boardingPointsForCity && boardingPointsForCity.length > 0 ? (
+                      boardingPointsForCity.map((bp) => (
                         <option key={bp.id} value={bp.id}>
-                          {bp.city} - {bp.locationName}
+                          {bp.locationName}
                         </option>
                       ))
                     ) : (
@@ -716,14 +574,191 @@ export default function Comprar() {
               </div>
             </div>
 
-            {/* Passengers */}
+            <div className="flex gap-3 pt-4">
+              <Button variant="outline" onClick={() => setStep(1)} className="flex-1 border-white/10 hover:bg-white/5">
+                <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
+              </Button>
+              <Button onClick={handleNext} className="flex-1 gold-gradient text-black font-bold">
+                Próximo <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 3: Purchase Type Selection (BEFORE dates) */}
+        {step === 3 && (
+          <div className="space-y-6">
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold">Passageiros ({form.passengers.length})</h3>
-                <Button variant="outline" size="sm" onClick={addPassenger} className="border-primary/30 text-primary hover:bg-primary/10">
-                  <Plus className="w-4 h-4 mr-1" /> Adicionar
-                </Button>
+              <h2 className="text-lg sm:text-xl font-bold mb-4">Tipo de compra</h2>
+              <p className="text-sm text-muted-foreground mb-6">Escolha como você quer viajar</p>
+
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-5">
+                <div>
+                  <label className="text-sm font-medium text-foreground/80 mb-3 block">Selecione uma opção *</label>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Dia Único */}
+                    <button
+                      onClick={() => setForm(f => ({ ...f, purchaseType: 'single' }))}
+                      className={`relative border-2 rounded-2xl p-6 transition-all ${
+                        form.purchaseType === 'single'
+                          ? "border-primary bg-primary/5"
+                          : "border-white/10 hover:border-white/20 bg-white/5"
+                      }`}
+                    >
+                      {form.purchaseType === 'single' && (
+                        <div className="absolute top-3 right-3 w-6 h-6 rounded-full gold-gradient flex items-center justify-center">
+                          <Check className="w-4 h-4 text-black" />
+                        </div>
+                      )}
+                      <div className="text-left">
+                        <h3 className="text-lg font-bold mb-1">Dia Único</h3>
+                        <p className="text-sm text-muted-foreground mb-3">Escolha 1 dia do evento</p>
+                        <p className="text-2xl font-bold text-primary">{formatCurrency(getDynamicBasePrice())}</p>
+                        <p className="text-xs text-muted-foreground mt-1">/dia</p>
+                      </div>
+                    </button>
+
+                    {/* Múltiplos Dias */}
+                    <button
+                      onClick={() => setForm(f => ({ ...f, purchaseType: 'multiple' }))}
+                      className={`relative border-2 rounded-2xl p-6 transition-all ${
+                        form.purchaseType === 'multiple'
+                          ? "border-primary bg-primary/5"
+                          : "border-white/10 hover:border-white/20 bg-white/5"
+                      }`}
+                    >
+                      {form.purchaseType === 'multiple' && (
+                        <div className="absolute top-3 right-3 w-6 h-6 rounded-full gold-gradient flex items-center justify-center">
+                          <Check className="w-4 h-4 text-black" />
+                        </div>
+                      )}
+                      <div className="text-left">
+                        <h3 className="text-lg font-bold mb-1">Múltiplos Dias</h3>
+                        <p className="text-sm text-muted-foreground mb-3">Escolha 2 ou mais dias</p>
+                        <p className="text-2xl font-bold text-primary">{formatCurrency(getDynamicBasePrice() * 2)}</p>
+                        <p className="text-xs text-muted-foreground mt-1">/2 dias</p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
               </div>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <Button variant="outline" onClick={() => setStep(2)} className="flex-1 border-white/10 hover:bg-white/5">
+                <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
+              </Button>
+              <Button onClick={handleNext} className="flex-1 gold-gradient text-black font-bold">
+                Próximo <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 4: Date Selection (AFTER purchase type) */}
+        {step === 4 && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-lg sm:text-xl font-bold mb-4">Selecione a(s) data(s)</h2>
+              <p className="text-sm text-muted-foreground mb-6">Escolha quando você quer viajar</p>
+
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-5">
+                <div>
+                  <label className="text-sm font-medium text-foreground/80 mb-3 block">
+                    {form.purchaseType === 'single' ? 'SELECIONE 1 DATA' : 'SELECIONE 2 OU MAIS DATAS'}
+                  </label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {dates.map((d) => {
+                      const isSoldOut = isSoldOutDate(d);
+                      const dateStr = getDateString(d);
+                      const seatData = seatAvailability?.find(s => s.travelDate === dateStr);
+                      const availableSeats = seatData?.availableSeats ?? 0;
+                      const indicator = getSeatIndicator(availableSeats);
+                      return (
+                      <button
+                        key={d}
+                        disabled={isSoldOut}
+                        onClick={() => {
+                          if (!isSoldOut) {
+                            if (form.purchaseType === 'single') {
+                              setForm(prev => ({ ...prev, transportDate: d }));
+                            } else {
+                              setForm(prev => {
+                                const isSelected = prev.transportDates.includes(d);
+                                return {
+                                  ...prev,
+                                  transportDates: isSelected
+                                    ? prev.transportDates.filter(date => date !== d)
+                                    : [...prev.transportDates, d]
+                                };
+                              });
+                            }
+                            if (errors.transportDate || errors.transportDates) {
+                              setErrors(prev => {
+                                const updated = { ...prev };
+                                delete updated.transportDate;
+                                delete updated.transportDates;
+                                return updated;
+                              });
+                            }
+                          }
+                        }}
+                        className={`border-2 rounded-xl p-3 text-center transition-all relative ${
+                          isSoldOut
+                            ? "border-red-400/30 bg-red-500/5 opacity-60 cursor-not-allowed"
+                            : form.purchaseType === 'single' && form.transportDate === d
+                            ? "border-primary bg-primary/10"
+                            : form.purchaseType === 'multiple' && form.transportDates.includes(d)
+                            ? "border-primary bg-primary/10"
+                            : "border-white/10 hover:border-white/20 bg-white/5"
+                        }`}
+                      >
+                        <div className="text-sm font-bold">{d.split(" ")[0]}</div>
+                        <div className="text-xs text-muted-foreground">{d.split(" ")[2]}</div>
+                        {!isSoldOut && seatData && (
+                          <div className="text-xs font-medium mt-2 text-foreground">
+                            <div>{indicator.icon} {indicator.label}</div>
+                          </div>
+                        )}
+                        {isSoldOut && (
+                          <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40">
+                            <div className="text-center">
+                              <Lock className="w-4 h-4 mx-auto mb-1 text-red-400" />
+                              <div className="text-xs font-bold text-red-400">ESGOTADO</div>
+                            </div>
+                          </div>
+                        )}
+                      </button>
+                    );
+                    })}
+                  </div>
+                  {errors.transportDate && <p className="text-xs text-red-400 mt-2">{errors.transportDate}</p>}
+                  {errors.transportDates && <p className="text-xs text-red-400 mt-2">{errors.transportDates}</p>}
+                  {form.purchaseType === 'multiple' && form.transportDates.length > 0 && (
+                    <p className="text-xs text-primary mt-2">Selecionadas {form.transportDates.length} datas</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <Button variant="outline" onClick={() => setStep(3)} className="flex-1 border-white/10 hover:bg-white/5">
+                <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
+              </Button>
+              <Button onClick={handleNext} className="flex-1 gold-gradient text-black font-bold">
+                Próximo <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 5: Passengers */}
+        {step === 5 && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-lg sm:text-xl font-bold mb-4">Dados dos passageiros</h2>
+              <p className="text-sm text-muted-foreground mb-6">Informações de cada passageiro</p>
 
               <div className="space-y-3">
                 {form.passengers.map((p, i) => (
@@ -760,11 +795,14 @@ export default function Comprar() {
                   </div>
                 ))}
               </div>
+
+              <Button variant="outline" size="sm" onClick={addPassenger} className="border-primary/30 text-primary hover:bg-primary/10 mt-4 w-full">
+                <Plus className="w-4 h-4 mr-1" /> Adicionar Passageiro
+              </Button>
             </div>
 
-            {/* Navigation */}
             <div className="flex gap-3 pt-4">
-              <Button variant="outline" onClick={() => setStep(0)} className="flex-1 border-white/10 hover:bg-white/5">
+              <Button variant="outline" onClick={() => setStep(4)} className="flex-1 border-white/10 hover:bg-white/5">
                 <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
               </Button>
               <Button onClick={handleNext} className="flex-1 gold-gradient text-black font-bold">
@@ -774,11 +812,11 @@ export default function Comprar() {
           </div>
         )}
 
-        {/* STEP 2: Summary & Payment */}
-        {step === 2 && (
+        {/* STEP 6: Summary */}
+        {step === 6 && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-lg sm:text-xl font-bold mb-4">Confirme e pague</h2>
+              <h2 className="text-lg sm:text-xl font-bold mb-4">Resumo da compra</h2>
               <p className="text-sm text-muted-foreground mb-6">Revise seus dados antes de prosseguir</p>
 
               <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4 mb-6">
@@ -793,7 +831,7 @@ export default function Comprar() {
                 </div>
 
                 <div className="border-t border-white/10 pt-4">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">PASSAGEIRO</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">PASSAGEIRO PRINCIPAL</p>
                   <p className="font-bold">{form.customerName}</p>
                   <p className="text-sm text-muted-foreground">{form.customerEmail}</p>
                 </div>
@@ -804,6 +842,17 @@ export default function Comprar() {
                     <MapPin className="w-4 h-4 text-primary" />
                     {selectedBP?.city} - {selectedBP?.locationName}
                   </p>
+                </div>
+
+                <div className="border-t border-white/10 pt-4">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">PASSAGEIROS ({form.passengers.length})</p>
+                  <div className="space-y-1">
+                    {form.passengers.map((p, i) => (
+                      <p key={i} className="text-sm text-muted-foreground">
+                        {i + 1}. {p.name}
+                      </p>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="border-t border-white/10 pt-4 space-y-3">
@@ -825,34 +874,39 @@ export default function Comprar() {
                 </div>
               </div>
 
-              {/* Payment Method Selection */}
               <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 flex gap-3 mb-6">
                 <ShieldCheck className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-blue-100">
                   Pagamento via PIX Manual - Sem taxa adicional
                 </p>
               </div>
+            </div>
 
-
-
-              {/* Navigation */}
-              <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setStep(1)} className="flex-1 border-white/10 hover:bg-white/5">
-                  <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
-                </Button>
-                <Button
-                  onClick={() => setStep(3)}
-                  className="flex-1 gold-gradient text-black font-bold"
-                >
-                  <MessageCircle className="w-4 h-4 mr-2" /> Gerar PIX
-                </Button>
-              </div>
+            <div className="flex gap-3 pt-4">
+              <Button variant="outline" onClick={() => setStep(5)} className="flex-1 border-white/10 hover:bg-white/5">
+                <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
+              </Button>
+              <Button 
+                onClick={handlePayment} 
+                disabled={isCreatingOrder || createPixOrder.isPending}
+                className="flex-1 gold-gradient text-black font-bold"
+              >
+                {isCreatingOrder || createPixOrder.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processando...
+                  </>
+                ) : (
+                  <>
+                    <MessageCircle className="w-4 h-4 mr-2" /> Gerar PIX
+                  </>
+                )}
+              </Button>
             </div>
           </div>
         )}
 
-        {/* STEP 3: Manual PIX Payment */}
-        {step === 3 && (
+        {/* STEP 7: Manual PIX Payment */}
+        {step === 7 && pixData && (
           <div className="bg-gradient-to-b from-red-900/20 to-transparent rounded-2xl p-8">
             <SimpleManualPixPayment
               amount={(() => {
@@ -884,7 +938,7 @@ export default function Comprar() {
               boardingPoint={boardingPoints?.find(
                 (bp) => bp.id === form.boardingPointId
               )?.locationName || 'Desconhecido'}
-              onBack={() => setStep(2)}
+              onBack={() => setStep(6)}
             />
           </div>
         )}
@@ -892,5 +946,4 @@ export default function Comprar() {
       </div>
     </PublicLayout>
   );
-
 }
