@@ -288,10 +288,14 @@ export async function deleteOrder(id: number) {
 export async function getAllOrders(eventId?: number) {
   const db = await getDb();
   if (!db) return [];
+  // Return all relevant statuses: paid, pending (PIX), pending_checkout (incomplete), failed, canceled
+  // Exclude only: refunded (old refunds)
+  const relevantStatuses = ["paid", "pending", "pending_checkout", "failed", "canceled"] as const;
+  const statusCondition = inArray(orders.status, relevantStatuses);
   if (eventId) {
-    return db.select().from(orders).where(and(eq(orders.eventId, eventId), eq(orders.status, "paid"))).orderBy(desc(orders.createdAt));
+    return db.select().from(orders).where(and(eq(orders.eventId, eventId), statusCondition)).orderBy(desc(orders.createdAt));
   }
-  return db.select().from(orders).where(eq(orders.status, "paid")).orderBy(desc(orders.createdAt));
+  return db.select().from(orders).where(statusCondition).orderBy(desc(orders.createdAt));
 }
 
 // ─── Passengers ───

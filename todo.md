@@ -56,10 +56,10 @@
 - [ ] Tratamento de erro e retry
 
 ## FASE 9: ADMIN - PEDIDOS
-- [ ] Revisar tentativas incompletas entrando como pendentes
-- [ ] Validar regra de criação/status dos pedidos
-- [ ] Implementar filtro por status
-- [ ] Implementar busca por pedido
+- [x] Revisar tentativas incompletas entrando como pendentes
+- [x] Validar regra de criação/status dos pedidos
+- [x] Implementar filtro por status
+- [x] Implementar busca por pedido
 
 ## FASE 10: ADMIN - EVENTOS
 - [ ] Todo evento criado deve aparecer na hero principal
