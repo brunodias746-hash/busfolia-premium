@@ -188,11 +188,10 @@ function HeroSection() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-3 sm:mb-6">
-                <Link href="/comprar">
-                  <Button size="lg" className="gold-gradient text-black font-bold text-sm sm:text-base px-5 sm:px-8 py-4 sm:py-5 rounded-xl hover:opacity-90 transition-opacity w-full sm:w-auto min-h-[44px]">
-                    GARANTA SUA VAGA AGORA <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
-                  </Button>
-                </Link>
+                <div className="bg-red-500/20 border border-red-500/50 rounded-xl px-5 sm:px-8 py-4 sm:py-5 text-center w-full sm:w-auto">
+                  <p className="text-sm sm:text-base font-bold text-red-400">VENDAS ONLINE ENCERRADAS</p>
+                  <p className="text-xs sm:text-sm text-red-300 mt-1">Para verificar disponibilidade, fale conosco no WhatsApp</p>
+                </div>
                 <a href="https://chat.whatsapp.com/KjaIneid0P9F6JScKsV7Po" target="_blank" rel="noopener noreferrer">
                   <Button size="lg" variant="outline" className="border-white/10 text-foreground/80 px-5 sm:px-8 py-4 sm:py-5 rounded-xl hover:bg-white/5 w-full sm:w-auto min-h-[44px]">
                     <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" /> Entrar no Grupo
@@ -324,9 +323,7 @@ function EventsSection() {
                         <div className="text-3xl sm:text-4xl font-black font-heading text-primary">{formatCurrency(event.priceCents)}</div>
                       </div>
                       <div className="flex flex-col gap-2 w-full sm:w-auto sm:ml-4">
-                        <Link href="/comprar">
-                          <Button className="gold-gradient text-black font-bold text-sm sm:text-base px-6 sm:px-8 py-3 sm:py-4 rounded-xl hover:opacity-90 w-full min-h-[44px] sm:min-h-[48px] whitespace-nowrap">COMPRAR AGORA</Button>
-                        </Link>
+                        <Button disabled className="bg-red-500/30 text-red-300 font-bold text-sm sm:text-base px-6 sm:px-8 py-3 sm:py-4 rounded-xl w-full min-h-[44px] sm:min-h-[48px] whitespace-nowrap cursor-not-allowed">VENDAS ENCERRADAS</Button>
                         {event.groupLink && (
                           <a href={event.groupLink} target="_blank" rel="noopener noreferrer" className="w-full">
                             <Button variant="outline" className="w-full font-bold text-sm sm:text-base px-6 sm:px-8 py-3 sm:py-4 rounded-xl min-h-[44px] sm:min-h-[48px] whitespace-nowrap"><MessageCircle className="w-4 h-4 mr-2" />ENTRAR NO GRUPO</Button>
@@ -551,10 +548,11 @@ function CTASection() {
       <div className="absolute inset-0 gold-gradient opacity-5" />
       <div className="container relative z-10 text-center px-6">
         <h2 className="text-2xl sm:text-3xl md:text-5xl font-black font-heading mb-3 sm:mb-4">Não fique de fora.<br /><span className="gold-text">Compre sua passagem agora.</span></h2>
-        <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-6 sm:mb-8 max-w-lg mx-auto">Vagas limitadas. Compre sua passagem com segurança e viaje com conforto.</p>
-        <Link href="/comprar">
-          <Button size="lg" className="gold-gradient text-black font-bold text-sm sm:text-lg px-8 sm:px-10 py-5 sm:py-6 rounded-xl hover:opacity-90 min-h-[44px]">COMPRAR PASSAGEM <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" /></Button>
-        </Link>
+        <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-6 sm:mb-8 max-w-lg mx-auto">Vendas online encerradas. Fale conosco no WhatsApp para verificar disponibilidade.</p>
+        <div className="bg-red-500/20 border border-red-500/50 rounded-xl px-8 sm:px-10 py-5 sm:py-6 text-center">
+          <p className="text-sm sm:text-lg font-bold text-red-400">VENDAS ONLINE ENCERRADAS</p>
+          <p className="text-xs sm:text-sm text-red-300 mt-2">Entre em contato conosco via WhatsApp</p>
+        </div>
       </div>
     </section>
   );
